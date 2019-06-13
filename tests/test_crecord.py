@@ -32,5 +32,5 @@ def test_invalid_schema():
 
 def test_create_from_pdf():
     with open("tests/data/CourtSummaryReport.pdf", "rb") as f:
-        record = parse_pdf(f)
-    assert record.person.first_name is not None
+        docket = parse_pdf(f)
+    assert docket.person.first_name is not None
