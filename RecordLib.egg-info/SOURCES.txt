@@ -1,0 +1,8 @@
+setup.py
+RecordLib/CRecord.py
+RecordLib/__init__.py
+RecordLib/parse_pdf.py
+RecordLib.egg-info/PKG-INFO
+RecordLib.egg-info/SOURCES.txt
+RecordLib.egg-info/dependency_links.txt
+RecordLib.egg-info/top_level.txt

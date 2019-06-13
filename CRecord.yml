@@ -1,0 +1,28 @@
+# Schema for a criminal record,
+# according to cerberus
+person:
+  type: dict
+  required: true
+  schema:
+    first_name:
+      type: string
+    last_name:
+      type: string
+cases:
+  type: list
+  schema:
+    docket_number:
+      type: string
+    otn:
+      type: string
+    charges:
+      type: list
+      schema:
+        offense:
+          type: string
+        grade:
+          type: string
+        disposition:
+          type: string
+    fines_and_costs:
+      type: string
