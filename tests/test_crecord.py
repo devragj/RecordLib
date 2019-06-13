@@ -1,4 +1,4 @@
-from RecordLib import CRecord
+from RecordLib.crecord import CRecord
 from RecordLib.parse_pdf import parse_pdf
 import pytest
 

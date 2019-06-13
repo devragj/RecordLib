@@ -33,7 +33,7 @@ Right now this is only an experimental project for trying out some ideas and new
 
 	}
 
-	### idempotent combining
+### idempotent combining
 
 I think we might want kind of algebra of Records. Like you can take a docket, parse it to a Record, and take a Summary and parse that to a record. Then add those two Records together, and the addition function should combine the two records intelligently - fail if the "person" is not the same, and combine cases without duplicating, combine charges without duplicating.
 
@@ -41,3 +41,15 @@ I think we might want kind of algebra of Records. Like you can take a docket, pa
 	rec2 = from_pdf(summary)
 
 	full_rec = rec1 + rec2
+
+Alternatively, it might be better to have idempotent but more explicit methods:
+
+	rec = CRecord()
+	docket = Docket("case_docket.pdf")
+	summary = Summary("summary.pdf")
+	rec.add_docket(docket)
+	rec.add_summary(summary)
+
+## other issues
+
+Right now pdf-to-text parsing is done with PyPDF2. That seeems to be unmaintained. We might do the command line pdftotext binary, or maybe there's some other python library we could use? Maybe parse_pdf should use dependency injection to be able to swap out text-extractors.

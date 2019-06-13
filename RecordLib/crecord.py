@@ -5,10 +5,10 @@ Note - it looks like i can't use dataclasses throughout because
        dataclasses don't support nested dataclass without overriding init, so
        what's the point?
 """
-import cerberus as cb
+import cerberus as cb # type: ignore
 from dataclasses import dataclass
 import yaml
-
+from typing import List
 
 @dataclass
 class Person:
@@ -38,7 +38,7 @@ class Case:
 
     docket_number: str
     otn: str
-    charges: [Charge]
+    charges: List[Charge]
     fines_and_costs: int
 
     def __init__(self, data):
@@ -54,7 +54,7 @@ class CRecord:
     """
 
     person: Person
-    cases: [Case]
+    cases: List[Case]
     validator: cb.Validator
 
     def __init__(self, data=None):
