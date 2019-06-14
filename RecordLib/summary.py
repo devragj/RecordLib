@@ -2,7 +2,9 @@ from __future__ import annotations
 from typing import BinaryIO, Union
 import io
 import parsimonious  # type: ignore
-from RecordLib.grammars.summary import summary_page_grammar
+from RecordLib.grammars.summary import (
+    summary_page_grammar, summary_page_terminals, summary_page_nonterminals)
+from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 import pytest
 import os
 
@@ -34,9 +36,12 @@ def parse_pdf(summary: Summary, pdf: Union[BinaryIO,str], tempdir: str = "tmp") 
     try:
         summary.parsed_pages = summary_page_grammar.parse(summary.text)
     except Exception as e:
-        pytest.set_trace()
         raise ValueError("Grammar cannot parse summary.")
 
+
+    summary_page_visitor = CustomVisitorFactory(summary_page_terminals, summary_page_nonterminals, dict()).create_instance()
+    xml_tree = summary_page_visitor.visit(summary.parsed_pages)
+    pytest.set_trace()
     # Store the header information
 
     # combine the body sections from each page and parse the combined body

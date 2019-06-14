@@ -19,12 +19,17 @@ useful_terminals = r"""
     ws = " "
 """
 
+# List of the terminal symbols for the summary_page_grammar
+summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line"]
+
+summary_page_nonterminals = ["summary_page", "first_page", "following_page", "header", "court_name", "caption", "summary_info", "footer"]
+
 summary_page_grammar = Grammar(
     r"""
     # Grammar for parsing summary pages, to separate
     # header, body, and footer for each page.
     # the body of each page will be combined and separately parsed.
-    summary_page = first_page following_page*
+    summary = first_page following_page*
     first_page = header caption summary_info footer
     header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
     court_name = single_content_char+
