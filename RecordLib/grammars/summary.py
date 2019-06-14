@@ -25,16 +25,16 @@ summary_page_grammar = Grammar(
     # header, body, and footer for each page.
     # the body of each page will be combined and separately parsed.
     summary_page = first_page following_page*
-    first_page = header caption summary_info footer !header
+    first_page = header caption summary_info footer
     header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
     court_name = single_content_char+
 
     caption = line+ empty_line
 
-    summary_info = (line !start_of_footer)+ line
+    summary_info = ((line / empty_line) !start_of_footer)+ line
 
     following_page = header continuation summary_info footer
-    continuation = ~r"Curry, Randall Keith (Continued)" new_line
+    continuation = ~r".* \(Continued\)" new_line
 
     footer = start_of_footer (line / empty_line)+ page_break
     start_of_footer = new_line* ws* "CPCMS" line
