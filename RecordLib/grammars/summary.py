@@ -15,6 +15,7 @@ useful_terminals = r"""
     number = ~r"[0-9]"+
     forward_slash = "/"
     single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
+    content_char_no_ws =  ~r"[\“\”a-z0-9`\"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
     new_line = "\n"
     ws = " "
 """
@@ -22,7 +23,7 @@ useful_terminals = r"""
 # List of the terminal symbols for the summary_page_grammar
 summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line"]
 
-summary_page_nonterminals = ["summary_page", "first_page", "following_page", "header", "court_name", "caption", "summary_info", "footer"]
+summary_page_nonterminals = ["summary", "first_page", "following_page", "header", "court_name", "caption", "summary_info", "footer"]
 
 summary_page_grammar = Grammar(
     r"""
@@ -46,5 +47,38 @@ summary_page_grammar = Grammar(
 
     """ + useful_terminals
 )
-
-summary_body_grammar = None
+
+summary_body_nonterminals = [
+    "summary_body",
+    "case_category",
+    "cases_in_county"
+    "case"
+]
+
+summary_body_terminals = [
+    "ws", "number", "forward_slash", "single_content_char", "new_line"
+]
+
+summary_body_grammar = Grammar(
+    r"""
+    summary_body = case_category+
+    case_category = case_status new_line cases_in_county
+    cases_in_county = county new_line case+
+    case = line+ empty_line
+    #case = case_basics new_line arrest_and_disp new_line def_atty new_line charges empty_line
+    #
+    # case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
+    # arres_and_disp = arrest_date ws+ disp_date ws+ disp_jusge
+    # def_atty = ws* "Def Atty:" ws+ single_content_char+
+    #
+    # charges = sequence_header sequence+
+    # sequence_header = line line
+    # sequence = sequence_num ws+ statute ws+ (grade ws+)? description ws+ disposition ws* new_line (sentence_desc_continued new_line)? sentence_date ws+ sentence_type ws+ program_period ws+ sentence_length ws* new_line
+    #
+    # sequence_num = number
+    # statute = number ws+ "§" ws+ number
+    # grade = ~"[MF][0-9]*"
+    # desciption =
+
+    """ + useful_terminals
+)
