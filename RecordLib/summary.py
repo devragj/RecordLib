@@ -66,11 +66,14 @@ def parse_pdf(
         for ln in sec.text.split("\n"):
             slines.append(ln)
 
-    summary_info_combined = "\n".join(sec.text for sec in summary_info_sections if "(Continued)" not in sec.text)
+    summary_info_combined = "\n".join(
+        sec.text for sec in summary_info_sections if "(Continued)" not in sec.text)
+
 
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
+        pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(

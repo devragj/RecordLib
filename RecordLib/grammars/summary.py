@@ -57,7 +57,8 @@ summary_body_nonterminals = [
     "case_status",
     "cases_in_county",
     "county",
-    "case"
+    "case",
+    "case_basics"
 ]
 
 summary_body_terminals = [
@@ -72,12 +73,21 @@ summary_body_grammar = Grammar(
     case_status = words
     cases_in_county = county new_line case+
     county = ws* words ws*
-    case = ws* line+ (empty_line+ / (empty_line* ws* end_of_input))
+    case = ws* case_basics new_line arrest_and_disp new_line def_atty new_line line+ (empty_line+ / (empty_line* ws* end_of_input))
     #case = case_basics new_line arrest_and_disp new_line def_atty new_line charges empty_line
     #
-    # case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
-    # arres_and_disp = arrest_date ws+ disp_date ws+ disp_jusge
-    # def_atty = ws* "Def Atty:" ws+ single_content_char+
+    case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
+    docket_num = content_char_no_ws+
+    proc_status = "Proc Status: " words
+    dc_num = "DC No: " content_char_no_ws*
+    otn_num = "OTN:" ws* content_char_no_ws+
+
+    arrest_and_disp = ws* arrest_date ws+ disp_date ws+ disp_judge
+    arrest_date = "Arrest Dt:" ws? content_char_no_ws*
+    disp_date = "Disp Date:" ws? content_char_no_ws+
+    disp_judge = "Disp Judge: " words
+
+    def_atty = ws* "Def Atty:" ws+ single_content_char+
     #
     # charges = sequence_header sequence+
     # sequence_header = line line
