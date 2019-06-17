@@ -84,11 +84,11 @@ def parse_pdf(
 
     # combine the caption, header, and body info into a single xml
     # representation of the summary.
-    self._xml = etree.Element("Summary")
-    self._xml.append(pages_xml_tree.xpath("//header")[0])
-    self._xml.append(pages_xml_tree.xpath("//caption")[0])
-    self._xml.append(summary_body_xml_tree)
-    return self
+    summary._xml = etree.Element("Summary")
+    summary._xml.append(pages_xml_tree.xpath("//header")[0])
+    summary._xml.append(pages_xml_tree.xpath("//caption")[0])
+    summary._xml.append(summary_body_xml_tree)
+    return summary
 
 class Summary:
     """
