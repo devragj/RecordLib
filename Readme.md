@@ -69,6 +69,8 @@ Developing grammars is super laborious. Some tips:
 
 So if you have a variable of the lines of your document, then you can more quickly test specific parts of the doc with specific parts of the grammar.
 
+**Autogenerate the NodeVisitor** RecordLib with Parsimonious transforms a document with a grammar in two phases. First, Parsimonious uses a grammar to build a tree of the document. Then a NodeVisitor visits each node of the tree and does something, using a NodeVisitor subclass we have to create. The `CustomVisitorFactory` from RecordLib creates such a NodeVisitor with default behavior that's helpful to us. By passing the Factory a list of the terminal and nonterminal symbols in the grammar, the Factory will give us a class that will take a parsed document and wrap everything under terminal and nonterminal symbols in tags with the symbol's name. Terminal symbols will also have their text contents included as the tag content. NonTerminal symbols will only wrap their children (who are eventually terminal symbols). 
+
 ## other issues
 
 Right now pdf-to-text parsing is done with PyPDF2. That seeems to be unmaintained. We might do the command line pdftotext binary, or maybe there's some other python library we could use? Maybe parse_pdf should use dependency injection to be able to swap out text-extractors.

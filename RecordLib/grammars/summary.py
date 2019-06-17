@@ -1,7 +1,7 @@
 from parsimonious.grammar import Grammar
 
 useful_terminals = r"""
-    # nonterminals
+    # nonterminals, but quiet ones that shouldn't create xml <tags>
 
     line = single_content_char+ new_line
     empty_line = ws* new_line
@@ -15,9 +15,10 @@ useful_terminals = r"""
     # Loud Terminals (include in list of terminals, so content of the
     # node ends up in the output)
     ws = " "
-    date = number "/" number "/" number
+    date = number forward_slash number forward_slash number
     number = ~r"[0-9]"+
     forward_slash = "/"
+    section_symbol = "§"
     single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
     content_char_no_ws =  ~r"[\“\”a-z0-9`\"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
     new_line = "\n"
@@ -25,7 +26,7 @@ useful_terminals = r"""
 """
 
 # List of the terminal symbols for the summary_page_grammar
-summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line"]
+summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line", "section_symbol"]
 
 summary_page_nonterminals = ["summary", "first_page", "following_page", "header", "court_name", "caption", "summary_info", "footer"]
 
@@ -60,6 +61,10 @@ summary_body_nonterminals = [
     "county",
     "case",
     "case_basics",
+    "docket_num",
+    "proc_status",
+    "dc_num",
+    "otn_num",
     "arrest_and_disp",
     "arrest_date", "disp_date", "disp_judge",
     "def_atty",
@@ -69,17 +74,19 @@ summary_body_nonterminals = [
     "statute",
     "grade",
     "description",
+    "sequence_header",
     "sequence_disposition",
     "sequence_disposition",
-    "sentence_desc_continued",
+    "sequence_continued",
     "sentence_date",
+    "sentence_type",
     "program_period",
     "sentence_length"
 ]
 
 summary_body_terminals = [
     "ws", "number", "forward_slash", "single_content_char", "new_line",
-    "content_char_no_ws"
+    "content_char_no_ws", "section_symbol"
 ]
 
 summary_body_grammar = Grammar(
@@ -110,16 +117,19 @@ summary_body_grammar = Grammar(
     sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? sentencing_info*
 
     sequence_num = !date number
-    statute = number ws+ "§" ws+ number (ws+ "§§" ws word)?
+    statute = number ws+ section_symbol ws+ number (ws+ section_symbol+ ws word)?
     grade = ~"[MFS][0-9]*"
-    description = words
-    sequence_disposition = words
+    description = words+
+        # + is needed only to make the parser not totally conflate this rule
+        # with the underlying words rule. W/out +, the description non-terminal
+        # disappears in the parser.
+    sequence_disposition = words+
 
     sequence_continued = ws+ !number words ws* words?
 
-    sentencing_info = ws+ sentence_date ws+ sentence_type (ws+ program_period ws+ sentence_length ws*)? new_line
-    sentence_date = date
-    sentence_type = words*
+    sentencing_info = ws+ sentence_date ws+ sentence_type? (ws+ program_period ws+ sentence_length ws*)? new_line
+    sentence_date = date ws
+    sentence_type = words+
     program_period = words*
     sentence_length = words*
     """ + useful_terminals
