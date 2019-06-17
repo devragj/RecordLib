@@ -65,14 +65,14 @@ def parse_pdf(
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        raise ValueError("Could not parse summary body.")
+        raise e
 
     summary_info_visitor = CustomVisitorFactory(
         summary_body_terminals, summary_body_nonterminals, dict()
     ).create_instance()
 
     summary_body_xml_tree = etree.fromstring(
-        summary_invo_visitor.visit(parsed_summary_body)
+        summary_info_visitor.visit(parsed_summary_body)
     )
     pytest.set_trace()
 

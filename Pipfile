@@ -5,18 +5,19 @@ name = "pypi"
 
 [dev-packages]
 pytest = "*"
-v = {version = "*", editable = true}
 mypy = "*"
 recordlib = {path = ".", editable = true}
 black = "*"
+click = "*"
+hypothesis = "*"
 
 [packages]
 cerberus = "*"
-hypothesis = "*"
 pyyaml = "*"
 parsimonious = "*"
-"pypdf2" = "*"
 lxml = "*"
+recordlib = {path = ".", editable = true}
+requests = "*"
 
 [requires]
 python_version = "3.7"

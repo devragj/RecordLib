@@ -2,10 +2,7 @@
 
 Library for handling Criminal Records information in Pennsylvania.
 
-Right now this is only an experimental project for trying out some ideas and new tooling.
-
-
-
+Right now this is only an experimental project for trying out some ideas and new tooling (e.g., trying out some of the newer python features like type annotations and data classes)
 
 ## Aspirational Usage
 
@@ -49,6 +46,20 @@ Alternatively, it might be better to have idempotent but more explicit methods:
 	summary = Summary("summary.pdf")
 	rec.add_docket(docket)
 	rec.add_summary(summary)
+
+## Testing
+
+Run automated tests with `pytest`.
+
+Grammars need to be tested on lots of different documents. The tests include tests that will try to parse all the dockets in a folder `tests/data/[summaries|dockets]`. If you want those tests to be meaningful, you need to put dockets there.
+
+You could do this manually by downloading dockets and saving them there. You can also use a helper script that randomly generates docket numbers and then uses [natev/DocketScraperAPI](https://hub.docker.com/r/natev/docketscraper_api) to download those dockets. To do this
+
+1. download and run the DocketScraperAPI image with `docker run natev/DocketScraperAPI -p 8800:8800`
+2. in this project environment, run `download (summaries | dockets) [-n = 1]`
+
+TODO I would like to try out `hypothesis` for property-based testing.
+
 
 ## other issues
 
