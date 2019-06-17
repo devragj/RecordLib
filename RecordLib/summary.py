@@ -72,7 +72,7 @@ def parse_pdf(
     ).create_instance()
 
     summary_body_xml_tree = etree.fromstring(
-        summary_invo_visitor.visit(parsed_summary_body)
+        summary_info_visitor.visit(parsed_summary_body)
     )
     pytest.set_trace()
 

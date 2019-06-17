@@ -5,6 +5,7 @@ useful_terminals = r"""
 
     line = single_content_char+ new_line
     empty_line = ws* new_line
+    word = content_char_no_ws+
 
     # quiet terminals with content that should just disappear
     page_break = "\f"
@@ -63,7 +64,9 @@ summary_body_grammar = Grammar(
     r"""
     summary_body = case_category+
     case_category = case_status new_line cases_in_county
+    case_status = ws* ("Closed" / "Inactive" / "Closed (Continued)" / "Active") ws*
     cases_in_county = county new_line case+
+    county = ws* word+ ws*
     case = line+ empty_line
     #case = case_basics new_line arrest_and_disp new_line def_atty new_line charges empty_line
     #

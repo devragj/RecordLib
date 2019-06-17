@@ -23,6 +23,8 @@ def test_parse_pdf_from_path():
 
 def test_bulk_parse_pdf_from_path():
     paths = os.listdir("tests/data/summaries")
+    if len(paths) == 0:
+        pytest.fail("No summaries to parse in /tests/data/summaries.")
     for path in paths:
         try:
             Summary(path, tempdir = "tests/data/tmp")
