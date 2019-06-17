@@ -69,11 +69,9 @@ def parse_pdf(
     summary_info_combined = "\n".join(
         sec.text for sec in summary_info_sections if "(Continued)" not in sec.text)
 
-
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -86,12 +84,11 @@ def parse_pdf(
 
     # combine the caption, header, and body info into a single xml
     # representation of the summary.
-    new_root = etree.Element("Summary")
-    new_root.append(pages_xml_tree.xpath("//header")[0])
-    new_root.append(pages_xml_tree.xpath("//caption")[0])
-    new_root.append(summary_body_xml_tree)
-    with open("tests/example.xml", "wb") as f:
-        f.write(etree.tostring(new_root, pretty_print=True))
+    self._xml = etree.Element("Summary")
+    self._xml.append(pages_xml_tree.xpath("//header")[0])
+    self._xml.append(pages_xml_tree.xpath("//caption")[0])
+    self._xml.append(summary_body_xml_tree)
+    return self
 
 class Summary:
     """

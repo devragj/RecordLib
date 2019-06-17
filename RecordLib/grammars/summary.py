@@ -26,9 +26,11 @@ useful_terminals = r"""
 """
 
 # List of the terminal symbols for the summary_page_grammar
-summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line", "section_symbol"]
+summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line", "section_symbol", "content_char_no_ws"]
 
-summary_page_nonterminals = ["summary", "first_page", "following_page", "header", "court_name", "caption", "summary_info", "footer"]
+summary_page_nonterminals = [
+    "summary", "first_page", "following_page", "header", "court_name",
+    "caption", "defendant_name", "def_dob", "def_sex", "def_addr", "def_eyecolor", "def_hair", "alias", "def_race", "summary_info", "footer"]
 
 summary_page_grammar = Grammar(
     r"""
@@ -40,7 +42,16 @@ summary_page_grammar = Grammar(
     header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
     court_name = single_content_char+
 
-    caption = line+ empty_line
+    caption = defendant_name ws+ def_dob ws+ def_sex ws* new_line ws* def_addr ws+ def_eyecolor ws* new_line "Aliases:" ws+ def_hair ws* new_line alias? ws+ def_race ws* new_line (alias new_line)* empty_line
+
+    defendant_name = words+
+    def_dob = "DOB:" ws* date
+    def_sex = "Sex:" ws* words
+    def_addr = words+
+    def_eyecolor = "Eyes:" ws* words
+    def_hair = "Hair:" ws* words
+    def_race = "Race:" ws* words
+    alias = words+
 
     summary_info = ((line / empty_line) !start_of_footer)+ line
 
@@ -85,7 +96,7 @@ summary_body_nonterminals = [
 ]
 
 # It can be useful for debugging to include 'new_line' as
-# a terminal so that its included in output xml. 
+# a terminal so that its included in output xml.
 summary_body_terminals = [
     "ws", "number", "forward_slash", "single_content_char",
     "content_char_no_ws", "section_symbol"
