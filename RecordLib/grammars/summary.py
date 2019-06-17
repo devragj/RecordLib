@@ -147,12 +147,17 @@ summary_body_grammar = Grammar(
     dc_num = "DC No: " content_char_no_ws*
     otn_num = "OTN:" ws* content_char_no_ws+
 
-    arrest_and_disp = ws* arrest_date ws+ disp_date ws+ disp_judge
+    # There seem to be two different formats for the arrest_and_disp section,
+    # closed cases have one format, and active-ish ones have a different.
+    arrest_and_disp = closed_arrest_and_disp / active_arrest_and_disp
+    old_arrest_and_disp = ws* arrest_date ws+ disp_date ws+ disp_judge
     arrest_date = "Arrest Dt:" ws? content_char_no_ws*
     disp_date = "Disp Date:" ws? content_char_no_ws+
     disp_judge = "Disp Judge: " words
 
     def_atty = ws* "Def Atty:" ws+ single_content_char+
+
+    active_arrest_and_disp = 
 
     charges = sequence_header sequence+
     sequence_header = line line # this is just the labels of columns.
