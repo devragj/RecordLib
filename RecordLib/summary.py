@@ -84,6 +84,8 @@ def parse_pdf(
         summary_info_visitor.visit(parsed_summary_body)
     )
 
+    with open("tests/data/example.xml", "wb") as f:
+        f.write(etree.tostring(summary_body_xml_tree, pretty_print=True))
 
 class Summary:
     """

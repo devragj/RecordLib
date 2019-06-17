@@ -15,6 +15,7 @@ useful_terminals = r"""
     # Loud Terminals (include in list of terminals, so content of the
     # node ends up in the output)
     ws = " "
+    date = number "/" number "/" number
     number = ~r"[0-9]"+
     forward_slash = "/"
     single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
@@ -58,7 +59,22 @@ summary_body_nonterminals = [
     "cases_in_county",
     "county",
     "case",
-    "case_basics"
+    "case_basics",
+    "arrest_and_disp",
+    "arrest_date", "disp_date", "disp_judge",
+    "def_atty",
+    "charges",
+    "sequence",
+    "sequence_num",
+    "statute",
+    "grade",
+    "description",
+    "sequence_disposition",
+    "sequence_disposition",
+    "sentence_desc_continued",
+    "sentence_date",
+    "program_period",
+    "sentence_length"
 ]
 
 summary_body_terminals = [
@@ -73,9 +89,8 @@ summary_body_grammar = Grammar(
     case_status = words
     cases_in_county = county new_line case+
     county = ws* words ws*
-    case = ws* case_basics new_line arrest_and_disp new_line def_atty new_line line+ (empty_line+ / (empty_line* ws* end_of_input))
-    #case = case_basics new_line arrest_and_disp new_line def_atty new_line charges empty_line
-    #
+    case = ws* case_basics new_line arrest_and_disp new_line def_atty new_line charges (empty_line+ / (empty_line* ws* end_of_input))
+
     case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
     docket_num = content_char_no_ws+
     proc_status = "Proc Status: " words
@@ -88,15 +103,24 @@ summary_body_grammar = Grammar(
     disp_judge = "Disp Judge: " words
 
     def_atty = ws* "Def Atty:" ws+ single_content_char+
-    #
-    # charges = sequence_header sequence+
-    # sequence_header = line line
-    # sequence = sequence_num ws+ statute ws+ (grade ws+)? description ws+ disposition ws* new_line (sentence_desc_continued new_line)? sentence_date ws+ sentence_type ws+ program_period ws+ sentence_length ws* new_line
-    #
-    # sequence_num = number
-    # statute = number ws+ "§" ws+ number
-    # grade = ~"[MF][0-9]*"
-    # desciption =
 
+    charges = sequence_header sequence+
+    sequence_header = line line # this is just the labels of columns.
+
+    sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? sentencing_info*
+
+    sequence_num = !date number
+    statute = number ws+ "§" ws+ number (ws+ "§§" ws word)?
+    grade = ~"[MFS][0-9]*"
+    description = words
+    sequence_disposition = words
+
+    sequence_continued = ws+ !number words ws* words?
+
+    sentencing_info = ws+ sentence_date ws+ sentence_type (ws+ program_period ws+ sentence_length ws*)? new_line
+    sentence_date = date
+    sentence_type = words*
+    program_period = words*
+    sentence_length = words*
     """ + useful_terminals
 )
