@@ -58,9 +58,11 @@ def parse_pdf(
 
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
+    slines = []
+    for sec in summary_info_sections:
+        for ln in sec.text.split("\n"):
+            slines.append(ln)
     summary_info_combined = "\n".join(sec.text for sec in summary_info_sections)
-    # with open(os.path.join(tempdir, "info.txt"), "w") as f:
-    #     f.write(summary_info_combined)
 
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
@@ -74,6 +76,7 @@ def parse_pdf(
     summary_body_xml_tree = etree.fromstring(
         summary_info_visitor.visit(parsed_summary_body)
     )
+
     pytest.set_trace()
 
 class Summary:

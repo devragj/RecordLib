@@ -61,6 +61,14 @@ You could do this manually by downloading dockets and saving them there. You can
 TODO I would like to try out `hypothesis` for property-based testing.
 
 
+## Developing Grammars
+
+Developing grammars is super laborious. Some tips:
+
+**Parse text w/ subrule** With parsimonious, you can try parsing a bit of text with a specific rule, with `mygrammar['rule'].parse("text")`
+
+So if you have a variable of the lines of your document, then you can more quickly test specific parts of the doc with specific parts of the grammar.
+
 ## other issues
 
 Right now pdf-to-text parsing is done with PyPDF2. That seeems to be unmaintained. We might do the command line pdftotext binary, or maybe there's some other python library we could use? Maybe parse_pdf should use dependency injection to be able to swap out text-extractors.

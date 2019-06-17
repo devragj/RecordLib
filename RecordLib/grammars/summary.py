@@ -6,9 +6,11 @@ useful_terminals = r"""
     line = single_content_char+ new_line
     empty_line = ws* new_line
     word = content_char_no_ws+
+    words = word (ws words)*
 
     # quiet terminals with content that should just disappear
     page_break = "\f"
+    end_of_input = !~"."
 
     # Loud Terminals (include in list of terminals, so content of the
     # node ends up in the output)
@@ -52,22 +54,25 @@ summary_page_grammar = Grammar(
 summary_body_nonterminals = [
     "summary_body",
     "case_category",
-    "cases_in_county"
+    "case_status",
+    "cases_in_county",
+    "county",
     "case"
 ]
 
 summary_body_terminals = [
-    "ws", "number", "forward_slash", "single_content_char", "new_line"
+    "ws", "number", "forward_slash", "single_content_char", "new_line",
+    "content_char_no_ws"
 ]
 
 summary_body_grammar = Grammar(
     r"""
     summary_body = case_category+
-    case_category = case_status new_line cases_in_county
-    case_status = ws* ("Closed" / "Inactive" / "Closed (Continued)" / "Active") ws*
+    case_category = ws* case_status ws* new_line cases_in_county
+    case_status = words
     cases_in_county = county new_line case+
-    county = ws* word+ ws*
-    case = line+ empty_line
+    county = ws* words ws*
+    case = ws* line+ (empty_line+ / (empty_line* ws* end_of_input))
     #case = case_basics new_line arrest_and_disp new_line def_atty new_line charges empty_line
     #
     # case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
