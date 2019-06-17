@@ -9,15 +9,15 @@ mypy = "*"
 recordlib = {path = ".", editable = true}
 black = "*"
 click = "*"
+hypothesis = "*"
 
 [packages]
 cerberus = "*"
-hypothesis = "*"
 pyyaml = "*"
 parsimonious = "*"
 lxml = "*"
-black = "*"
-mypy = "*"
+recordlib = {path = ".", editable = true}
+requests = "*"
 
 [requires]
 python_version = "3.7"
