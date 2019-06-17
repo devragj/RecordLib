@@ -58,11 +58,15 @@ def parse_pdf(
 
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
+
+    # slines is for debugging and having quick access to a list of the
+    # lines of the text.
     slines = []
     for sec in summary_info_sections:
         for ln in sec.text.split("\n"):
             slines.append(ln)
-    summary_info_combined = "\n".join(sec.text for sec in summary_info_sections)
+
+    summary_info_combined = "\n".join(sec.text for sec in summary_info_sections if "(Continued)" not in sec.text)
 
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
@@ -77,7 +81,6 @@ def parse_pdf(
         summary_info_visitor.visit(parsed_summary_body)
     )
 
-    pytest.set_trace()
 
 class Summary:
     """
