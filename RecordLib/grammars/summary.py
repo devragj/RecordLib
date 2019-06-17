@@ -84,8 +84,10 @@ summary_body_nonterminals = [
     "sentence_length"
 ]
 
+# It can be useful for debugging to include 'new_line' as
+# a terminal so that its included in output xml. 
 summary_body_terminals = [
-    "ws", "number", "forward_slash", "single_content_char", "new_line",
+    "ws", "number", "forward_slash", "single_content_char",
     "content_char_no_ws", "section_symbol"
 ]
 
