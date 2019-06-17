@@ -5,10 +5,11 @@ Note - it looks like i can't use dataclasses throughout because
        dataclasses don't support nested dataclass without overriding init, so
        what's the point?
 """
-import cerberus as cb # type: ignore
+import cerberus as cb  # type: ignore
 from dataclasses import dataclass
 import yaml
 from typing import List
+
 
 @dataclass
 class Person:

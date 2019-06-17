@@ -8,12 +8,13 @@ from RecordLib.grammars.summary import (
     summary_page_nonterminals,
     summary_body_grammar,
     summary_body_terminals,
-    summary_body_nonterminals
+    summary_body_nonterminals,
 )
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 import pytest
 import os
 from lxml import etree
+
 
 def parse_pdf(
     summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
@@ -53,8 +54,7 @@ def parse_pdf(
     # the summary is now a string of xml along the lines of:
     # <summary> <first_page> ... </first_page>
     # <following_page> ... </following_page> </summary>
-    pages_xml_tree = etree.fromstring(
-        summary_page_visitor.visit(summary.parsed_pages))
+    pages_xml_tree = etree.fromstring(summary_page_visitor.visit(summary.parsed_pages))
 
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
@@ -67,7 +67,8 @@ def parse_pdf(
             slines.append(ln)
 
     summary_info_combined = "\n".join(
-        sec.text for sec in summary_info_sections if "(Continued)" not in sec.text)
+        sec.text for sec in summary_info_sections if "(Continued)" not in sec.text
+    )
 
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
@@ -89,6 +90,7 @@ def parse_pdf(
     summary._xml.append(pages_xml_tree.xpath("//caption")[0])
     summary._xml.append(summary_body_xml_tree)
     return summary
+
 
 class Summary:
     """

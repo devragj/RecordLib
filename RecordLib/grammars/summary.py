@@ -26,11 +26,34 @@ useful_terminals = r"""
 """
 
 # List of the terminal symbols for the summary_page_grammar
-summary_page_terminals = ["ws", "number", "forward_slash", "single_content_char", "new_line", "section_symbol", "content_char_no_ws"]
+summary_page_terminals = [
+    "ws",
+    "number",
+    "forward_slash",
+    "single_content_char",
+    "new_line",
+    "section_symbol",
+    "content_char_no_ws",
+]
 
 summary_page_nonterminals = [
-    "summary", "first_page", "following_page", "header", "court_name",
-    "caption", "defendant_name", "def_dob", "def_sex", "def_addr", "def_eyecolor", "def_hair", "alias", "def_race", "summary_info", "footer"]
+    "summary",
+    "first_page",
+    "following_page",
+    "header",
+    "court_name",
+    "caption",
+    "defendant_name",
+    "def_dob",
+    "def_sex",
+    "def_addr",
+    "def_eyecolor",
+    "def_hair",
+    "alias",
+    "def_race",
+    "summary_info",
+    "footer",
+]
 
 summary_page_grammar = Grammar(
     r"""
@@ -61,7 +84,8 @@ summary_page_grammar = Grammar(
     footer = start_of_footer (line / empty_line)+ page_break
     start_of_footer = new_line* ws* "CPCMS" line
 
-    """ + useful_terminals
+    """
+    + useful_terminals
 )
 
 summary_body_nonterminals = [
@@ -77,7 +101,9 @@ summary_body_nonterminals = [
     "dc_num",
     "otn_num",
     "arrest_and_disp",
-    "arrest_date", "disp_date", "disp_judge",
+    "arrest_date",
+    "disp_date",
+    "disp_judge",
     "def_atty",
     "charges",
     "sequence",
@@ -92,14 +118,18 @@ summary_body_nonterminals = [
     "sentence_date",
     "sentence_type",
     "program_period",
-    "sentence_length"
+    "sentence_length",
 ]
 
 # It can be useful for debugging to include 'new_line' as
 # a terminal so that its included in output xml.
 summary_body_terminals = [
-    "ws", "number", "forward_slash", "single_content_char",
-    "content_char_no_ws", "section_symbol"
+    "ws",
+    "number",
+    "forward_slash",
+    "single_content_char",
+    "content_char_no_ws",
+    "section_symbol",
 ]
 
 summary_body_grammar = Grammar(
@@ -145,5 +175,6 @@ summary_body_grammar = Grammar(
     sentence_type = words+
     program_period = words*
     sentence_length = words*
-    """ + useful_terminals
+    """
+    + useful_terminals
 )
