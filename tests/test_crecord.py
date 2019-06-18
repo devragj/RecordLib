@@ -1,10 +1,9 @@
 from RecordLib.crecord import CRecord
-from RecordLib.parse_pdf import parse_pdf
 import pytest
 
 
 def test_init():
-    rec = CRecord({
+    rec = CRecord(data = {
         "person": {
             "first_name": "Joe",
             "last_name": "Smith"
@@ -28,9 +27,3 @@ def test_invalid_schema():
                 "first_name": "Blank"
             }
         })
-
-
-def test_create_from_pdf():
-    with open("tests/data/CourtSummaryReport.pdf", "rb") as f:
-        docket = parse_pdf(f)
-    assert docket.person.first_name is not None

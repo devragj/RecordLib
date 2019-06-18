@@ -66,9 +66,20 @@ class CustomVisitorFactory:
 
     # Default method generators
     def generate_default_terminal_method(self, terminal):
+        """ Create the default method for visiting terminal symbols
+
+        The default method for visiting terminal sysmbols will simply return
+        the content, as a string, of the symbol.
+        """
         return lambda self, node, children: self.stringify(node.text)
 
     def generate_default_non_terminal_method(self, non_terminal_name):
+        """ Create the default method for visiting nonterminal symbols.
+
+        The default method for visiting nonterminal symbols will return the
+        output of the node's children wrapped in xml tags with the name of the
+        nonterminal symbol, as in <parent> [some contents] </parent>
+        """
         def non_terminal_method(self, node, children):
             contents = self.stringify(children)
             return f"<{non_terminal_name}> {contents} </{non_terminal_name}>"

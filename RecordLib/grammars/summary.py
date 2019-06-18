@@ -111,7 +111,8 @@ summary_body_nonterminals = [
     "statute",
     "grade",
     "description",
-    "sequence_header",
+    "closed_sequence_header",
+    "open_sequence_header",
     "sequence_disposition",
     "sequence_disposition",
     "sequence_continued",
@@ -119,6 +120,17 @@ summary_body_nonterminals = [
     "sentence_type",
     "program_period",
     "sentence_length",
+    "trial_date",
+    "legacy_num",
+    "action_list",
+    "last_actions",
+    "last_action",
+    "last_action_date",
+    "last_action_room",
+    "next_actions",
+    "next_action",
+    "next_action_date",
+    "next_action_room",
 ]
 
 # It can be useful for debugging to include 'new_line' as
@@ -174,7 +186,7 @@ summary_body_grammar = Grammar(
     charges = closed_sequences / open_sequences
 
     closed_sequences = closed_sequence_header closed_sequence+
-    closed_sequence_header = line # this is just the labels of columns.
+    closed_sequence_header = line line # this is just the labels of columns.
     closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? sentencing_info*
 
     open_sequences = open_sequence_header open_sequence+

@@ -11,10 +11,11 @@ from RecordLib.grammars.summary import (
     summary_body_nonterminals,
 )
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
+from RecordLib.common import Person, Case, Charge
 import pytest
 import os
 from lxml import etree
-
+from collections import namedtuple
 
 def parse_pdf(
     summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
@@ -91,8 +92,6 @@ def parse_pdf(
     summary._xml.append(pages_xml_tree.xpath("//caption")[0])
     summary._xml.append(summary_body_xml_tree)
 
-    with open("tests/data/example.xml", "wb") as f:
-        f.write(etree.tostring(summary._xml, pretty_print=True))
 
     return summary
 
@@ -104,7 +103,15 @@ class Summary:
 
     text: str
     tempdir: str
+    _xml: etree.Element
 
     def __init__(self, pdf: Union[BinaryIO, str] = None, tempdir: str = "tmp") -> None:
         if pdf is not None:
             parse_pdf(self, pdf, tempdir)
+
+    def get_defendant_name(self) -> Person:
+        if self._xml is not None:
+            full_name = self._xml.find("caption/defendant_name").text
+            last_first = [n.strip() for n in full_name.split(",")]
+            return Person(last_first[1], last_first[0])
+        return Name(None, None)
