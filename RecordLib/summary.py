@@ -59,12 +59,6 @@ def parse_pdf(
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
 
-    # slines is for debugging and having quick access to a list of the
-    # lines of the text.
-    slines = []
-    for sec in summary_info_sections:
-        for ln in sec.text.split("\n"):
-            slines.append(ln)
 
     summary_info_combined = "\n".join(
         sec.text for sec in summary_info_sections if "(Continued)" not in sec.text
@@ -73,6 +67,13 @@ def parse_pdf(
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
+        # lines of the text.
+        # slines is for debugging and having quick access to a list of the
+        slines = []
+        for sec in summary_info_sections:
+            for ln in sec.text.split("\n"):
+                slines.append(ln)
+        pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -89,6 +90,10 @@ def parse_pdf(
     summary._xml.append(pages_xml_tree.xpath("//header")[0])
     summary._xml.append(pages_xml_tree.xpath("//caption")[0])
     summary._xml.append(summary_body_xml_tree)
+
+    with open("tests/data/example.xml", "wb") as f:
+        f.write(etree.tostring(summary._xml, pretty_print=True))
+
     return summary
 
 

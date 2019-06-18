@@ -139,7 +139,7 @@ summary_body_grammar = Grammar(
     case_status = words
     cases_in_county = county new_line case+
     county = ws* words ws*
-    case = ws* case_basics new_line arrest_and_disp new_line def_atty new_line charges (empty_line+ / (empty_line* ws* end_of_input))
+    case = ws* case_basics new_line arrest_and_disp new_line charges (empty_line+ / (empty_line* ws* end_of_input))
 
     case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
     docket_num = content_char_no_ws+
@@ -150,23 +150,40 @@ summary_body_grammar = Grammar(
     # There seem to be two different formats for the arrest_and_disp section,
     # closed cases have one format, and active-ish ones have a different.
     arrest_and_disp = closed_arrest_and_disp / active_arrest_and_disp
-    old_arrest_and_disp = ws* arrest_date ws+ disp_date ws+ disp_judge
+
+    closed_arrest_and_disp = ws* arrest_date ws+ disp_date ws+ disp_judge new_line def_atty
     arrest_date = "Arrest Dt:" ws? content_char_no_ws*
     disp_date = "Disp Date:" ws? content_char_no_ws+
     disp_judge = "Disp Judge: " words
-
     def_atty = ws* "Def Atty:" ws+ single_content_char+
 
-    active_arrest_and_disp = 
+    active_arrest_and_disp = ws* arrest_date ws+ trial_date ws+ legacy_num new_line action_list
+    trial_date = "Trial Dt:" ws? date?
+    legacy_num = "Legacy No:" ws? words?
+    action_list = last_actions new_line next_actions
+    last_actions = ws+ last_action ws+ last_action_date ws+ last_action_room
+    next_actions = ws+ next_action ws+ next_action_date ws+ next_action_room
+    last_action = "Last Action:" ws? words
+    last_action_date = "Last Action Date:" ws? date
+    last_action_room = "Last Action Room:" ws? words
+    next_action = "Next Action:" ws? words
+    next_action_date = "Next Action Date:" ws? date
+    next_action_room = "Next Action Room:" ws? words
 
-    charges = sequence_header sequence+
-    sequence_header = line line # this is just the labels of columns.
+    # Closed and Active-ish cases have different formats for the sequence table.
+    charges = closed_sequences / open_sequences
 
-    sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? sentencing_info*
+    closed_sequences = closed_sequence_header closed_sequence+
+    closed_sequence_header = line # this is just the labels of columns.
+    closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? sentencing_info*
+
+    open_sequences = open_sequence_header open_sequence+
+    open_sequence_header = ws+ "Seq No" line
+    open_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description (ws+ sequence_disposition)? new_line
 
     sequence_num = !date number
     statute = number ws+ section_symbol ws+ number (ws+ section_symbol+ ws word)?
-    grade = ~"[MFS][0-9]*"
+    grade = words+
     description = words+
         # + is needed only to make the parser not totally conflate this rule
         # with the underlying words rule. W/out +, the description non-terminal
