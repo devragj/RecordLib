@@ -7,7 +7,6 @@ Note - it looks like i can't use dataclasses throughout because
 """
 from __future__ import annotations
 import cerberus as cb  # type: ignore
-from dataclasses import dataclass
 import yaml
 from typing import List
 import pytest

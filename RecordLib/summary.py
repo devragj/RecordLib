@@ -115,3 +115,40 @@ class Summary:
             last_first = [n.strip() for n in full_name.split(",")]
             return Person(last_first[1], last_first[0])
         return Name(None, None)
+
+    def get_cases(self) -> List:
+        """
+        Return a list of the cases described in this Summary sheet.
+        """
+        cases = CaseList()
+        case_elements = self._xml.xpath("//case")
+        for case in case_elements:
+            closed_sequences = case.xpath("//closed_sequence")
+            closed_charges = []
+            for seq in closed_sequences:
+                closed_charges.append(Charge(
+                    offense=seq.find("description").text.strip(),
+                    statute=seq.find("statute").text.strip(),
+                    grade=seq.find("grade").text.strip(),
+                    disposition=seq.find("sequence_disposition").text.strip()
+                ))
+
+            pytest.set_trace()
+            open_sequences = case.xpath("//open_sequence")
+            open_charges = []
+            for seq in open_sequences:
+                raise NotImplementedError
+
+            cases.append(Case(
+                status=case.getparent().getparent().text.strip(),
+                county=case.getparent().find("county").text.strip(),
+                docket_numbers=[case.find("case_basics/docket_num").text.strip()
+],
+                otn=case.find("case_basics/otn_num").text.strip(),
+                dc=case.find("case_basics/dc_num").text.strip(),
+                charges=closed_charges + open_charges,
+                fines_and_costs=None # a summary docket never has info about this.
+            ))
+
+        cases = Case.combine_cases_w_shared_otn(cases)
+        return cases
