@@ -34,10 +34,12 @@ def cli(
         if resp.status_code == 200 and resp.json().get("docket") is not None:
             logging.info("... URL found. Downloading file.")
             if document_type.lower() in ["s", "summary", "summaries"]:
-                # download the summar
-                resp = requests.get(resp.json()["docket"]["summary_url"])
+                # download the summary
+                url_to_fetch = resp.json()["docket"]["summary_url"]
             else:
-                resp = requests.get(resp.json()["docket"]["docket_sheet_url"])
+                url_to_fetch = resp.json()["docket"]["docket_sheet_url"]
+
+            resp = requests.get(url_to_fetch)
             if resp.status_code == 200:
                 with open(
                     os.path.join(dest_path, f"{ docket_number }_{ document_type }.pdf"),
@@ -46,7 +48,10 @@ def cli(
                     f.write(resp.content)
             else:
                 logging.error(
-                    f"...request for summary url failed. Status code: { resp.status_code }"
+                    f"...request for url failed. Status code: { resp.status_code }"
+                )
+                logging.error(
+                    f"   URL was { url_to_fetch }"
                 )
             logging.info("... Downloading complete. Moving on.")
         else:
