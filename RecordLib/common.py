@@ -34,9 +34,6 @@ class Case:
     """
     Track information about a case
 
-    A Case is uniquely identified by its OTN, the "Offense Tracking Number."
-    A case _usually_ also only has one docket number. One situation in which a case has multiple docket numbers is when a case starts in one county
-    and then is transferred to a new county.
     """
 
     status: str
