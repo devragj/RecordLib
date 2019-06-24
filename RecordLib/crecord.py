@@ -31,7 +31,8 @@ def test_years_since_final_release(crecord: CRecord) -> int:
     How many years since a person's final release from confinement or
     supervision?
     """
-    pass
+    if len(crecord.cases) == 0: return None
+
 
 class CRecord:
     """
