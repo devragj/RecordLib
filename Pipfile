@@ -20,6 +20,7 @@ recordlib = {path = ".", editable = true}
 requests = "*"
 "e1839a8" = {editable = true, path = "."}
 black = "*"
+python-dateutil = "*"
 
 [requires]
 python_version = "3.7"

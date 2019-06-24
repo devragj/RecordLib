@@ -1,4 +1,4 @@
-from parsimonious.grammar import Grammar # type: ignore
+from parsimonious.grammar import Grammar  # type: ignore
 
 useful_terminals = r"""
     # nonterminals, but quiet ones that shouldn't create xml <tags>

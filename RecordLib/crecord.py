@@ -13,7 +13,25 @@ import pytest
 from RecordLib.summary import Summary
 from RecordLib.common import Case, Charge, Person
 from dataclasses import asdict
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
+def years_since_last_arrested_or_prosecuted(crecord: CRecord) -> int:
+    """
+    How many years since a person was last arrested or prosecuted?
+    """
+    if len(crecord.cases) == 0: return None
+    cases_ordered = sorted(crecord.cases, key=Case.order_cases_by_last_action)
+    last_case = cases_ordered[-1]
+    return relativedelta(last_case.last_action(), date.today()).years
+
+
+def test_years_since_final_release(crecord: CRecord) -> int:
+    """
+    How many years since a person's final release from confinement or
+    supervision?
+    """
+    pass
 
 class CRecord:
     """
@@ -24,17 +42,22 @@ class CRecord:
     cases: List[Case]
     validator: cb.Validator
 
+    years_since_last_arrested_or_prosecuted = years_since_last_arrested_or_prosecuted
+
+
     def __init__(self, person: Person, cases: List[Case] = []):
         self.person = person
         self.cases = cases
-        self.validate
+
 
     def to_dict(self) -> dict:
-        return {"person": asdict(self.person),
-                "cases": [c.to_dict() for c in self.cases]}
+        return {
+            "person": asdict(self.person),
+            "cases": [c.to_dict() for c in self.cases],
+        }
 
-    def validate(self) -> bool:
-        schema = yaml.load(open("CRecord.yml", "r"), Loader=yaml.SafeLoader)
+    def validate(self, crecord_schema: str = "CRecord.yml") -> bool:
+        schema = yaml.load(open(crecord_schema, "r"), Loader=yaml.SafeLoader)
         self.validator = cb.Validator(schema)
         data = self.to_dict()
         if not self.validator.validate(data):
@@ -52,10 +75,10 @@ class CRecord:
             This updated CRecord object.
         """
         # Get D's name from the summary
-        def_name = summary.get_defendant_name()
+        defendant = summary.get_defendant()
         self.person = Person(
-            first_name=def_name.first_name,
-            last_name=def_name.last_name
+            first_name=defendant.first_name, last_name=defendant.last_name,
+            date_of_birth=defendant.date_of_birth
         )
 
         # Get the cases from the summary

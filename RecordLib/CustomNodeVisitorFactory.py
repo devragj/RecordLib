@@ -1,4 +1,4 @@
-from parsimonious import NodeVisitor # type: ignore
+from parsimonious import NodeVisitor  # type: ignore
 
 
 def stringify(node_visitor, content):
@@ -80,6 +80,7 @@ class CustomVisitorFactory:
         output of the node's children wrapped in xml tags with the name of the
         nonterminal symbol, as in <parent> [some contents] </parent>
         """
+
         def non_terminal_method(self, node, children):
             contents = self.stringify(children)
             return f"<{non_terminal_name}> {contents} </{non_terminal_name}>"

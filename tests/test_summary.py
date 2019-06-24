@@ -1,9 +1,9 @@
 from RecordLib.summary import Summary
 from RecordLib.crecord import CRecord
-from RecordLib.common import Person
+from RecordLib.common import Person, Case
 import pytest
 import os
-
+from datetime import date
 
 def test_init():
     try:
@@ -40,16 +40,17 @@ def test_add_summary_to_crecord():
     summary = Summary(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
-    rec = CRecord(Person("John", "Smith"))
+    rec = CRecord(Person("John", "Smith", date(1998, 1, 1)))
     rec.add_summary(summary)
     rec.person.first_name == summary._xml.xpath("caption/defendant_name")[0].text
 
-def test_get_name():
+def test_get_defendant():
     summary = Summary(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
-    assert len(summary.get_defendant_name().first_name) > 0
-    assert len(summary.get_defendant_name().last_name) > 0
+    assert len(summary.get_defendant().first_name) > 0
+    assert len(summary.get_defendant().last_name) > 0
+    assert summary.get_defendant().date_of_birth > date(1900, 1, 1)
 
 def test_get_cases():
     summary = Summary(
@@ -57,4 +58,4 @@ def test_get_cases():
         tempdir="tests/data/tmp")
     assert len(summary.get_cases()) > 0
     assert len(summary.get_cases()) > 0
-    assert summary.get_cases()[0] is not None
+    assert isinstance(summary.get_cases()[0], Case)

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import BinaryIO, Union, List
 import io
 import parsimonious  # type: ignore
-from parsimonious.nodes import Node # type: ignore
+from parsimonious.nodes import Node  # type: ignore
 from RecordLib.grammars.summary import (
     summary_page_grammar,
     summary_page_terminals,
@@ -17,6 +17,17 @@ import pytest
 import os
 from lxml import etree
 from collections import namedtuple
+from datetime import datetime
+
+def date_or_none(datestring: str, fmtstr: str = "%m/%d/%Y") -> date:
+    """
+    Return date or None given a string.
+    """
+    try:
+        return datetime.strptime(datestring, fmtstr)
+    except ValueError:
+        return None
+
 
 def parse_pdf(
     summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
@@ -61,7 +72,6 @@ def parse_pdf(
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
 
-
     summary_info_combined = "\n".join(
         sec.text for sec in summary_info_sections if "(Continued)" not in sec.text
     )
@@ -92,7 +102,6 @@ def parse_pdf(
     summary._xml.append(pages_xml_tree.xpath("//caption")[0])
     summary._xml.append(summary_body_xml_tree)
 
-
     return summary
 
 
@@ -110,12 +119,17 @@ class Summary:
         if pdf is not None:
             parse_pdf(self, pdf, tempdir)
 
-    def get_defendant_name(self) -> Person:
+    def get_defendant(self) -> Person:
         if self._xml is not None:
             full_name = self._xml.find("caption/defendant_name").text
             last_first = [n.strip() for n in full_name.split(",")]
-            return Person(last_first[1], last_first[0])
-        return Person(None, None)
+            def_dob = self._xml.find("caption/def_dob").text.strip()
+            try:
+                def_dob = datetime.strptime(def_dob, "%m/%d/%Y").date()
+            except ValueError:
+                def_dob = None
+            return Person(last_first[1], last_first[0], def_dob)
+        return Person(None, None, None)
 
     def get_cases(self) -> List:
         """
@@ -127,26 +141,31 @@ class Summary:
             closed_sequences = case.xpath("//closed_sequence")
             closed_charges = []
             for seq in closed_sequences:
-                closed_charges.append(Charge(
-                    offense=seq.find("description").text.strip(),
-                    statute=seq.find("statute").text.strip(),
-                    grade=seq.find("grade").text.strip(),
-                    disposition=seq.find("sequence_disposition").text.strip()
-                ))
+                closed_charges.append(
+                    Charge(
+                        offense=seq.find("description").text.strip(),
+                        statute=seq.find("statute").text.strip(),
+                        grade=seq.find("grade").text.strip(),
+                        disposition=seq.find("sequence_disposition").text.strip(),
+                    )
+                )
 
             open_sequences = case.xpath("//open_sequence")
             open_charges = []
             for seq in open_sequences:
                 raise NotImplementedError
-
-            cases.append(Case(
-                status=case.getparent().getparent().text.strip(),
-                county=case.getparent().find("county").text.strip(),
-                docket_numbers=[case.find("case_basics/docket_num").text.strip()
-],
-                otn=case.find("case_basics/otn_num").text.strip(),
-                dc=case.find("case_basics/dc_num").text.strip(),
-                charges=closed_charges + open_charges,
-                fines_and_costs=None # a summary docket never has info about this.
-            ))
+            cases.append(
+                Case(
+                    status=case.getparent().getparent().text.strip(),
+                    county=case.getparent().find("county").text.strip(),
+                    docket_numbers=[case.find("case_basics/docket_num").text.strip()],
+                    otn=case.find("case_basics/otn_num").text.strip(),
+                    dc=case.find("case_basics/dc_num").text.strip(),
+                    charges=closed_charges + open_charges,
+                    fines_and_costs=None,  # a summary docket never has info about this.
+                    arrest_date=date_or_none(case.find("arrest_and_disp/arrest_date").text.strip()),
+                    disposition_date=date_or_none(case.find("arrest_and_disp/disp_date").text.strip()),
+                    judge=case.find("arrest_and_disp/disp_judge").text.strip()
+                )
+            )
         return cases

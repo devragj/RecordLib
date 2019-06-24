@@ -5,6 +5,7 @@ RecordLib/common.py
 RecordLib/crecord.py
 RecordLib/docket.py
 RecordLib/number_generator.py
+RecordLib/ruledefs.py
 RecordLib/summary.py
 RecordLib.egg-info/PKG-INFO
 RecordLib.egg-info/SOURCES.txt
@@ -12,5 +13,7 @@ RecordLib.egg-info/dependency_links.txt
 RecordLib.egg-info/entry_points.txt
 RecordLib.egg-info/requires.txt
 RecordLib.egg-info/top_level.txt
+RecordLib/grammars/__init__.py
+RecordLib/grammars/summary.py
 scripts/__init__.py
 scripts/download_dockets.py
