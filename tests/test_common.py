@@ -1,11 +1,18 @@
 from RecordLib.common import *
-
+from dataclasses import asdict
 
 
 def test_person():
     per = Person("John", "Smeth")
     assert per.first_name == "John"
     assert per.last_name == "Smeth"
+
+def test_person_todict():
+    per = Person("John", "Smeth")
+    assert asdict(per) == {
+        "first_name": "John",
+        "last_name": "Smeth"
+    }
 
 def test_charge():
     char = Charge(
@@ -33,3 +40,6 @@ def test_case():
         fines_and_costs=200
     )
     assert case.status == "Open"
+
+def test_case_todict(example_case):
+    assert example_case.to_dict()["county"] == example_case.county

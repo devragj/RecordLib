@@ -1,28 +1,35 @@
 from RecordLib.crecord import CRecord
+from RecordLib.common import Person
 import pytest
 
 
 def test_init():
-    rec = CRecord(data = {
-        "person": {
-            "first_name": "Joe",
-            "last_name": "Smith"
-        }
+    person = Person(**{
+        "first_name": "Joe",
+        "last_name": "Smith"
     })
-    #pytest.set_trace()
+    rec = CRecord(**{
+        "person": person
+    })
     assert rec.person.first_name == "Joe"
+    rec = CRecord(
+        person = Person(
+            first_name="Joan",
+            last_name="Smythe"
+        )
+    )
+    assert rec.person.last_name == "Smythe"
 
 
-def test_init_empty():
-    try:
+def test_init_empty_fails():
+    """ Fail without a Person to relate the record to. """
+    with pytest.raises(TypeError):
         rec = CRecord()
-    except:
-        pytest.fail("Should not have failed.")
 
 
 def test_invalid_schema():
-    with pytest.raises(AssertionError):
-        CRecord({
+    with pytest.raises(TypeError):
+        CRecord(**{
             "persons": {
                 "first_name": "Blank"
             }

@@ -2,7 +2,7 @@
 Common, simple dataclasses live here.
 """
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import List
 import functools
 
@@ -15,7 +15,6 @@ class Person:
 
     first_name: str
     last_name: str
-
 
 @dataclass
 class Charge:
@@ -51,3 +50,13 @@ class Case:
         self.fines_and_costs = fines_and_costs
         self.status = status
         self.county = county
+
+    def to_dict(self) -> dict:
+        return({
+            "docket_numbers": self.docket_numbers,
+            "otn": self.otn,
+            "charges": [asdict(c) for c in self.charges],
+            "fines_and_costs": self.fines_and_costs,
+            "status": self.status,
+            "county": self.county,
+        })

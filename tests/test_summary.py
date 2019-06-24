@@ -1,5 +1,6 @@
 from RecordLib.summary import Summary
 from RecordLib.crecord import CRecord
+from RecordLib.common import Person
 import pytest
 import os
 
@@ -39,7 +40,7 @@ def test_add_summary_to_crecord():
     summary = Summary(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
-    rec = CRecord()
+    rec = CRecord(Person("John", "Smith"))
     rec.add_summary(summary)
     rec.person.first_name == summary._xml.xpath("caption/defendant_name")[0].text
 
