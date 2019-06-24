@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import BinaryIO, Union
+from typing import BinaryIO, Union, List
 import io
 import parsimonious  # type: ignore
+from parsimonious.nodes import Node # type: ignore
 from RecordLib.grammars.summary import (
     summary_page_grammar,
     summary_page_terminals,
@@ -19,7 +20,7 @@ from collections import namedtuple
 
 def parse_pdf(
     summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
-) -> None:
+) -> Summary:
     """
     parse a pdf and store different information about the parsing in
     summary
@@ -104,6 +105,7 @@ class Summary:
     text: str
     tempdir: str
     _xml: etree.Element
+    parsed_pages: parsimonious.nodes.Node
 
     def __init__(self, pdf: Union[BinaryIO, str] = None, tempdir: str = "tmp") -> None:
         if pdf is not None:
@@ -114,13 +116,13 @@ class Summary:
             full_name = self._xml.find("caption/defendant_name").text
             last_first = [n.strip() for n in full_name.split(",")]
             return Person(last_first[1], last_first[0])
-        return Name(None, None)
+        return Person(None, None)
 
     def get_cases(self) -> List:
         """
         Return a list of the cases described in this Summary sheet.
         """
-        cases = CaseList()
+        cases = []
         case_elements = self._xml.xpath("//case")
         for case in case_elements:
             closed_sequences = case.xpath("//closed_sequence")
@@ -133,7 +135,6 @@ class Summary:
                     disposition=seq.find("sequence_disposition").text.strip()
                 ))
 
-            pytest.set_trace()
             open_sequences = case.xpath("//open_sequence")
             open_charges = []
             for seq in open_sequences:
@@ -149,6 +150,4 @@ class Summary:
                 charges=closed_charges + open_charges,
                 fines_and_costs=None # a summary docket never has info about this.
             ))
-
-        cases = Case.combine_cases_w_shared_otn(cases)
         return cases

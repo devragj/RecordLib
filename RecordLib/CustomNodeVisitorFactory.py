@@ -1,4 +1,4 @@
-from parsimonious import NodeVisitor
+from parsimonious import NodeVisitor # type: ignore
 
 
 def stringify(node_visitor, content):

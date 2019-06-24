@@ -1,9 +1,9 @@
 import random
 import logging
-from types import GeneratorType
+from typing import Generator
 
 
-def create_docket_numbers(court: str = "either") -> str:
+def create_docket_numbers(court: str = "either") -> Generator[str, None, None]:
     """
     Generate srandom docket numbers
 
