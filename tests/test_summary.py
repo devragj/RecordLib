@@ -1,6 +1,7 @@
 from RecordLib.summary import Summary
 from RecordLib.crecord import CRecord
-from RecordLib.common import Person, Case
+from RecordLib.common import Person
+from RecordLib.case import Case
 import pytest
 import os
 from datetime import date

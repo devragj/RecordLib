@@ -30,7 +30,8 @@ def cli(
         logging.info(f"Finding { docket_number } ... ")
         url = f"{ scraper_url }/lookupDocket/{ court }"
         logging.debug(f"... posting to { url }")
-        resp = requests.post(url, json={"docket_number": docket_number})
+        resp = requests.post(
+            url, json={"docket_number": docket_number})
         if resp.status_code == 200 and resp.json().get("docket") is not None:
             logging.info("... URL found. Downloading file.")
             if document_type.lower() in ["s", "summary", "summaries"]:
@@ -39,7 +40,7 @@ def cli(
             else:
                 url_to_fetch = resp.json()["docket"]["docket_sheet_url"]
 
-            resp = requests.get(url_to_fetch)
+            resp = requests.get(url_to_fetch, headers={"User-Agent": "DocketAnalyzerTesting"})
             if resp.status_code == 200:
                 with open(
                     os.path.join(dest_path, f"{ docket_number }_{ document_type }.pdf"),

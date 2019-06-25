@@ -11,7 +11,8 @@ import yaml
 from typing import List
 import pytest
 from RecordLib.summary import Summary
-from RecordLib.common import Case, Charge, Person
+from RecordLib.common import Charge, Person
+from RecordLib.case import Case
 from dataclasses import asdict
 from datetime import date
 from dateutil.relativedelta import relativedelta

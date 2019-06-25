@@ -12,7 +12,8 @@ from RecordLib.grammars.summary import (
     summary_body_nonterminals,
 )
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
-from RecordLib.common import Person, Case, Charge, Sentence
+from RecordLib.case import Case
+from RecordLib.common import Person, Charge, Sentence
 import pytest
 import os
 from lxml import etree
