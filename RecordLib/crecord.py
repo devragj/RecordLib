@@ -19,19 +19,32 @@ from dateutil.relativedelta import relativedelta
 def years_since_last_arrested_or_prosecuted(crecord: CRecord) -> int:
     """
     How many years since a person was last arrested or prosecuted?
+
+    If we can't tell how many years, return 0.
     """
     if len(crecord.cases) == 0: return None
     cases_ordered = sorted(crecord.cases, key=Case.order_cases_by_last_action)
     last_case = cases_ordered[-1]
-    return relativedelta(last_case.last_action(), date.today()).years
+    try:
+        return relativedelta(date.today(), last_case.last_action()).years
+    except (ValueError, TypeError):
+        return 0
 
 
-def test_years_since_final_release(crecord: CRecord) -> int:
+def years_since_final_release(crecord: CRecord) -> int:
     """
     How many years since a person's final release from confinement or
     supervision?
+
+    If we cannot tell, return 0.
     """
     if len(crecord.cases) == 0: return None
+    cases_ordered = sorted(crecord.cases, key=Case.order_cases_by_last_action)
+    last_case = cases_ordered[-1]
+    try:
+        return relativedelta(date.today(), last_case.end_of_confinement()).years
+    except (ValueError, TypeError):
+        return 0
 
 
 class CRecord:
@@ -45,6 +58,7 @@ class CRecord:
 
     years_since_last_arrested_or_prosecuted = years_since_last_arrested_or_prosecuted
 
+    years_since_final_release = years_since_final_release
 
     def __init__(self, person: Person, cases: List[Case] = []):
         self.person = person

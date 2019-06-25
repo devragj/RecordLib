@@ -44,7 +44,7 @@ class Case:
 
     status: str
     county: str
-    docket_numbers: List[str]
+    docket_number: str
     otn: str
     dc: str
     charges: List[Charge]
@@ -54,9 +54,9 @@ class Case:
     judge: str
 
     def __init__(
-        self, status, county, docket_numbers, otn, dc, charges, fines_and_costs,
+        self, status, county, docket_number, otn, dc, charges, fines_and_costs,
     arrest_date, disposition_date, judge) -> None:
-        self.docket_numbers = docket_numbers
+        self.docket_number = docket_number
         self.otn = otn
         self.charges = charges
         self.fines_and_costs = fines_and_costs
@@ -77,9 +77,15 @@ class Case:
             else:
                 return None
 
+    def end_of_confinement(self) -> int:
+        """
+        TODO try to figure out the days of confinement in a case.
+        """
+        return None
+
     def to_dict(self) -> dict:
         return {
-            "docket_numbers": self.docket_numbers,
+            "docket_number": self.docket_number,
             "otn": self.otn,
             "charges": [asdict(c) for c in self.charges],
             "fines_and_costs": self.fines_and_costs,

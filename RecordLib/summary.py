@@ -158,7 +158,7 @@ class Summary:
                 Case(
                     status=case.getparent().getparent().text.strip(),
                     county=case.getparent().find("county").text.strip(),
-                    docket_numbers=[case.find("case_basics/docket_num").text.strip()],
+                    docket_number=case.find("case_basics/docket_num").text.strip(),
                     otn=case.find("case_basics/otn_num").text.strip(),
                     dc=case.find("case_basics/dc_num").text.strip(),
                     charges=closed_charges + open_charges,

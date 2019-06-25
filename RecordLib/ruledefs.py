@@ -3,12 +3,12 @@ Collect rule-functions that take a record and return an analysis of
 how the rule applies to the record.
 """
 from RecordLib.crecord import CRecord
-
+import pytest
 ## 18 PA 9122 Expungements
 ## https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
 
 
-def expunge_over_70(crecord: CRecord) -> dict:
+def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> dict:
     """
     Analyze a crecord for expungements if the defendant is over 70.
 
@@ -16,12 +16,25 @@ def expunge_over_70(crecord: CRecord) -> dict:
     is 70 or older, and has been free of arrest or prosecution for 10
     years following the final release from confinement or supervision.
     """
+    conditions = {
+        "age_over_70": crecord.person.age() > 70,
+        "years_since_last_arrested_or_prosecuted": crecord.years_since_last_arrested_or_prosecuted() > 10,
+        "years_since_final_release": crecord.years_since_final_release() > 10
+    }
 
-    if ((crecord.person.age() > 70) and
-        (crecord.years_since_last_arrested_or_prosecuted() > 10) and
-        (crecord.years_since_final_release() > 10)):
-            return crecord, {"expunge_over_70": crecord.cases}
-    return crecord, {"expunge_over_70": []}
+    if all(conditions.values()):
+        conclusion = "Expunge cases"
+    else:
+        conclusion = "No expungements possible"
+
+    analysis.update({
+        "age_over_70_expungements": {
+            "conditions": conditions,
+            "conclusion": conclusion
+        }
+    })
+
+    return crecord, analysis
 
 
 def expunge_deceased(crecord: CRecord) -> dict:

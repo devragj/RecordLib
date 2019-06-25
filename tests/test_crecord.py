@@ -2,6 +2,7 @@ from RecordLib.crecord import CRecord
 from RecordLib.common import Person
 import pytest
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 def test_init():
     dob = date(2010, 1,1)
@@ -25,7 +26,9 @@ def test_init():
 
 
 def test_years_since_last_arrested_or_prosecuted(example_crecord):
-    example_crecord.years_since_last_arrested_or_prosecuted()
+    example_crecord.cases[0].arrest_date = date(2010, 1, 1)
+    example_crecord.cases[0].disposition_date = date(2010, 1, 1)
+    assert example_crecord.years_since_last_arrested_or_prosecuted() > 5
 
 
 def test_years_since_final_release(example_crecord):

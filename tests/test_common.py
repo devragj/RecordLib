@@ -39,7 +39,7 @@ def test_case():
     case = Case(
         status="Open",
         county="Erie",
-        docket_numbers=["12-CP-01", "12-MC-01"],
+        docket_number="12-CP-01",
         otn="112000111",
         dc="11222",
         charges=[char],
@@ -71,7 +71,7 @@ def test_order_cases_by_last_action(example_case):
     case2 = Case(
         status="Open",
         county="Erie",
-        docket_numbers=["12-CP-01", "12-MC-01"],
+        docket_number="12-CP-01",
         otn="112000111",
         dc="11222",
         charges=[example_case],

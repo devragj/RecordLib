@@ -24,7 +24,7 @@ def example_case(example_charge):
     return Case(
         status="Open",
         county="Erie",
-        docket_numbers=["12-CP-01", "12-MC-01"],
+        docket_number="12-CP-01",
         otn="112000111",
         dc="11222",
         charges=[example_charge],
