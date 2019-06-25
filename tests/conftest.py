@@ -1,5 +1,5 @@
 import pytest
-from RecordLib.common import Case, Charge, Person
+from RecordLib.common import Case, Charge, Person, Sentence
 from RecordLib.crecord import CRecord
 from datetime import date
 
@@ -12,12 +12,22 @@ def example_person():
     )
 
 @pytest.fixture
-def example_charge():
+def example_sentence():
+    return Sentence(
+        sentence_date=date(2000,1,1),
+        sentence_type="Confinement",
+        sentence_period="180 days",
+        sentence_length="Min 180 days, max 365 days"
+    )
+
+@pytest.fixture
+def example_charge(example_sentence):
     return Charge(
         "Eating w/ mouth open",
         "M2",
         "14 section 23",
-        "Guilty Plea")
+        "Guilty Plea",
+        sentences=[example_sentence])
 
 @pytest.fixture
 def example_case(example_charge):

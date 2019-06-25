@@ -12,12 +12,22 @@ from RecordLib.grammars.summary import (
     summary_body_nonterminals,
 )
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
-from RecordLib.common import Person, Case, Charge
+from RecordLib.common import Person, Case, Charge, Sentence
 import pytest
 import os
 from lxml import etree
 from collections import namedtuple
 from datetime import datetime
+
+def text_or_blank(element: etree.Element) -> str:
+    """
+    Extract the text of an element, if any, or return a blank string.
+    """
+    try:
+        return element.text.strip()
+    except AttributeError:
+        return ""
+
 
 def date_or_none(datestring: str, fmtstr: str = "%m/%d/%Y") -> date:
     """
@@ -141,14 +151,21 @@ class Summary:
             closed_sequences = case.xpath("//closed_sequence")
             closed_charges = []
             for seq in closed_sequences:
-                closed_charges.append(
-                    Charge(
-                        offense=seq.find("description").text.strip(),
-                        statute=seq.find("statute").text.strip(),
-                        grade=seq.find("grade").text.strip(),
-                        disposition=seq.find("sequence_disposition").text.strip(),
-                    )
-                )
+                charge = Charge(
+                    offense=text_or_blank(seq.find("description")),
+                    statute=text_or_blank(seq.find("statute")),
+                    grade=text_or_blank(seq.find("grade")),
+                    disposition=text_or_blank(seq.find("sequence_disposition")),
+                    sentences=[])
+                for sentence in seq.xpath("//sentencing_info"):
+                    charge.sentences.append(Sentence(
+                        sentence_date=text_or_blank(sentence.find("sentence_date")),
+                        sentence_type=text_or_blank(sentence.find("sentence_type")),
+                        sentence_period=text_or_blank(sentence.find("program_period")),
+                        sentence_length=text_or_blank(sentence.find("sentence_length"))
+                    ))
+                closed_charges.append(Charge)
+
 
             open_sequences = case.xpath("//open_sequence")
             open_charges = []

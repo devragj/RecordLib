@@ -22,6 +22,8 @@ def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> dict:
         "years_since_final_release": crecord.years_since_final_release() > 10
     }
 
+    pytest.set_trace()
+
     if all(conditions.values()):
         conclusion = "Expunge cases"
     else:

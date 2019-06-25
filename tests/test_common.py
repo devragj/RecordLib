@@ -20,22 +20,32 @@ def test_person_todict():
         "date_of_birth": date(2010, 1, 1)
     }
 
+def test_sentence():
+    st = Sentence(
+        sentence_date=date(2010, 1, 1),
+        sentence_type="Probation",
+        sentence_period="90 days",
+        sentence_length="Min: 90 Day(s) Max: 90 Day(s)"
+    )
+
 def test_charge():
     char = Charge(
         offense="Eating w/ mouth open",
         grade="M2",
         statute="24 &sect; 102",
-        disposition="Guilty Plea",)
+        disposition="Guilty Plea",
+        sentences=[])
     assert char.offense == "Eating w/ mouth open"
     assert char.grade == "M2"
     assert char.disposition == "Guilty Plea"
 
-def test_case():
+def test_case(example_sentence):
     char = Charge(
         "Eating w/ mouth open",
         "M2",
         "14 section 23",
-        "Guilty Plea")
+        "Guilty Plea",
+        sentences=[example_sentence])
     case = Case(
         status="Open",
         county="Erie",

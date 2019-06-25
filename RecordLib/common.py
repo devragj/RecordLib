@@ -25,6 +25,16 @@ class Person:
             (self.date_of_birth.month, self.date_of_birth.day))
 
 @dataclass
+class Sentence:
+    """
+    Track information about a sentence. A Charge has zero or more Sentences.
+    """
+    sentence_date: date
+    sentence_type: str
+    sentence_period: str
+    sentence_length: str
+
+@dataclass
 class Charge:
     """
     Track information about a charge
@@ -34,6 +44,7 @@ class Charge:
     grade: str
     statute: str
     disposition: str
+    sentences: List[Sentence]
 
 
 class Case:
@@ -77,11 +88,24 @@ class Case:
             else:
                 return None
 
-    def end_of_confinement(self) -> int:
+
+    def was_confined(self) -> bool:
+        """
+        True if there was a disposition that led to confinement.
+        """
+        if any(["onfine" in s.sentence_type for charge in self.charges for s in charge.sentences]):
+            return True
+        return False
+
+
+
+    def end_of_confinement(self) -> date:
         """
         TODO try to figure out the days of confinement in a case.
         """
-        return None
+        if not self.was_confined():
+            return None
+        return max([s.sentence_date for s in self.sentences])
 
     def to_dict(self) -> dict:
         return {

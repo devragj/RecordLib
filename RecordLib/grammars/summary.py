@@ -119,6 +119,7 @@ summary_body_nonterminals = [
     "sequence_disposition",
     "sequence_disposition",
     "sequence_continued",
+    "sentencing_info",
     "sentence_date",
     "sentence_type",
     "program_period",

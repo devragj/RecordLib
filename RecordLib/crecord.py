@@ -36,13 +36,12 @@ def years_since_final_release(crecord: CRecord) -> int:
     How many years since a person's final release from confinement or
     supervision?
 
-    If we cannot tell, return 0.
+    If the record has no cases, the person was never confined, so return "infinity." If we cannot tell, because cases don't identify when confinement ended, return 0.
     """
-    if len(crecord.cases) == 0: return None
-    cases_ordered = sorted(crecord.cases, key=Case.order_cases_by_last_action)
-    last_case = cases_ordered[-1]
+    confinement_ends = [c.end_of_confinement() for c in crecord.cases if c.was_confined()]
+    if len(confinement_ends) == 0: return float("Inf")
     try:
-        return relativedelta(date.today(), last_case.end_of_confinement()).years
+        return relativedelta(date.today(), max(confinement_ends)).years
     except (ValueError, TypeError):
         return 0
 
@@ -78,6 +77,7 @@ class CRecord:
         if not self.validator.validate(data):
             return False
         return True
+
 
     def add_summary(self, summary: Summary) -> CRecord:
         """
