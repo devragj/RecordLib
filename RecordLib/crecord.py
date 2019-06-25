@@ -91,13 +91,7 @@ class CRecord:
             This updated CRecord object.
         """
         # Get D's name from the summary
-        defendant = summary.get_defendant()
-        self.person = Person(
-            first_name=defendant.first_name, last_name=defendant.last_name,
-            date_of_birth=defendant.date_of_birth
-        )
-
+        self.person = summary.get_defendant()
         # Get the cases from the summary
         cases = summary.get_cases()
-
         return self

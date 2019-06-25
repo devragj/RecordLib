@@ -25,6 +25,13 @@ def test_init():
     assert rec.person.last_name == "Smythe"
 
 
+def test_add_summary(example_summary):
+    rec = CRecord(Person("Dummy", "Name", None))
+    rec.add_summary(example_summary)
+    rec.person.first_name == example_summary.get_defendant().first_name
+
+
+
 def test_years_since_last_arrested_or_prosecuted(example_crecord):
     example_crecord.cases[0].arrest_date = date(2010, 1, 1)
     example_crecord.cases[0].disposition_date = date(2010, 1, 1)

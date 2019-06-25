@@ -97,6 +97,7 @@ def parse_pdf(
             for ln in sec.text.split("\n"):
                 slines.append(ln)
         raise e
+        pytest.set_trace()
 
     summary_info_visitor = CustomVisitorFactory(
         summary_body_terminals, summary_body_nonterminals, dict()

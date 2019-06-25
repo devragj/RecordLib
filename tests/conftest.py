@@ -2,7 +2,12 @@ import pytest
 from RecordLib.case import Case
 from RecordLib.common import Charge, Person, Sentence
 from RecordLib.crecord import CRecord
+from RecordLib.summary import Summary
 from datetime import date
+
+@pytest.fixture
+def example_summary():
+    return Summary("tests/data/CourtSummaryReport.pdf", tempdir="tests/data/tmp")
 
 @pytest.fixture
 def example_person():
