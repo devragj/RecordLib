@@ -1,6 +1,7 @@
 setup.py
 RecordLib/CustomNodeVisitorFactory.py
 RecordLib/__init__.py
+RecordLib/case.py
 RecordLib/common.py
 RecordLib/crecord.py
 RecordLib/docket.py

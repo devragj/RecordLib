@@ -69,6 +69,7 @@ def parse_pdf(
     try:
         summary.parsed_pages = summary_page_grammar.parse(summary.text)
     except Exception as e:
+        pytest.set_trace()
         raise ValueError("Grammar cannot parse summary.")
 
     summary_page_visitor = CustomVisitorFactory(
@@ -96,6 +97,7 @@ def parse_pdf(
         for sec in summary_info_sections:
             for ln in sec.text.split("\n"):
                 slines.append(ln)
+        pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(

@@ -151,7 +151,7 @@ summary_body_terminals = [
 summary_body_grammar = Grammar(
     r"""
     summary_body = case_category+
-    case_category = ws* case_status ws* new_line cases_in_county
+    case_category = ws* case_status ws* new_line cases_in_county+
     case_status = words
     cases_in_county = county new_line case+
     county = ws* words ws*
@@ -190,7 +190,7 @@ summary_body_grammar = Grammar(
     charges = closed_sequences / open_sequences
 
     closed_sequences = closed_sequence_header closed_sequence+
-    closed_sequence_header = line line # this is just the labels of columns.
+    closed_sequence_header = ws+ "Seq No" line ws+ "Sentence Dt." line # this is just the labels of columns.
     closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? sentencing_info*
 
     open_sequences = open_sequence_header open_sequence+
@@ -206,13 +206,13 @@ summary_body_grammar = Grammar(
         # disappears in the parser.
     sequence_disposition = words+
 
-    sequence_continued = ws+ !number words ws* words?
+    sequence_continued = ws+ !number !date words ws* words?
 
-    sentencing_info = ws+ sentence_date ws+ sentence_type? (ws+ program_period ws+ sentence_length ws*)? new_line
+    sentencing_info = ws+ sentence_date ws+ sentence_type? (ws+ program_period? ws* sentence_length? ws*)? new_line
     sentence_date = date ws
     sentence_type = words+
-    program_period = words*
-    sentence_length = words*
+    program_period = words+
+    sentence_length = words+
     """
     + useful_terminals
 )
