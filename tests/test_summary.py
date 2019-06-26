@@ -5,6 +5,7 @@ from RecordLib.case import Case
 import pytest
 import os
 from datetime import date
+import logging
 
 def test_init():
     try:
@@ -30,12 +31,18 @@ def test_bulk_parse_pdf_from_path():
     paths = os.listdir("tests/data/summaries")
     if len(paths) == 0:
         pytest.fail("No summaries to parse in /tests/data/summaries.")
+    fails = []
     for path in paths:
         try:
-            summary = Summary(path, tempdir = "tests/data/tmp")
+            summary = Summary(os.path.join(f"tests/data/summaries", path), tempdir = "tests/data/tmp")
         except:
-            pytest.fail(f"Failed to parse: {path}")
-        assert len(summary._xml) > 0
+            fails.append(os.path.split(path)[1])
+    if len(fails) > 0:
+        logging.error(f"{ len(fails) } / {len(paths)} summaries failed to parse:")
+        for fail in fails:
+            logging.error(f"  - {fail}")
+        pytest.fail("Summaries failed to parse.")
+
 
 def test_add_summary_to_crecord():
     summary = Summary(

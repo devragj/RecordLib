@@ -111,4 +111,8 @@ So if you have a variable of the lines of your document, then you can more quick
 
 ## other issues
 
-Right now pdf-to-text parsing is done with pdftotext. I think it works really well, but relying on a binary like that does limit options for how to deploy a project like this (i.e, couldn't use heroku, I think). It also requires writing a file temporarily to disk, which is kind of yucky. The best-known python pdf parser, PyPDF2, appears not be maintained anymore. 
+**Text from PDFs**
+Right now pdf-to-text parsing is done with pdftotext. I think it works really well, but relying on a binary like that does limit options for how to deploy a project like this (i.e, couldn't use heroku, I think). It also requires writing a file temporarily to disk, which is kind of yucky. The best-known python pdf parser, PyPDF2, appears not be maintained anymore.
+
+**Handing uncertainty**
+Its important that an Analysis be able to say that how a rule applies to a case or charge is uncertain. For example, if the grade is missing from a charge, the answer to expungement questions isn't True or False, its "we don't know because ..."  

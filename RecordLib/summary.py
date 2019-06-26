@@ -65,11 +65,12 @@ def parse_pdf(
     except:
         raise ValueError("Cannot extract summary text..")
 
+    os.remove(os.path.join(tempdir, "tmp.txt"))
+
     # Parse each page (a header, body, and footer)
     try:
         summary.parsed_pages = summary_page_grammar.parse(summary.text)
     except Exception as e:
-        pytest.set_trace()
         raise ValueError("Grammar cannot parse summary.")
 
     summary_page_visitor = CustomVisitorFactory(
@@ -84,19 +85,33 @@ def parse_pdf(
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
 
+    ## Combine the text of the sections into one string
+    ## When there's a page break over sections, then an empty line gets
+    ## inserted, and I'd like to get rid of it, to help the grammars.
+    for i, section in enumerate(summary_info_sections):
+        if section.text[-2] == "\n" and section.text[-1] == " ":
+            if i < (len(summary_info_sections) - 1):
+                if ("(Continued)" in summary_info_sections[i+1].text[0:50]):
+                    section.text = section.text[:-2]
     summary_info_combined = "\n".join(
-        sec.text for sec in summary_info_sections if "(Continued)" not in sec.text
+        [sec.text for sec in summary_info_sections]
     )
+
+    ## Then split into lines, so we can remove lines that say (Continued)
+    slines = []
+    for sec in summary_info_sections:
+        for ln in sec.text.split("\n"):
+            slines.append(ln)
+
+    slines = [ln for ln in slines if "(Continued)" not in ln]
+
+    ## And recombine into one string, with the (Continued) lines removed.
+    summary_info_combined = "\n".join(slines)
+
 
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        # lines of the text.
-        # slines is for debugging and having quick access to a list of the
-        slines = []
-        for sec in summary_info_sections:
-            for ln in sec.text.split("\n"):
-                slines.append(ln)
         pytest.set_trace()
         raise e
 
