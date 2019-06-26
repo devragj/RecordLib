@@ -17,6 +17,7 @@ useful_terminals = r"""
     ws = " "
     date = number forward_slash number forward_slash number
     number = ~r"[0-9]"+
+    number_w_dec_hyp = ~r"[0-9\.-]"+
     forward_slash = "/"
     section_symbol = "§"
     single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
@@ -144,6 +145,7 @@ summary_body_nonterminals = [
 summary_body_terminals = [
     "ws",
     "number",
+    "number_w_dec_hyp",
     "forward_slash",
     "single_content_char",
     "content_char_no_ws",
@@ -192,19 +194,19 @@ summary_body_grammar = Grammar(
     # Closed and Active-ish cases have different formats for the sequence table.
     charges = closed_sequences / open_sequences
 
-    closed_sequences = closed_sequence_header closed_sequence+
+    closed_sequences = closed_sequence_header (closed_sequence* / (line closed_sequence*))?
     closed_sequence_header = ws+ "Seq No" ws+ "Statute" ws+ "Grade" ws+ "Description" ws+ "Disposition" new_line ws+ "Sentence Dt." ws+ "Sentence Type" ws+ "Program Period" ws+ "Sentence Length" new_line # this is just the labels of columns.
 
     # the closed sequence header is interspersed because on page overflows,
     # it can end up inserted in the middle of a sequence.
     closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? closed_sequence_header? (sentencing_info closed_sequence_header?)*
 
-    open_sequences = open_sequence_header open_sequence+
+    open_sequences = open_sequence_header+ (open_sequence+ / (line open_sequence_header open_sequence*))?
     open_sequence_header = ws+ "Seq No" line
-    open_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description (ws+ sequence_disposition)? new_line (sequence_continued new_line)?
+    open_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description (ws+ sequence_disposition)? new_line (sequence_continued new_line)? open_sequence_header?
 
     sequence_num = !date number
-    statute = (number ws+ section_symbol ws+ number (ws+ section_symbol+ ws word)?) / migration
+    statute = (number ws+ section_symbol ws+ number_w_dec_hyp (ws+ section_symbol+ ws word)?) / migration
     migration = "Migration" ws+ section_symbol ws+ "Migration"
     grade = content_char_no_ws content_char_no_ws?
     description = words+
@@ -213,7 +215,7 @@ summary_body_grammar = Grammar(
         # disappears in the parser.
     sequence_disposition = words+
 
-    sequence_continued = ws+ !number !date words ws* words?
+    sequence_continued = ws+ !(number ws) !date words ws* words?
 
     sentencing_info = ws+ sentence_date ws+ sentence_type? (ws+ program_period? ws* sentence_length? ws*)? new_line
     sentence_date = date ws
