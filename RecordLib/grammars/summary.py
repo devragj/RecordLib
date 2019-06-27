@@ -178,7 +178,7 @@ summary_body_grammar = Grammar(
     disp_judge = "Disp Judge:" ws? words?
     def_atty = ws* "Def Atty:" ws+ single_content_char+
 
-    active_arrest_and_disp = ws* arrest_date ws+ trial_date ws+ legacy_num (new_line def_atty)? new_line action_list
+    active_arrest_and_disp = ws* arrest_date ws+ trial_date ws+ legacy_num (new_line ws* case_basics)? (new_line def_atty)? (new_line ws* case_basics)? new_line action_list
     trial_date = "Trial Dt:" ws? date?
     legacy_num = "Legacy No:" ws? words?
     action_list = last_actions new_line next_actions
@@ -194,7 +194,7 @@ summary_body_grammar = Grammar(
     # Closed and Active-ish cases have different formats for the sequence table.
     charges = closed_sequences / open_sequences
 
-    closed_sequences = closed_sequence_header (closed_sequence* / (line closed_sequence*))?
+    closed_sequences = closed_sequence_header+ (closed_sequence* / (line closed_sequence*))?
     closed_sequence_header = ws+ "Seq No" ws+ "Statute" ws+ "Grade" ws+ "Description" ws+ "Disposition" new_line ws+ "Sentence Dt." ws+ "Sentence Type" ws+ "Program Period" ws+ "Sentence Length" new_line # this is just the labels of columns.
 
     # the closed sequence header is interspersed because on page overflows,
