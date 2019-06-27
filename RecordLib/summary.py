@@ -71,6 +71,7 @@ def parse_pdf(
     try:
         summary.parsed_pages = summary_page_grammar.parse(summary.text)
     except Exception as e:
+        #pytest.set_trace()
         raise ValueError("Grammar cannot parse summary.")
 
     summary_page_visitor = CustomVisitorFactory(

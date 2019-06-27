@@ -9,7 +9,7 @@ useful_terminals = r"""
     words = word (ws words)*
 
     # quiet terminals with content that should just disappear
-    page_break = "\f"
+    page_break = "\f" / '\x0c'
     end_of_input = !~"."
 
     # Loud Terminals (include in list of terminals, so content of the
@@ -20,8 +20,8 @@ useful_terminals = r"""
     number_w_dec_hyp = ~r"[0-9\.-]"+
     forward_slash = "/"
     section_symbol = "§"
-    single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
-    content_char_no_ws =  ~r"[\“\”a-z0-9`\"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§]"i
+    single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§\+\<\>]"i
+    content_char_no_ws =  ~r"[\“\”a-z0-9`\"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§\+\<\>]"i
     new_line = "\n"
     ws = " "
 """
@@ -66,15 +66,15 @@ summary_page_grammar = Grammar(
     header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
     court_name = single_content_char+
 
-    caption = defendant_name ws+ def_dob ws+ def_sex ws* new_line ws* def_addr ws+ def_eyecolor ws* new_line "Aliases:" ws+ def_hair ws* new_line alias? ws+ def_race ws* new_line (alias new_line)* empty_line
+    caption = defendant_name ws+ def_dob ws* def_sex ws* new_line ws* def_addr ws+ def_eyecolor ws* new_line "Aliases:" ws+ def_hair ws* new_line alias? ws+ def_race ws* new_line (alias new_line)* empty_line
 
     defendant_name = words+
-    def_dob = "DOB:" ws* date
-    def_sex = "Sex:" ws* words
-    def_addr = words+
-    def_eyecolor = "Eyes:" ws* words
-    def_hair = "Hair:" ws* words
-    def_race = "Race:" ws* words
+    def_dob = "DOB:" ws* date?
+    def_sex = "Sex:" ws* words?
+    def_addr = words*
+    def_eyecolor = "Eyes:" ws* words?
+    def_hair = "Hair:" ws* words?
+    def_race = "Race:" ws* words?
     alias = words+
 
     summary_info = ((line / empty_line) !start_of_footer)+ line
