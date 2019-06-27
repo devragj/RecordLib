@@ -25,8 +25,16 @@ def test_sentence():
         sentence_date=date(2010, 1, 1),
         sentence_type="Probation",
         sentence_period="90 days",
-        sentence_length="Min: 90 Day(s) Max: 90 Day(s)"
+        sentence_length={
+            "min_length": {
+                "time": "90",
+                "unit": "Day"},
+            "max_length":{
+                "time": "90",
+                "unit": "Day"
+            }}
     )
+    assert st.sentence_complete() == date(2010, 1, 1) + 90
 
 def test_charge():
     char = Charge(

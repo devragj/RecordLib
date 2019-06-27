@@ -67,3 +67,16 @@ def test_get_cases():
     assert len(summary.get_cases()) > 0
     assert len(summary.get_cases()) > 0
     assert isinstance(summary.get_cases()[0], Case)
+
+def test_get_sentences():
+    summary = Summary(
+        pdf="tests/data/CourtSummaryReport.pdf",
+        tempdir="tests/data/tmp")
+    cases = summary.get_cases()
+    for case in cases:
+        for charge in case.charges:
+            for sentence in charge.sentences:
+                try:
+                    assert (isinstance(sentence.max_length(), int) or sentence.max_length() is None)
+                except:
+                    pytest.fail("Could not get sentence from charge.")
