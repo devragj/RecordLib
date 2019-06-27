@@ -80,8 +80,10 @@ def parse_pdf(
 
     # the summary is now a string of xml along the lines of:
     # <summary> <first_page> ... </first_page>
-    # <following_page> ... </following_page> </summary>
-    pages_xml_tree = etree.fromstring(summary_page_visitor.visit(summary.parsed_pages))
+    # <following_page> ... </following_page> </summary>\
+    xml_parser = etree.XMLParser(encoding="UTF-8", recover=True)
+    pages_xml_tree = etree.fromstring(
+        summary_page_visitor.visit(summary.parsed_pages), xml_parser)
 
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")

@@ -199,7 +199,7 @@ summary_body_grammar = Grammar(
 
     # the closed sequence header is interspersed because on page overflows,
     # it can end up inserted in the middle of a sequence.
-    closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)? closed_sequence_header? (sentencing_info closed_sequence_header?)*
+    closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)* closed_sequence_header? (sentencing_info closed_sequence_header?)*
 
     open_sequences = open_sequence_header+ (open_sequence+ / (line open_sequence_header open_sequence*))?
     open_sequence_header = ws+ "Seq No" line
