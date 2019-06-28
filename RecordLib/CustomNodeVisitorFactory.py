@@ -19,8 +19,8 @@ class CustomVisitorFactory:
         """
         Input: a) list of terminal symbols,
                b) list of non-terminal symbols, and
-               c) dict of methods to override the default methods
-                  this class creates.
+               c) list of tuples (method_name, method) to override the default methods
+                  this class creaes.
         Inside: Sets these as attributes of the instance of the class.
         """
         self.terminals = terminals
