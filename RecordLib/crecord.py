@@ -47,7 +47,12 @@ def years_since_final_release(crecord: CRecord) -> int:
     if len(confinement_ends) == 0:
         return float("Inf")
     try:
-        return relativedelta(date.today(), max(confinement_ends)).years
+        # nb. relativedelta(a, b) = c
+        # if a is before b, then c is negative. if a is after b, c is positive.
+        # relativedelta(today, yesterday) > 0
+        # relativedelta(yesterday, today) < 0
+        return max(relativedelta(date.today(),
+                   max(confinement_ends)).years, 0)
     except (ValueError, TypeError):
         return 0
 

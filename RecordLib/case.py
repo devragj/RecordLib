@@ -2,7 +2,7 @@ from dataclasses import asdict
 from RecordLib.common import Charge, Person, Sentence
 from typing import List
 from datetime import date
-
+import pytest
 
 class Case:
     """
@@ -67,12 +67,12 @@ class Case:
 
     def end_of_confinement(self) -> date:
         """
-        TODO try to figure out the days of confinement in a case.
+        Try to figure out the days of confinement in a case.
         """
         if not self.was_confined():
             return None
         sentences = [s for c in self.charges for s in c.sentences]
-        return max([s.sentence_date for s in sentences])
+        return max([s.sentence_date + s.sentence_length.max_time for s in sentences])
 
     def to_dict(self) -> dict:
         return {
