@@ -21,6 +21,7 @@ from collections import namedtuple
 from datetime import datetime
 import re
 
+
 def visit_sentence_length(self, node, vc):
     """
     Custom node visitor for parsing a setence in a conviction.
@@ -32,18 +33,28 @@ def visit_sentence_length(self, node, vc):
         </sentence_length>
     """
 
-
-
     # Sentence lengths can appear in lots of formats, so this attempts to parse different
     # possibilities.
-    min_pattern = re.compile(r".*(?:min of|Min:) (?P<time>[0-9\./]*) (?P<unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
-    max_pattern = re.compile(r".*(?:max of|Max:) (?P<time>[0-9\./]*) (?P<unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
+    min_pattern = re.compile(
+        r".*(?:min of|Min:) (?P<time>[0-9\./]*) (?P<unit>\w+).*",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    max_pattern = re.compile(
+        r".*(?:max of|Max:) (?P<time>[0-9\./]*) (?P<unit>\w+).*",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
     # Original from DocketParse
-    #range_pattern = re.compile(r".*?(?P<min_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<min_unit>\w+ )?(?:to|-)? (?P<max_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<max_unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
+    # range_pattern = re.compile(r".*?(?P<min_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<min_unit>\w+ )?(?:to|-)? (?P<max_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<max_unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
 
-    range_pattern = re.compile(".*: (?P<min_time>[0-9\.\/]+) (?P<min_unit>\w+)?(?:to|-)?.*: (?P<max_time>[0-9\.\/]+) (?P<max_unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
+    range_pattern = re.compile(
+        ".*: (?P<min_time>[0-9\.\/]+) (?P<min_unit>\w+)?(?:to|-)?.*: (?P<max_time>[0-9\.\/]+) (?P<max_unit>\w+).*",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
 
-    single_term_pattern = re.compile(r".*\s{5,}(?P<time>[0-9\./]+)\s(?P<unit>\w+)$.*", flags=re.IGNORECASE|re.DOTALL)
+    single_term_pattern = re.compile(
+        r".*\s{5,}(?P<time>[0-9\./]+)\s(?P<unit>\w+)$.*",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
     temp_string = node.text
     #    print(temp_string)
     min_length = None
@@ -54,39 +65,59 @@ def visit_sentence_length(self, node, vc):
     single_term = re.match(single_term_pattern, node.text)
 
     if min_length_match is not None:
-      min_length = (
-        f"<min_length> <time> {min_length_match.group('time')} </time> " +
-        f"<unit> {min_length_match.group('unit')} </unit> </min_length>")
-      if max_length_match is None:
-        max_length = (
-            f"<max_length> <time> {min_length_match.group('time')} </time> " +
-            f" <unit> {min_length_match.group('unit')} </unit> </max_length>" )
-
+        min_length = (
+            f"<min_length> <time> {min_length_match.group('time')} </time> "
+            + f"<unit> {min_length_match.group('unit')} </unit> </min_length>"
+        )
+        if max_length_match is None:
+            max_length = (
+                f"<max_length> <time> {min_length_match.group('time')} </time> "
+                + f" <unit> {min_length_match.group('unit')} </unit> </max_length>"
+            )
 
     if max_length_match is not None:
-      max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (max_length_match.group('time'),max_length_match.group('unit'))
-      if min_length_match is None:
-        min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (max_length_match.group('time'),max_length_match.group('unit'))
-
+        max_length = (
+            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
+            % (max_length_match.group("time"), max_length_match.group("unit"))
+        )
+        if min_length_match is None:
+            min_length = (
+                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
+                % (max_length_match.group("time"), max_length_match.group("unit"))
+            )
 
     if range is not None:
-      if range.group('min_unit') is not None:
-        min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (range.group('min_time'), range.group('min_unit'))
-      else:
-        min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (range.group('min_time'), range.group('max_unit'))
-      max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (range.group('max_time'),range.group('max_unit'))
-
+        if range.group("min_unit") is not None:
+            min_length = (
+                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
+                % (range.group("min_time"), range.group("min_unit"))
+            )
+        else:
+            min_length = (
+                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
+                % (range.group("min_time"), range.group("max_unit"))
+            )
+        max_length = (
+            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
+            % (range.group("max_time"), range.group("max_unit"))
+        )
 
     if single_term is not None:
-      min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (single_term.group('time'), single_term.group('unit'))
-      max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (single_term.group('time'), single_term.group('unit'))
+        min_length = (
+            "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
+            % (single_term.group("time"), single_term.group("unit"))
+        )
+        max_length = (
+            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
+            % (single_term.group("time"), single_term.group("unit"))
+        )
 
     contents = self.stringify(vc)
     if min_length is not None and max_length is not None:
         contents = min_length + " " + max_length
 
-
     return " <sentence_length> %s </sentence_length> " % contents
+
 
 def text_or_blank(element: etree.Element) -> str:
     """
@@ -139,12 +170,11 @@ def parse_pdf(
     try:
         summary.parsed_pages = summary_page_grammar.parse(summary.text)
     except Exception as e:
-        #pytest.set_trace()
+        # pytest.set_trace()
         raise ValueError("Grammar cannot parse summary.")
 
     summary_page_visitor = CustomVisitorFactory(
-        summary_page_terminals, summary_page_nonterminals,
-        dict()
+        summary_page_terminals, summary_page_nonterminals, dict()
     ).create_instance()
 
     # the summary is now a string of xml along the lines of:
@@ -152,7 +182,8 @@ def parse_pdf(
     # <following_page> ... </following_page> </summary>\
     xml_parser = etree.XMLParser(encoding="UTF-8", recover=True)
     pages_xml_tree = etree.fromstring(
-        summary_page_visitor.visit(summary.parsed_pages), xml_parser)
+        summary_page_visitor.visit(summary.parsed_pages), xml_parser
+    )
 
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
@@ -163,11 +194,9 @@ def parse_pdf(
     for i, section in enumerate(summary_info_sections):
         if section.text[-2] == "\n" and section.text[-1] == " ":
             if i < (len(summary_info_sections) - 1):
-                if ("(Continued)" in summary_info_sections[i+1].text[0:50]):
+                if "(Continued)" in summary_info_sections[i + 1].text[0:50]:
                     section.text = section.text[:-2]
-    summary_info_combined = "\n".join(
-        [sec.text for sec in summary_info_sections]
-    )
+    summary_info_combined = "\n".join([sec.text for sec in summary_info_sections])
 
     ## Then split into lines, so we can remove lines that say (Continued)
     slines = []
@@ -180,7 +209,6 @@ def parse_pdf(
     ## And recombine into one string, with the (Continued) lines removed.
     summary_info_combined = "\n".join(slines)
 
-
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
@@ -188,8 +216,9 @@ def parse_pdf(
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
-        summary_body_terminals, summary_body_nonterminals,
-        [("sentence_length", visit_sentence_length)]
+        summary_body_terminals,
+        summary_body_nonterminals,
+        [("sentence_length", visit_sentence_length)],
     ).create_instance()
 
     summary_body_xml_tree = etree.fromstring(
@@ -247,23 +276,37 @@ class Summary:
                     statute=text_or_blank(seq.find("statute")),
                     grade=text_or_blank(seq.find("grade")),
                     disposition=text_or_blank(seq.find("sequence_disposition")),
-                    sentences=[])
+                    sentences=[],
+                )
                 for sentence in seq.xpath("//sentencing_info"):
-                    charge.sentences.append(Sentence(
-                        sentence_date=text_or_blank(sentence.find("sentence_date")),
-                        sentence_type=text_or_blank(sentence.find("sentence_type")),
-                        sentence_period=text_or_blank(sentence.find("program_period")),
-                        sentence_length=SentenceLength(
-                            min_time=(
-                                text_or_blank(sentence.find("sentence_length/min_length/time")),
-                                text_or_blank(sentence.find("sentence_length/min_length/unit"))),
-                            max_time=(
-                                text_or_blank(sentence.find("sentence_length/max_length/time")),
-                                text_or_blank(sentence.find("sentence_length/max_length/unit")))
-                            )
-                    ))
+                    charge.sentences.append(
+                        Sentence(
+                            sentence_date=text_or_blank(sentence.find("sentence_date")),
+                            sentence_type=text_or_blank(sentence.find("sentence_type")),
+                            sentence_period=text_or_blank(
+                                sentence.find("program_period")
+                            ),
+                            sentence_length=SentenceLength(
+                                min_time=(
+                                    text_or_blank(
+                                        sentence.find("sentence_length/min_length/time")
+                                    ),
+                                    text_or_blank(
+                                        sentence.find("sentence_length/min_length/unit")
+                                    ),
+                                ),
+                                max_time=(
+                                    text_or_blank(
+                                        sentence.find("sentence_length/max_length/time")
+                                    ),
+                                    text_or_blank(
+                                        sentence.find("sentence_length/max_length/unit")
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
                 closed_charges.append(charge)
-
 
             open_sequences = case.xpath("//open_sequence")
             open_charges = []
@@ -273,21 +316,36 @@ class Summary:
                     statute=text_or_blank(seq.find("statute")),
                     grade=text_or_blank(seq.find("grade")),
                     disposition=text_or_blank(seq.find("sequence_disposition")),
-                    sentences=[])
+                    sentences=[],
+                )
                 for sentence in seq.xpath("//sentencing_info"):
-                    charge.sentences.append(Sentence(
-                        sentence_date=text_or_blank(sentence.find("sentence_date")),
-                        sentence_type=text_or_blank(sentence.find("sentence_type")),
-                        sentence_period=text_or_blank(sentence.find("program_period")),
-                        sentence_length=SentenceLength(
-                            min_time=(
-                                text_or_blank(sentence.find("sentence_length/min_length/time")),
-                                text_or_blank(sentence.find("sentence_length/min_length/unit"))),
-                            max_time=(
-                                text_or_blank(sentence.find("sentence_length/max_length/time")),
-                                text_or_blank(sentence.find("sentence_length/max_length/unit")))
-                            )
-                    ))
+                    charge.sentences.append(
+                        Sentence(
+                            sentence_date=text_or_blank(sentence.find("sentence_date")),
+                            sentence_type=text_or_blank(sentence.find("sentence_type")),
+                            sentence_period=text_or_blank(
+                                sentence.find("program_period")
+                            ),
+                            sentence_length=SentenceLength(
+                                min_time=(
+                                    text_or_blank(
+                                        sentence.find("sentence_length/min_length/time")
+                                    ),
+                                    text_or_blank(
+                                        sentence.find("sentence_length/min_length/unit")
+                                    ),
+                                ),
+                                max_time=(
+                                    text_or_blank(
+                                        sentence.find("sentence_length/max_length/time")
+                                    ),
+                                    text_or_blank(
+                                        sentence.find("sentence_length/max_length/unit")
+                                    ),
+                                ),
+                            ),
+                        )
+                    )
                 open_charges.append(charge)
 
             cases.append(
@@ -299,9 +357,13 @@ class Summary:
                     dc=case.find("case_basics/dc_num").text.strip(),
                     charges=closed_charges + open_charges,
                     fines_and_costs=None,  # a summary docket never has info about this.
-                    arrest_date=date_or_none(case.find("arrest_and_disp/arrest_date").text.strip()),
-                    disposition_date=date_or_none(case.find("arrest_and_disp/disp_date").text.strip()),
-                    judge=case.find("arrest_and_disp/disp_judge").text.strip()
+                    arrest_date=date_or_none(
+                        case.find("arrest_and_disp/arrest_date").text.strip()
+                    ),
+                    disposition_date=date_or_none(
+                        case.find("arrest_and_disp/disp_date").text.strip()
+                    ),
+                    judge=case.find("arrest_and_disp/disp_judge").text.strip(),
                 )
             )
         return cases

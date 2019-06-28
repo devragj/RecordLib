@@ -1,10 +1,8 @@
-
 from dataclasses import asdict
-from RecordLib.common import (
-    Charge, Person, Sentence
-)
+from RecordLib.common import Charge, Person, Sentence
 from typing import List
 from datetime import date
+
 
 class Case:
     """
@@ -24,8 +22,18 @@ class Case:
     judge: str
 
     def __init__(
-        self, status, county, docket_number, otn, dc, charges, fines_and_costs,
-    arrest_date, disposition_date, judge) -> None:
+        self,
+        status,
+        county,
+        docket_number,
+        otn,
+        dc,
+        charges,
+        fines_and_costs,
+        arrest_date,
+        disposition_date,
+        judge,
+    ) -> None:
         self.docket_number = docket_number
         self.otn = otn
         self.charges = charges
@@ -47,16 +55,15 @@ class Case:
             else:
                 return None
 
-
     def was_confined(self) -> bool:
         """
         True if there was a disposition that led to confinement.
         """
-        if any(["onfine" in s.sentence_type for c in self.charges for s in c.sentences]):
+        if any(
+            ["onfine" in s.sentence_type for c in self.charges for s in c.sentences]
+        ):
             return True
         return False
-
-
 
     def end_of_confinement(self) -> date:
         """
@@ -66,7 +73,6 @@ class Case:
             return None
         sentences = [s for c in self.charges for s in c.sentences]
         return max([s.sentence_date for s in sentences])
-
 
     def to_dict(self) -> dict:
         return {
@@ -78,7 +84,7 @@ class Case:
             "county": self.county,
             "arrest_date": self.arrest_date,
             "disposition_date": self.disposition_date,
-            "judge": self.judge
+            "judge": self.judge,
         }
 
     @staticmethod

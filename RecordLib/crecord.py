@@ -17,13 +17,15 @@ from dataclasses import asdict
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
+
 def years_since_last_arrested_or_prosecuted(crecord: CRecord) -> int:
     """
     How many years since a person was last arrested or prosecuted?
 
     If we can't tell how many years, return 0.
     """
-    if len(crecord.cases) == 0: return None
+    if len(crecord.cases) == 0:
+        return None
     cases_ordered = sorted(crecord.cases, key=Case.order_cases_by_last_action)
     last_case = cases_ordered[-1]
     try:
@@ -39,8 +41,11 @@ def years_since_final_release(crecord: CRecord) -> int:
 
     If the record has no cases, the person was never confined, so return "infinity." If we cannot tell, because cases don't identify when confinement ended, return 0.
     """
-    confinement_ends = [c.end_of_confinement() for c in crecord.cases if c.was_confined()]
-    if len(confinement_ends) == 0: return float("Inf")
+    confinement_ends = [
+        c.end_of_confinement() for c in crecord.cases if c.was_confined()
+    ]
+    if len(confinement_ends) == 0:
+        return float("Inf")
     try:
         return relativedelta(date.today(), max(confinement_ends)).years
     except (ValueError, TypeError):
@@ -64,7 +69,6 @@ class CRecord:
         self.person = person
         self.cases = cases
 
-
     def to_dict(self) -> dict:
         return {
             "person": asdict(self.person),
@@ -78,7 +82,6 @@ class CRecord:
         if not self.validator.validate(data):
             return False
         return True
-
 
     def add_summary(self, summary: Summary) -> CRecord:
         """

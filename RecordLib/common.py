@@ -11,6 +11,7 @@ import re
 import logging
 from datetime import timedelta
 
+
 @dataclass
 class Person:
     """
@@ -24,17 +25,23 @@ class Person:
     def age(self) -> int:
         """ Age in years """
         today = date.today()
-        return today.year - self.date_of_birth.year - (
-            (today.month, today.day) <
-            (self.date_of_birth.month, self.date_of_birth.day))
+        return (
+            today.year
+            - self.date_of_birth.year
+            - (
+                (today.month, today.day)
+                < (self.date_of_birth.month, self.date_of_birth.day)
+            )
+        )
+
 
 class SentenceLength:
     """
     Track info about the length of a sentence
     """
+
     min_time: timedelta
     max_time: timedelta
-
 
     @staticmethod
     def calculate_days(length: str, unit: str) -> float:
@@ -83,6 +90,7 @@ class Sentence:
     """
     Track information about a sentence. A Charge has zero or more Sentences.
     """
+
     sentence_date: date
     sentence_type: str
     sentence_period: str
@@ -93,6 +101,7 @@ class Sentence:
             return self.sentence_length.max_time + self.sentence_date
         except:
             return None
+
 
 @dataclass
 class Charge:
