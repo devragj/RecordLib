@@ -4,6 +4,7 @@ how the rule applies to the record.
 """
 from RecordLib.crecord import CRecord
 import pytest
+import copy
 
 ## 18 PA 9122 Expungements
 ## https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
@@ -26,9 +27,13 @@ def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> dict:
 
     if all(conditions.values()):
         conclusion = "Expunge cases"
+        modified_record = CRecord(
+            person=copy.deepcopy(crecord.person),
+            cases=[]
+        )
     else:
         conclusion = "No expungements possible"
-
+        modified_record = crecord
     analysis.update(
         {
             "age_over_70_expungements": {
@@ -38,7 +43,9 @@ def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> dict:
         }
     )
 
-    return crecord, analysis
+
+
+    return modified_record, analysis
 
 
 def expunge_deceased(crecord: CRecord) -> dict:
