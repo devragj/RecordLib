@@ -13,7 +13,7 @@ from RecordLib.grammars.summary import (
 )
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.case import Case
-from RecordLib.common import Person, Charge, Sentence
+from RecordLib.common import Person, Charge, Sentence, SentenceLength
 import pytest
 import os
 from lxml import etree
@@ -32,11 +32,12 @@ def visit_sentence_length(self, node, vc):
         </sentence_length>
     """
 
+
+
     # Sentence lengths can appear in lots of formats, so this attempts to parse different
     # possibilities.
-
-    min_pattern = re.compile(r".*(?:min of|Min:) (?P<time>[0-9\./]*) (?P<units>\w+).*", flags=re.IGNORECASE|re.DOTALL)
-    max_pattern = re.compile(r".*(?:max of|Max:) (?P<time>[0-9\./]*) (?P<units>\w+).*", flags=re.IGNORECASE|re.DOTALL)
+    min_pattern = re.compile(r".*(?:min of|Min:) (?P<time>[0-9\./]*) (?P<unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
+    max_pattern = re.compile(r".*(?:max of|Max:) (?P<time>[0-9\./]*) (?P<unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
     # Original from DocketParse
     #range_pattern = re.compile(r".*?(?P<min_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<min_unit>\w+ )?(?:to|-)? (?P<max_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<max_unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
 
@@ -53,48 +54,38 @@ def visit_sentence_length(self, node, vc):
     single_term = re.match(single_term_pattern, node.text)
 
     if min_length_match is not None:
-      #print("Min-length is %s number of %s" % (min_length.group('time'), min_length.group('units')))
-      min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (min_length_match.group('time'),min_length_match.group('units'))
+      min_length = (
+        f"<min_length> <time> {min_length_match.group('time')} </time> " +
+        f"<unit> {min_length_match.group('unit')} </unit> </min_length>")
       if max_length_match is None:
-        max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (min_length_match.group('time'),min_length_match.group('units'))
+        max_length = (
+            f"<max_length> <time> {min_length_match.group('time')} </time> " +
+            f" <unit> {min_length_match.group('unit')} </unit> </max_length>" )
 
-    #else:
-      #print("Min length not found.")
 
     if max_length_match is not None:
-    #      print("Max-length is %s number of %s" % (max_length_match.group('time'), max_length_match.group('units')))
-      max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (max_length_match.group('time'),max_length_match.group('units'))
+      max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (max_length_match.group('time'),max_length_match.group('unit'))
       if min_length_match is None:
-        min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (max_length_match.group('time'),max_length_match.group('units'))
+        min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (max_length_match.group('time'),max_length_match.group('unit'))
 
-    #else:
-      #print("Max length not found")
 
     if range is not None:
-      #print(range.groups())
-      #print("Range from %s to %s %s" % (range.group('min_time'), range.group('max_time'),range.group('max_unit')))
       if range.group('min_unit') is not None:
         min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (range.group('min_time'), range.group('min_unit'))
       else:
         min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (range.group('min_time'), range.group('max_unit'))
       max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (range.group('max_time'),range.group('max_unit'))
-    #     else:
-    #       print("Range not found.")
+
 
     if single_term is not None:
-    #      print("Single term is %s %s" % (single_term.group('time'), single_term.group('unit')))
       min_length = "<min_length> <time> %s </time> <unit> %s </unit> </min_length>" % (single_term.group('time'), single_term.group('unit'))
       max_length = "<max_length> <time> %s </time> <unit> %s </unit> </max_length>" % (single_term.group('time'), single_term.group('unit'))
-    #     else:
-    #       print("Single terms not found.")
 
     contents = self.stringify(vc)
     if min_length is not None and max_length is not None:
-      contents = re.sub(r"(<length_of_sentence>)(.*)(</length_of_sentence>)", r"\1" + min_length + max_length + r"\3", contents)
+        contents = min_length + " " + max_length
 
-    #     print("New Contents:")
-    #     print(contents)
-    #     print("Finished with visit_sentence_info.")
+
     return " <sentence_length> %s </sentence_length> " % contents
 
 def text_or_blank(element: etree.Element) -> str:
@@ -263,7 +254,13 @@ class Summary:
                         sentence_type=text_or_blank(sentence.find("sentence_type")),
                         sentence_period=text_or_blank(sentence.find("program_period")),
                         sentence_length=SentenceLength(
-                            text_or_blank(sentence.find("sentence_length")))
+                            min_time=(
+                                text_or_blank(sentence.find("sentence_length/min_length/time")),
+                                text_or_blank(sentence.find("sentence_length/min_length/unit"))),
+                            max_time=(
+                                text_or_blank(sentence.find("sentence_length/max_length/time")),
+                                text_or_blank(sentence.find("sentence_length/max_length/unit")))
+                            )
                     ))
                 closed_charges.append(charge)
 
@@ -283,7 +280,13 @@ class Summary:
                         sentence_type=text_or_blank(sentence.find("sentence_type")),
                         sentence_period=text_or_blank(sentence.find("program_period")),
                         sentence_length=SentenceLength(
-                            text_or_blank(sentence.find("sentence_length")))
+                            min_time=(
+                                text_or_blank(sentence.find("sentence_length/min_length/time")),
+                                text_or_blank(sentence.find("sentence_length/min_length/unit"))),
+                            max_time=(
+                                text_or_blank(sentence.find("sentence_length/max_length/time")),
+                                text_or_blank(sentence.find("sentence_length/max_length/unit")))
+                            )
                     ))
                 open_charges.append(charge)
 

@@ -4,7 +4,7 @@ from RecordLib.common import Person
 from RecordLib.case import Case
 import pytest
 import os
-from datetime import date
+from datetime import date, timedelta
 import logging
 
 def test_init():
@@ -77,6 +77,6 @@ def test_get_sentences():
         for charge in case.charges:
             for sentence in charge.sentences:
                 try:
-                    assert (isinstance(sentence.max_length(), int) or sentence.max_length() is None)
+                    assert (isinstance(sentence.sentence_length.max_time, timedelta) or sentence.sentence_length.max_time is None)
                 except:
                     pytest.fail("Could not get sentence from charge.")

@@ -9,6 +9,7 @@ from datetime import date
 import pytest
 import re
 import logging
+from datetime import timedelta
 
 @dataclass
 class Person:
@@ -31,8 +32,8 @@ class SentenceLength:
     """
     Track info about the length of a sentence
     """
-    min_length: int
-    max_length: int
+    min_time: timedelta
+    max_time: timedelta
 
 
     @staticmethod
@@ -48,23 +49,24 @@ class SentenceLength:
         """
         if re.match("day", unit.strip(), re.IGNORECASE):
             try:
-                return float(length.strip())
+                return timedelta(days=float(length.strip()))
             except ValueError:
                 logging.error(f"Could not parse { length } to int")
                 return None
         if re.match("month", unit.strip(), re.IGNORECASE):
             try:
-                return 30.42 * float(length.strip())
+                return timedelta(days=30.42 * float(length.strip()))
             except ValueError:
                 logging.error(f"Could not parse { length } to int")
                 return None
         if re.match("year", unit.strip(), re.IGNORECASE):
             try:
-                return 365 * float(length.strip())
+                return timedelta(days=365 * float(length.strip()))
             except ValueError:
                 logging.error(f"Could not parse { length } to int")
                 return None
-        logging.error(f"Could not understand unit of time: { unit }")
+        if unit.strip() != "":
+            logging.warning(f"Could not understand unit of time: { unit }")
         return None
 
     def __init__(self, min_time: Tuple[str], max_time: Tuple[str]):
@@ -74,6 +76,7 @@ class SentenceLength:
         """
         self.min_time = SentenceLength.calculate_days(*min_time)
         self.max_time = SentenceLength.calculate_days(*max_time)
+
 
 @dataclass
 class Sentence:
@@ -85,10 +88,9 @@ class Sentence:
     sentence_period: str
     sentence_length: SentenceLength
 
-    def sentence_complete(self):
+    def sentence_complete_date(self):
         try:
-            min = self.sentence_length.get("min_length")
-            max = self.sentence
+            return self.sentence_length.max_time + self.sentence_date
         except:
             return None
 

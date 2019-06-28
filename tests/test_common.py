@@ -1,6 +1,6 @@
 from RecordLib.common import *
 from dataclasses import asdict
-from datetime import date
+from datetime import date, timedelta
 import pytest
 
 def test_person():
@@ -25,21 +25,17 @@ def test_sentence():
         sentence_date=date(2010, 1, 1),
         sentence_type="Probation",
         sentence_period="90 days",
-        sentence_length={
-            "min_length": {
-                "time": "90",
-                "unit": "Day"},
-            "max_length":{
-                "time": "90",
-                "unit": "Day"
-            }}
+        sentence_length=SentenceLength(
+            min_time=("90","Day"),
+            max_time=("90","Day")
+        )
     )
-    assert st.sentence_complete() == date(2010, 1, 1) + 90
+    assert st.sentence_complete_date() == date(2010, 1, 1) + timedelta(days=90)
 
 def test_calculate_days():
-    assert SentenceLength.calculate_days("40", "Day(s)") == 40
-    assert SentenceLength.calculate_days("3 ", "Month(s)") == 91.26
-    assert SentenceLength.calculate_days(" 1", "Year(s)") == 365
+    assert SentenceLength.calculate_days("40", "Day(s)").days == 40
+    assert SentenceLength.calculate_days("3 ", "Month(s)").days == 91
+    assert SentenceLength.calculate_days(" 1", "Year(s)").days == 365
     assert SentenceLength.calculate_days(" Other", "Values") is None
 
 def test_SentenceLength():
@@ -47,8 +43,8 @@ def test_SentenceLength():
         min_time=("30", " Day(s)"),
         max_time=("1", "Year(s)")
     )
-    assert lng.max_time==365
-    assert lng.min_time==30
+    assert lng.max_time.days==365
+    assert lng.min_time.days==30
 
 def test_charge():
     char = Charge(
