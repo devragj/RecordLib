@@ -1,6 +1,6 @@
 import pytest
 from RecordLib.case import Case
-from RecordLib.common import Charge, Person, Sentence
+from RecordLib.common import Charge, Person, Sentence, SentenceLength
 from RecordLib.crecord import CRecord
 from RecordLib.summary import Summary
 from datetime import date
@@ -18,12 +18,19 @@ def example_person():
     )
 
 @pytest.fixture
-def example_sentence():
+def example_sentencelength():
+    return SentenceLength(
+        min_time=("10","Year"),
+        max_time=("25", "Year")
+    )
+
+@pytest.fixture
+def example_sentence(example_sentencelength):
     return Sentence(
         sentence_date=date(2000,1,1),
         sentence_type="Confinement",
         sentence_period="180 days",
-        sentence_length="Min 180 days, max 365 days"
+        sentence_length=example_sentencelength
     )
 
 @pytest.fixture

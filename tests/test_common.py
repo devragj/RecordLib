@@ -4,9 +4,11 @@ from datetime import date, timedelta
 import pytest
 
 def test_person():
-    per = Person("John", "Smeth", date(2010, 1, 1))
+    per = Person("John", "Smeth", date(2010, 1, 1), date(2020, 1, 1))
     assert per.first_name == "John"
     assert per.last_name == "Smeth"
+    assert per.date_of_birth.year == 2010
+    assert per.date_of_death.year == 2020
 
 def test_person_age():
     per = Person("John", "Smeth", date(2000, 1, 1))
@@ -17,7 +19,8 @@ def test_person_todict():
     assert asdict(per) == {
         "first_name": "John",
         "last_name": "Smeth",
-        "date_of_birth": date(2010, 1, 1)
+        "date_of_birth": date(2010, 1, 1),
+        "date_of_death": None,
     }
 
 def test_sentence():

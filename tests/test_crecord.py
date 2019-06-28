@@ -28,7 +28,9 @@ def test_init():
 def test_add_summary(example_summary):
     rec = CRecord(Person("Dummy", "Name", None))
     rec.add_summary(example_summary)
-    rec.person.first_name == example_summary.get_defendant().first_name
+    assert rec.person.first_name == example_summary.get_defendant().first_name
+    assert ((len(rec.cases) == len(example_summary.get_cases())) and
+            (len(rec.cases) > 0))
 
 
 

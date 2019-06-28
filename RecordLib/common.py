@@ -10,7 +10,7 @@ import pytest
 import re
 import logging
 from datetime import timedelta
-
+from typing import Optional
 
 @dataclass
 class Person:
@@ -21,6 +21,7 @@ class Person:
     first_name: str
     last_name: str
     date_of_birth: date
+    date_of_death: Optional[date] = None
 
     def age(self) -> int:
         """ Age in years """
