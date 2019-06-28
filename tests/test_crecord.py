@@ -3,6 +3,7 @@ from RecordLib.common import Person
 import pytest
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import copy
 
 def test_init():
     dob = date(2010, 1,1)
@@ -32,7 +33,13 @@ def test_add_summary(example_summary):
     assert ((len(rec.cases) == len(example_summary.get_cases())) and
             (len(rec.cases) > 0))
 
-
+def test_add_summary_doesnt_add_duplicates(example_summary):
+    pytest.fail("CRecord _does_ add duplicates, but I can't get this test to fail.")
+    summary2 = copy.deepcopy(example_summary)
+    rec = CRecord(Person("Dummy", "Name", None))
+    rec.add_summary(example_summary)
+    rec.add_summary(summary2)
+    assert len(rec.cases) == len(example_summary.get_cases())
 
 def test_years_since_last_arrested_or_prosecuted(example_crecord):
     example_crecord.cases[0].arrest_date = date(2010, 1, 1)
