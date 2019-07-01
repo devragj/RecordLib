@@ -34,7 +34,6 @@ def test_add_summary(example_summary):
             (len(rec.cases) > 0))
 
 def test_add_summary_doesnt_add_duplicates(example_summary):
-    pytest.fail("CRecord _does_ add duplicates, but I can't get this test to fail.")
     summary2 = copy.deepcopy(example_summary)
     rec = CRecord(Person("Dummy", "Name", None))
     rec.add_summary(example_summary)

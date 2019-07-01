@@ -101,5 +101,5 @@ class CRecord:
         # Get D's name from the summary
         self.person = summary.get_defendant()
         # Get the cases from the summary
-        self.cases = summary.get_cases()
+        self.cases += summary.get_cases() 
         return self
