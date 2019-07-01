@@ -16,7 +16,7 @@ from RecordLib.case import Case
 from dataclasses import asdict
 from datetime import date
 from dateutil.relativedelta import relativedelta
-
+import logging
 
 def years_since_last_arrested_or_prosecuted(crecord: CRecord) -> int:
     """
@@ -88,12 +88,17 @@ class CRecord:
             return False
         return True
 
-    def add_summary(self, summary: Summary) -> CRecord:
+    def add_summary(self, summary: Summary, merge_strategy: str = "ignore_new") -> CRecord:
         """
         Add the information of a summary sheet to a CRecord.
 
+        Depending on the `merge_strategy`, any cases in the summary sheet
+        that have a docket number that matches any case already in this
+        CRecord will not be added, or the new case will overwrite the old.
+
         Args:
             summary (Summary): A parsed summary sheet.
+            merge_strategy (str): "ignore_new" or "overwrite_old", which indicate whether duplicate new cases should be dropped or should replace the old ones
 
         Returns:
             This updated CRecord object.
@@ -101,5 +106,17 @@ class CRecord:
         # Get D's name from the summary
         self.person = summary.get_defendant()
         # Get the cases from the summary
-        self.cases += summary.get_cases() 
+        docket_nums = [c.docket_number for c in self.cases]
+        for i, new_case in enumerate(summary.get_cases()):
+            if new_case.docket_number not in docket_nums:
+                logging.info(f"Adding {new_case.docket_number} to record.")
+                self.cases.append(new_case)
+            elif merge_strategy == "ignore_new":
+                logging.info(f"Case with docket { new_case.docket_number } already part of record. Ignoring it.")
+            elif merge_strategy == "overwrite_old":
+                logging.info(f"Case with docket { new_case.docket_number } already part of record. Using it.")
+                self.cases[i] = new_case
+            else:
+                logging.info(f"Case with docket { new_case.docket_number } already part of record, no merge strategy selected. Ignoring duplicate.")
+
         return self

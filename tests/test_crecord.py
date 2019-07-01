@@ -40,6 +40,21 @@ def test_add_summary_doesnt_add_duplicates(example_summary):
     rec.add_summary(summary2)
     assert len(rec.cases) == len(example_summary.get_cases())
 
+def test_add_summary_merge_strategies(example_summary):
+    summary2 = copy.deepcopy(example_summary)
+    summary2.get_cases()[0].otn = "a_different_otn"
+    # default merge_strategy is to ignore new duplicates
+    rec = CRecord(Person("Dummy", "Name", None))
+    rec.add_summary(example_summary)
+    rec.add_summary(summary2)
+    assert rec.cases[0].otn == example_summary.get_cases()[0].otn
+
+    # alternate merge strategy overwrites duplicates w/ new case
+    rec = CRecord(Person("Dummy", "Name", None))
+    rec.add_summary(example_summary)
+    rec.add_summary(summary2, "overwrite_old")
+    assert rec.cases[0].otn == summary2.get_cases()[0].otn
+
 def test_years_since_last_arrested_or_prosecuted(example_crecord):
     example_crecord.cases[0].arrest_date = date(2010, 1, 1)
     example_crecord.cases[0].disposition_date = date(2010, 1, 1)
