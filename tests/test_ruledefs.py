@@ -29,3 +29,15 @@ def test_rule_expunge_over_70(example_crecord):
     analysis["age_over_70_expungements"]["conditions"]["years_since_final_release"] == True
     # The modified record has removed the cases this rule wants to expunge.
     assert len(modified_record.cases) < len(example_crecord.cases)
+
+
+def test_expunge_deceased(example_crecord):
+    example_crecord.person.date_of_death = None
+    mod_rec, analysis = ruledefs.expunge_deceased(example_crecord)
+    assert analysis["deceased_expungements"]["conclusion"] == "No expungements possible"
+    assert analysis["deceased_expungements"]["conditions"]["deceased_three_years"] is False
+
+    example_crecord.person.date_of_death = date(2000, 1, 1)
+    mod_rec, analysis = ruledefs.expunge_deceased(example_crecord)
+    assert analysis["deceased_expungements"]["conclusion"] == "Expunge cases"
+    assert analysis["deceased_expungements"]["conditions"]["deceased_three_years"] is True

@@ -11,6 +11,7 @@ import re
 import logging
 from datetime import timedelta
 from typing import Optional
+from dateutil.relativedelta import relativedelta
 
 @dataclass
 class Person:
@@ -35,6 +36,13 @@ class Person:
             )
         )
 
+    def years_dead(self) -> float:
+        """Return number of years dead a person is. Or -Infinity, if alive.
+        """
+        if self.date_of_death:
+            return relativedelta(date.today(), self.date_of_death).years
+        else:
+            return float("-Inf")
 
 class SentenceLength:
     """

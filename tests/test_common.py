@@ -14,6 +14,16 @@ def test_person_age():
     per = Person("John", "Smeth", date(2000, 1, 1))
     assert per.age() > 17
 
+
+def test_person_years_dead(example_person):
+    example_person.date_of_death = None
+    assert example_person.years_dead() == float("-Inf")
+    example_person.date_of_death = date.today()
+    assert example_person.years_dead() == 0
+    example_person.date_of_death = date(2000,1,1)
+    assert example_person.years_dead() > 10
+
+
 def test_person_todict():
     per = Person("John", "Smeth", date(2010, 1, 1))
     assert asdict(per) == {

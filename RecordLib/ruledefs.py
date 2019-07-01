@@ -5,12 +5,14 @@ how the rule applies to the record.
 from RecordLib.crecord import CRecord
 import pytest
 import copy
-
+from typing import Tuple
+from dateutil.relativedelta import relativedelta
+from datetime import date
 ## 18 PA 9122 Expungements
 ## https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
 
 
-def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> dict:
+def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord, dict]:
     """
     Analyze a crecord for expungements if the defendant is over 70.
 
@@ -43,18 +45,39 @@ def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> dict:
         }
     )
 
-
-
     return modified_record, analysis
 
 
-def expunge_deceased(crecord: CRecord) -> dict:
+def expunge_deceased(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord, dict]:
     """
     Analyze a crecord for expungments if the individual has been dead for three years.
 
     18 PA 9122(b)(2) provides for expungement of records for an individual who has been dead for three years.
     """
-    pass
+    conditions = {
+        "deceased_three_years": crecord.person.years_dead() > 3
+    }
+
+    if all(conditions.values()):
+        conclusion = "Expunge cases"
+        modified_record = CRecord(
+            person=copy.deepcopy(crecord.person),
+            cases=[]
+        )
+    else:
+        conclusion = "No expungements possible"
+        modified_record = crecord
+
+    analysis.update(
+        {
+            "deceased_expungements": {
+                "conditions": conditions,
+                "conclusion": conclusion,
+            }
+        }
+    )
+
+    return modified_record, analysis
 
 
 def expunge_summaries(crecord: CRecord) -> dict:
