@@ -80,15 +80,57 @@ def expunge_deceased(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord
     return modified_record, analysis
 
 
-def expunge_summaries(crecord: CRecord) -> dict:
+def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord, dict]:
     """
     Analyze crecord for expungements of summary convictions.
 
     18 PA 9122(b)(3)(i) and (ii) provide for expungement of summary convictions if the individual has been free of arrest or prosecution for five years following the conviction for the offense.
 
     Not available if person got ARD for certain offenses listed in (b.1)
+
+    TODO excluding ARD offenses from expungements here.
+
+    TODO grades are often missing. We should tell users we're uncertain.
     """
-    pass
+    conditions = {
+        "arrest_free_five_years": crecord.years_since_last_arrested_or_prosecuted() > 5,
+    }
+
+    expungements = []
+    num_charges = 0
+    num_expungeable_charges = 0
+    modified_record = CRecord(person = crecord.person)
+    for case in crecord.cases:
+        any_expungements = False
+        expungements_this_case = {"docket_number": case.docket_number}
+        for charge in case.charges:
+            num_charges += 1
+            if charge.grade.strip() == "S":
+                num_expungeable_charges += 1
+                expungements_this_case.update({"charge": charge})
+        expungements.append(expungements_this_case)
+
+        if any_expungements is False:
+            modified_record.cases.append(copy.deepcopy(case))
+
+    if (not all(conditions.values())) or num_expungeable_charges == 0:
+        conclusion = "No expungements possible"
+    elif all(conditions.values()) and num_charges == num_expungeable_charges:
+        conclusion = "Expunge all cases"
+    else:
+        conclusion = f"Expunge {num_expungeable_charges} charges in {len(crecord.cases)} cases"
+
+    analysis.update(
+        {
+            "summary_conviction_expungements": {
+                "conditions": conditions,
+                "conclusion": conclusion,
+                "expungements": expungements,
+            }
+        }
+    )
+
+    return modified_record, analysis
 
 
 rules = [expunge_over_70, expunge_deceased]

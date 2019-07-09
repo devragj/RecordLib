@@ -3,6 +3,7 @@ from RecordLib.common import Sentence, SentenceLength
 from datetime import date
 import pytest
 import types
+import copy
 
 def test_rule_expunge_over_70(example_crecord):
     example_crecord.person.date_of_birth = date(1920, 1, 1)
@@ -41,3 +42,27 @@ def test_expunge_deceased(example_crecord):
     mod_rec, analysis = ruledefs.expunge_deceased(example_crecord)
     assert analysis["deceased_expungements"]["conclusion"] == "Expunge cases"
     assert analysis["deceased_expungements"]["conditions"]["deceased_three_years"] is True
+
+
+def test_expunge_summary_convictions(example_crecord, example_charge):
+    # Old summary convictions are expungeable
+    example_crecord.cases[0].charges[0].grade = "S"
+    example_crecord.cases[0].arrest_date = date(2000, 1, 1)
+    example_crecord.cases[0].disposition_date = date(2001, 1, 1)
+    mod_rec, analysis = ruledefs.expunge_summary_convictions(example_crecord)
+    assert analysis["summary_conviction_expungements"]["conclusion"] == "Expunge all cases"
+
+    # no expunged summary convictions if there was a recent arrest.
+    example_crecord.cases[0].arrest_date = date(2019, 1, 1)
+    mod_rec, analysis = ruledefs.expunge_summary_convictions(example_crecord)
+    assert analysis["summary_conviction_expungements"]["conclusion"] == "No expungements possible"
+
+    # Only summary convictions, not other grades, can be expunged.
+    new_charge = copy.deepcopy(example_charge)
+    new_charge.grade = "M2"
+    example_crecord.cases[0].arrest_date = date(2000, 1, 1)
+    example_crecord.cases[0].charges.append(new_charge)
+    assert len(example_crecord.cases[0].charges) == 2
+    mod_rec, analysis = ruledefs.expunge_summary_convictions(example_crecord)
+    assert analysis["summary_conviction_expungements"]["conclusion"] == "Expunge 1 charges in 1 cases"
+    assert analysis["summary_conviction_expungements"]["expungements"][0]["charge"] == example_charge

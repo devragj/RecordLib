@@ -30,7 +30,7 @@ def years_since_last_arrested_or_prosecuted(crecord: CRecord) -> int:
     last_case = cases_ordered[-1]
     try:
         return relativedelta(date.today(), last_case.last_action()).years
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as e:
         return 0
 
 
