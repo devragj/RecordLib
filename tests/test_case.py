@@ -15,7 +15,7 @@ def test_case(example_sentence):
     case = Case(
         status="Open",
         county="Erie",
-        docket_number="12-CP-01",
+        docket_number="12-CP-02",
         otn="112000111",
         dc="11222",
         charges=[char],

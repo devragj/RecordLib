@@ -1,6 +1,7 @@
 setup.py
 RecordLib/CustomNodeVisitorFactory.py
 RecordLib/__init__.py
+RecordLib/analysis.py
 RecordLib/case.py
 RecordLib/common.py
 RecordLib/crecord.py
@@ -17,4 +18,5 @@ RecordLib.egg-info/top_level.txt
 RecordLib/grammars/__init__.py
 RecordLib/grammars/summary.py
 scripts/__init__.py
+scripts/analyze.py
 scripts/download_dockets.py

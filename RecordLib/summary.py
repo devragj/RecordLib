@@ -129,13 +129,13 @@ def text_or_blank(element: etree.Element) -> str:
         return ""
 
 
-def date_or_none(datestring: str, fmtstr: str = "%m/%d/%Y") -> date:
+def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> date:
     """
     Return date or None given a string.
     """
     try:
-        return datetime.strptime(datestring, fmtstr)
-    except ValueError:
+        return datetime.strptime(date_element.text.strip(), fmtstr).date()
+    except (ValueError, AttributeError):
         return None
 
 
@@ -281,7 +281,7 @@ class Summary:
                 for sentence in seq.xpath("//sentencing_info"):
                     charge.sentences.append(
                         Sentence(
-                            sentence_date=text_or_blank(sentence.find("sentence_date")),
+                            sentence_date=date_or_none(sentence.find("sentence_date")),
                             sentence_type=text_or_blank(sentence.find("sentence_type")),
                             sentence_period=text_or_blank(
                                 sentence.find("program_period")
@@ -321,7 +321,7 @@ class Summary:
                 for sentence in seq.xpath("//sentencing_info"):
                     charge.sentences.append(
                         Sentence(
-                            sentence_date=text_or_blank(sentence.find("sentence_date")),
+                            sentence_date=date_or_none(sentence.find("sentence_date")),
                             sentence_type=text_or_blank(sentence.find("sentence_type")),
                             sentence_period=text_or_blank(
                                 sentence.find("program_period")
@@ -350,20 +350,20 @@ class Summary:
 
             cases.append(
                 Case(
-                    status=case.getparent().getparent().text.strip(),
-                    county=case.getparent().find("county").text.strip(),
-                    docket_number=case.find("case_basics/docket_num").text.strip(),
-                    otn=case.find("case_basics/otn_num").text.strip(),
-                    dc=case.find("case_basics/dc_num").text.strip(),
+                    status=text_or_blank(case.getparent().getparent()),
+                    county=text_or_blank(case.getparent().find("county")),
+                    docket_number=text_or_blank(case.find("case_basics/docket_num")),
+                    otn=text_or_blank(case.find("case_basics/otn_num")),
+                    dc=text_or_blank(case.find("case_basics/dc_num")),
                     charges=closed_charges + open_charges,
                     fines_and_costs=None,  # a summary docket never has info about this.
                     arrest_date=date_or_none(
-                        case.find("arrest_and_disp/arrest_date").text.strip()
+                        case.find("arrest_and_disp/arrest_date")
                     ),
                     disposition_date=date_or_none(
-                        case.find("arrest_and_disp/disp_date").text.strip()
+                        case.find("arrest_and_disp/disp_date")
                     ),
-                    judge=case.find("arrest_and_disp/disp_judge").text.strip(),
+                    judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
                 )
             )
         return cases

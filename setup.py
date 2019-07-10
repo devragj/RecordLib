@@ -15,5 +15,6 @@ setup(
     entry_points='''
         [console_scripts]
         download_docs=scripts.download_dockets:cli
+        analyze=scripts.analyze:analyze
     ''',
 )

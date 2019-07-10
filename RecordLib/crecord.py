@@ -25,7 +25,9 @@ def years_since_last_arrested_or_prosecuted(crecord: CRecord) -> int:
     If we can't tell how many years, return 0.
     """
     if len(crecord.cases) == 0:
-        return None
+        return float("-Inf")
+    if any("Active" in case.status for case in crecord.cases):
+        return 0
     cases_ordered = sorted(crecord.cases, key=Case.order_cases_by_last_action)
     last_case = cases_ordered[-1]
     try:
@@ -70,9 +72,12 @@ class CRecord:
 
     years_since_final_release = years_since_final_release
 
-    def __init__(self, person: Person = None, cases: List[Case] = []):
+    def __init__(self, person: Person = None, cases: List[Case] = None):
         self.person = person
-        self.cases = cases
+        if cases is None:
+            self.cases = list()
+        else:
+            self.cases = cases
 
     def to_dict(self) -> dict:
         return {
@@ -114,6 +119,7 @@ class CRecord:
             if new_case.docket_number not in docket_nums:
                 logging.info(f"Adding {new_case.docket_number} to record.")
                 self.cases.append(new_case)
+                docket_nums.append(new_case.docket_number)
             elif case_merge_strategy == "ignore_new":
                 logging.info(f"Case with docket { new_case.docket_number } already part of record. Ignoring it.")
             elif case_merge_strategy == "overwrite_old":

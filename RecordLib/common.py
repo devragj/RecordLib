@@ -63,6 +63,8 @@ class SentenceLength:
             length (str): A string that can be converted to an integer
             unit (str): A unit of time, Days, Months, or Years
         """
+        if length == "" or str == "":
+            return(timedelta(days=0))
         if re.match("day", unit.strip(), re.IGNORECASE):
             try:
                 return timedelta(days=float(length.strip()))

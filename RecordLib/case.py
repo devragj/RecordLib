@@ -3,6 +3,7 @@ from RecordLib.common import Charge, Person, Sentence
 from typing import List
 from datetime import date
 import pytest
+import logging
 
 class Case:
     """
@@ -45,6 +46,14 @@ class Case:
         self.judge = judge
 
     def last_action(self) -> date:
+        """
+        The last arrest or disposition that happened in a case.
+
+        Sometimes we want to know when the last thing in a case happened.
+
+        If we can't find an arrest or disposition date, then Case#last_action will return a date far in the past. The theory is that if a case has no last action, then any expression asking "was the last action longer ago than X " should be True, so X needs to be basically infinitely far in the past.
+
+        """
         try:
             return max(self.arrest_date, self.disposition_date)
         except TypeError:
@@ -53,7 +62,8 @@ class Case:
             elif self.arrest_date is not None and self.disposition_date is None:
                 return self.arrest_date
             else:
-                return None
+                logging.warning(f"Neither an arrest date nor a disposition date for {self.docket_number}. Returning datetime.min")
+                return date.min
 
     def was_confined(self) -> bool:
         """
@@ -89,5 +99,15 @@ class Case:
 
     @staticmethod
     def order_cases_by_last_action(case):
-        """ Key for a sorted() call, to sort a list of cases by the last action date"""
+        """
+        Key for a sorted() call, to sort a list of cases by the last action date
+
+        Args:
+            case: a case
+
+        Returns:
+            The date of the last action on a case. Or, if there was no last action, today's date. This is so that cases that don't have a known last action
+
+        Returns the date of the last action on a case
+        """
         return case.last_action()

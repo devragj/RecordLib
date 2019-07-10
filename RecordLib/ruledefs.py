@@ -95,7 +95,6 @@ def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tu
     conditions = {
         "arrest_free_five_years": crecord.years_since_last_arrested_or_prosecuted() > 5,
     }
-
     expungements = []
     num_charges = 0
     num_expungeable_charges = 0
@@ -125,7 +124,7 @@ def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tu
             "summary_conviction_expungements": {
                 "conditions": conditions,
                 "conclusion": conclusion,
-                "expungements": expungements,
+                "expungements": expungements if all(conditions.values()) else [],
             }
         }
     )
