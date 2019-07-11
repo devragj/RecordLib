@@ -49,15 +49,17 @@ There are I think five kinds of objects involved in this framework.
 	record.cases[0].charges == [a list of charges on a case]
 	record.cases[0].feescosts = (amt owed: ..., amt paid: ..., fees that could be waived.)
 
-    expungement_rule_methods = [
-        expunge_over_70_years,
-        expunge_nonconvictions,
-        expunge_summary_convictions,
-        seal_misdemeanor_convictions
-    ]
+    analysis_container = (
+        Analysis(record)
+	.rule(expunge_deceased)
+	.rule(expunge_over70_years)
+	.rule(expunge_nonconvictions)
+	.rule(seal_convictions)
+    )
 
-    original_record, modified_record, analysis = pipeline(CRecord, expungement_rule_methods)
-
+    remaining_charges = analysis_container.modified_record
+    analysis = analysis_container.analysis
+    
 	analysis ==
 	{
 		personInfo: {},
@@ -71,7 +73,10 @@ There are I think five kinds of objects involved in this framework.
 
 	}
 
-    generate_petiton_packet(original_record, analysis)
+    attorney_info = Attorney(name="Jane Smith", organization="Legal Services Org of X County", barid="xxxxxx")
+
+    success_or_fail = generate_petiton_packet(original_record, analysis, attorney_info)
+    print(success_or_fail)
 
 
 ## Roadmap
