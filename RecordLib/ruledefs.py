@@ -1,6 +1,9 @@
 """
 Collect rule-functions that take a record and return an analysis of
 how the rule applies to the record.
+
+18 PA 9122 deals with Expungements
+https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
 """
 from RecordLib.crecord import CRecord
 import pytest
@@ -8,11 +11,10 @@ import copy
 from typing import Tuple
 from dateutil.relativedelta import relativedelta
 from datetime import date
-## 18 PA 9122 Expungements
-## https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
+import re
 
 
-def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord, dict]:
+def expunge_over_70(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
     """
     Analyze a crecord for expungements if the defendant is over 70.
 
@@ -29,10 +31,7 @@ def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord,
 
     if all(conditions.values()):
         conclusion = "Expunge cases"
-        modified_record = CRecord(
-            person=copy.deepcopy(crecord.person),
-            cases=[]
-        )
+        modified_record = CRecord(person=copy.deepcopy(crecord.person), cases=[])
     else:
         conclusion = "No expungements possible"
         modified_record = crecord
@@ -48,39 +47,31 @@ def expunge_over_70(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord,
     return modified_record, analysis
 
 
-def expunge_deceased(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord, dict]:
+def expunge_deceased(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
     """
     Analyze a crecord for expungments if the individual has been dead for three years.
 
     18 PA 9122(b)(2) provides for expungement of records for an individual who has been dead for three years.
     """
-    conditions = {
-        "deceased_three_years": crecord.person.years_dead() > 3
-    }
+    conditions = {"deceased_three_years": crecord.person.years_dead() > 3}
 
     if all(conditions.values()):
         conclusion = "Expunge cases"
-        modified_record = CRecord(
-            person=copy.deepcopy(crecord.person),
-            cases=[]
-        )
+        modified_record = CRecord(person=copy.deepcopy(crecord.person), cases=[])
     else:
         conclusion = "No expungements possible"
         modified_record = crecord
 
     analysis.update(
-        {
-            "deceased_expungements": {
-                "conditions": conditions,
-                "conclusion": conclusion,
-            }
-        }
+        {"deceased_expungements": {"conditions": conditions, "conclusion": conclusion}}
     )
 
     return modified_record, analysis
 
 
-def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tuple[CRecord, dict]:
+def expunge_summary_convictions(
+    crecord: CRecord, analysis: dict
+) -> Tuple[CRecord, dict]:
     """
     Analyze crecord for expungements of summary convictions.
 
@@ -93,12 +84,12 @@ def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tu
     TODO grades are often missing. We should tell users we're uncertain.
     """
     conditions = {
-        "arrest_free_five_years": crecord.years_since_last_arrested_or_prosecuted() > 5,
+        "arrest_free_five_years": crecord.years_since_last_arrested_or_prosecuted() > 5
     }
     expungements = []
     num_charges = 0
     num_expungeable_charges = 0
-    modified_record = CRecord(person = crecord.person)
+    modified_record = CRecord(person=crecord.person)
     for case in crecord.cases:
         any_expungements = False
         expungements_this_case = {"docket_number": case.docket_number}
@@ -107,6 +98,7 @@ def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tu
             if charge.grade.strip() == "S":
                 num_expungeable_charges += 1
                 expungements_this_case.update({"charge": charge})
+                any_expungements = True
         expungements.append(expungements_this_case)
 
         if any_expungements is False:
@@ -117,7 +109,9 @@ def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tu
     elif all(conditions.values()) and num_charges == num_expungeable_charges:
         conclusion = "Expunge all cases"
     else:
-        conclusion = f"Expunge {num_expungeable_charges} charges in {len(crecord.cases)} cases"
+        conclusion = (
+            f"Expunge {num_expungeable_charges} charges in {len(crecord.cases)} cases"
+        )
 
     analysis.update(
         {
@@ -132,4 +126,58 @@ def expunge_summary_convictions(crecord: CRecord, analysis: dict = dict()) -> Tu
     return modified_record, analysis
 
 
-rules = [expunge_over_70, expunge_deceased]
+def expunge_nonconvictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
+    """
+    18 Pa. 9122(a) provides that non-convictions (cases are closed with no disposition recorded) "shall be expunged."
+    """
+    conditions = {"Nonconvictions can always be expunged.": True}
+    expungements = []
+    num_charges = 0
+    num_expungeable_charges = 0
+    modified_record = CRecord(person=crecord.person)
+    if all(conditions.values()):
+        for case in crecord.cases:
+            any_expungements = False
+            expungements_this_case = {
+                "docket_number": case.docket_number,
+                "charges": list()}
+            for charge in case.charges:
+                num_charges += 1
+                if charge.disposition.strip() == "" or any(
+                    [
+                        re.match(disp, charge.disposition, re.IGNORECASE)
+                        for disp in [
+                            "Nolle Prossed",
+                            "Withdrawn",
+                            "Not Guilty",
+                            "Dismissed",
+                        ]
+                    ]
+                ):
+                    num_expungeable_charges += 1
+                    expungements_this_case["charges"].append(charge)
+                    any_expungements = True
+            if len(expungements_this_case["charges"]) > 0:
+                expungements.append(expungements_this_case)
+
+            if any_expungements is False:
+                modified_record.cases.append(copy.deepcopy(case))
+
+    if num_expungeable_charges == 0:
+        conclusion = "No expungements possible"
+    elif num_charges == num_expungeable_charges:
+        conclusion = "Expunge all cases"
+    else:
+        conclusion = "Expunge some cases"
+
+    analysis.update(
+        {
+            "expunge_nonconvictions": {
+                "conditions": conditions,
+                "conclusion": conclusion,
+                "expungements": expungements,
+            }
+        }
+    )
+
+    return modified_record, analysis

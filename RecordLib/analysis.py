@@ -12,7 +12,7 @@ class Analysis:
         self.analysis = OrderedDict()
 
     def rule(self, ruledef: Callable) -> Analysis:
-        modified_rec, analysis = ruledef(self.modified_rec)
+        modified_rec, analysis = ruledef(self.modified_rec, dict())
         self.modified_rec = modified_rec
         self.analysis.update(analysis)
         return self

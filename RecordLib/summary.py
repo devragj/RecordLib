@@ -268,7 +268,7 @@ class Summary:
         cases = []
         case_elements = self._xml.xpath("//case")
         for case in case_elements:
-            closed_sequences = case.xpath("//closed_sequence")
+            closed_sequences = case.xpath(".//closed_sequence")
             closed_charges = []
             for seq in closed_sequences:
                 charge = Charge(
@@ -278,7 +278,7 @@ class Summary:
                     disposition=text_or_blank(seq.find("sequence_disposition")),
                     sentences=[],
                 )
-                for sentence in seq.xpath("//sentencing_info"):
+                for sentence in seq.xpath(".//sentencing_info"):
                     charge.sentences.append(
                         Sentence(
                             sentence_date=date_or_none(sentence.find("sentence_date")),
@@ -308,7 +308,7 @@ class Summary:
                     )
                 closed_charges.append(charge)
 
-            open_sequences = case.xpath("//open_sequence")
+            open_sequences = case.xpath(".//open_sequence")
             open_charges = []
             for seq in open_sequences:
                 charge = Charge(
@@ -318,7 +318,7 @@ class Summary:
                     disposition=text_or_blank(seq.find("sequence_disposition")),
                     sentences=[],
                 )
-                for sentence in seq.xpath("//sentencing_info"):
+                for sentence in seq.xpath(".//sentencing_info"):
                     charge.sentences.append(
                         Sentence(
                             sentence_date=date_or_none(sentence.find("sentence_date")),

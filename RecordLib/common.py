@@ -2,16 +2,17 @@
 Common, simple dataclasses live here.
 """
 from __future__ import annotations
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, is_dataclass
 from typing import List, Tuple
 import functools
-from datetime import date
+from datetime import date, datetime
 import pytest
 import re
 import logging
 from datetime import timedelta
 from typing import Optional
 from dateutil.relativedelta import relativedelta
+import json
 
 @dataclass
 class Person:
@@ -125,3 +126,38 @@ class Charge:
     statute: str
     disposition: str
     sentences: List[Sentence]
+
+@functools.singledispatch
+def to_serializable(val):
+    """
+    single_dispatch is for letting me define how different classes should serialize.
+
+    There's a single default serializer (this method), and then additional methods that replace this method depending on the type sent to the method.
+    """
+    return str(val)
+
+@to_serializable.register(Charge)
+def ts_charge(charge):
+    return asdict(charge)
+
+@to_serializable.register(date)
+@to_serializable.register(datetime)
+def ts_date(a_date):
+    return a_date.isoformat()
+
+# class DataClassJSONEncoder(json.JSONEncoder):
+#     """
+#     Class for encoding objects as JSON.
+#     """
+#     def default(self, obj):
+#         """
+#         Override the default jsonencoder serialization method.
+#
+#         If the object is a dataclass, then use the dataclass method to serialize it.
+#         Otherwise, just do whatever the regular default would be.
+#         """
+#         if is_dataclass(obj):
+#             return asdict(obj)
+#         if isinstance(obj, (date, datetime)):
+#             return(obj.isoformat())
+#         return super().default(obj)
