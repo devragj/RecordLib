@@ -191,7 +191,7 @@ def parse_pdf(
     ## Combine the text of the sections into one string
     ## When there's a page break over sections, then an empty line gets
     ## inserted, and I'd like to get rid of it, to help the grammars.
-    print(f"Page count: {len(summary_info_sections)}")
+    logging.info(f"Page count: {len(summary_info_sections)}")
     for i, section in enumerate(summary_info_sections):
         if section.text[-2] == "\n" and section.text[-1] == " ":
             if i < (len(summary_info_sections) - 1):
