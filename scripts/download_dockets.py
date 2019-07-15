@@ -51,7 +51,7 @@ def download_docket(scraper_url: str, court: str, docket_number: str, doc_type: 
         logging.info("... Downloading complete. Moving on.")
     else:
         logging.info("Request failed. Moving on.")
-    return url, None
+    return None, None
 
 
 @cli.command()
@@ -170,7 +170,7 @@ def docket_numbers(dest_path: str, scraper_url: str, doc_type: str, input_csv: s
 @click.option("--scraper-url", default="http://localhost:5000", show_default=True)
 @click.option("--court", default="CP", type=click.Choice(["CP", "MDJ", "either"]))
 def random(
-    document_type: str, n: int, dest_path: str, scraper_url: str, court: str
+    document_type: str, number: int, dest_path: str, scraper_url: str, court: str
 ) -> None:
     """
     Download <n> random "summary" documents or "docket" documents to <dest-path>.
@@ -182,16 +182,16 @@ def random(
         logging.warning(f"{dest_path} does not already exist. Creating it")
         os.mkdir(dest_path)
 
-    for _ in range(n):
+    for _ in range(number):
         docket_number = next(create_docket_numbers(court))
         logging.info(f"Finding { docket_number } ... ")
-        url_to_fetch, resp_conent = download_docket(scraper_url, court, docket_number, document_type)
+        url_to_fetch, resp_content = download_docket(scraper_url, court, docket_number, document_type)
         if resp_content is not None:
             with open(
                 os.path.join(dest_path, f"{ docket_number }_{ document_type }.pdf"),
                 "wb",
             ) as f:
-                f.write(resp.content)
+                f.write(resp_content)
 
 
     logging.info("Complete.")
