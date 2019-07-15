@@ -30,6 +30,6 @@ def create_docket_numbers(court: str = "either") -> Generator[str, None, None]:
         yield docket_number
 
     logging.warning(
-        "Odd. You didn't create any docket numbers. Did you select CP, MJ or either for the `court` parameter?"
+        "You didn't create any docket numbers. Did you select CP, MJ or either for the `court` parameter?"
     )
     yield ""

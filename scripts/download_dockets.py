@@ -30,6 +30,10 @@ def download_docket(scraper_url: str, court: str, docket_number: str, doc_type: 
     """
     resp = requests.post(
         f"{scraper_url}/lookupDocket/{court}", json={"docket_number": docket_number})
+    if "Error" in resp.json().get("status"):
+        logging.error("Error from ScraperAPI:" + resp.json().get("status"))
+        pytest.set_trace()
+        return None, None
     if resp.status_code == 200 and resp.json().get("docket") is not None:
         logging.info("... URL found. Downloading file.")
         if doc_type.lower() in ["s", "summary", "summaries"]:
@@ -182,10 +186,16 @@ def random(
         logging.warning(f"{dest_path} does not already exist. Creating it")
         os.mkdir(dest_path)
 
+
     for _ in range(number):
         docket_number = next(create_docket_numbers(court))
         logging.info(f"Finding { docket_number } ... ")
-        url_to_fetch, resp_content = download_docket(scraper_url, court, docket_number, document_type)
+        if court == "either":
+            court_to_search = "CP" if "CP-" in docket_number else "MDJ"
+            logging.info("court is now " + court_to_search)
+        else:
+            court_to_search = court
+        url_to_fetch, resp_content = download_docket(scraper_url, court_to_search, docket_number, document_type)
         if resp_content is not None:
             with open(
                 os.path.join(dest_path, f"{ docket_number }_{ document_type }.pdf"),
