@@ -205,7 +205,7 @@ def parse_pdf(
 
         return False
 
-    # Then split into lines, so we can remove lines that say (Continued)
+    # Then split into lines, so we can remove lines that say (Continued) and other overflow lines.
     slines = []
     previous_sec_lines = []
     for i, sec in enumerate(summary_info_sections):
