@@ -32,7 +32,6 @@ def download_docket(scraper_url: str, court: str, docket_number: str, doc_type: 
         f"{scraper_url}/lookupDocket/{court}", json={"docket_number": docket_number})
     if "Error" in resp.json().get("status"):
         logging.error("Error from ScraperAPI:" + resp.json().get("status"))
-        pytest.set_trace()
         return None, None
     if resp.status_code == 200 and resp.json().get("docket") is not None:
         logging.info("... URL found. Downloading file.")
