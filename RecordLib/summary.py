@@ -191,22 +191,69 @@ def parse_pdf(
     ## Combine the text of the sections into one string
     ## When there's a page break over sections, then an empty line gets
     ## inserted, and I'd like to get rid of it, to help the grammars.
+    logging.info(f"Page count: {len(summary_info_sections)}")
     for i, section in enumerate(summary_info_sections):
         if section.text[-2] == "\n" and section.text[-1] == " ":
             if i < (len(summary_info_sections) - 1):
                 if "(Continued)" in summary_info_sections[i + 1].text[0:50]:
                     section.text = section.text[:-2]
-    summary_info_combined = "\n".join([sec.text for sec in summary_info_sections])
 
-    ## Then split into lines, so we can remove lines that say (Continued)
+    def find_in_lines(lines, id):
+        for line in lines:
+            if id in line:
+                return True
+
+        return False
+
+    # Then split into lines, so we can remove lines that say (Continued) and other overflow lines.
     slines = []
-    for sec in summary_info_sections:
-        for ln in sec.text.split("\n"):
+    previous_sec_lines = []
+    for i, sec in enumerate(summary_info_sections):
+        sec_lines = sec.text.split("\n")
+        line_count = len(sec_lines)
+        lines_to_remove = 0
+        if line_count > 0 and "(Continued)" in sec_lines[0]:
+            lines_to_remove += 1
+            if line_count > 1 and "(Continued)" in sec_lines[1]:
+                lines_to_remove += 1
+                if line_count > 2:
+                    line = sec_lines[2]
+                    pattern = '(CP\S+)\s'
+                    match = re.search(pattern, line)
+                    if match:
+                        cp_id = match.group(1)
+                        # print(cp_id)
+                        if find_in_lines(previous_sec_lines, cp_id):
+                            lines_to_remove += 1
+                            if line_count > 3 and 'Arrest Dt' in sec_lines[3]:
+                                lines_to_remove += 1
+                                if line_count > 4 and 'Def Atty' in sec_lines[4]:
+                                    lines_to_remove += 1
+                                    if line_count > 5 and 'Seq No' in sec_lines[5]:
+                                        lines_to_remove += 1
+                                        if line_count > 6 and 'Sentence' in sec_lines[6]:
+                                            lines_to_remove += 1
+                            elif line_count > 3 and 'Seq No' in sec_lines[3]:
+                                p_line = previous_sec_lines[-1]
+                                test = 'Def' in p_line or 'Arrest' in p_line or 'Next' in p_line or 'Disp ' in p_line
+                                if not test:
+                                    lines_to_remove += 1
+                                    if 'Sentence' in sec_lines[4] and 'Seq No' not in p_line:
+                                        lines_to_remove += 1
+                    elif 'Seq No' in line:
+                        p_line = previous_sec_lines[-1]
+                        test = 'Def' in p_line or 'Arrest' in p_line or 'Next' in p_line or 'Disp ' in p_line
+                        if not test:
+                            lines_to_remove += 1
+                            if 'Sentence' in sec_lines[3] and 'Seq No' not in p_line:
+                                lines_to_remove += 1
+
+        for ln in sec_lines[lines_to_remove:]:
             slines.append(ln)
 
-    slines = [ln for ln in slines if "(Continued)" not in ln]
+        previous_sec_lines = sec_lines
 
-    ## And recombine into one string, with the (Continued) lines removed.
+    # And recombine into one string.
     summary_info_combined = "\n".join(slines)
 
     try:
