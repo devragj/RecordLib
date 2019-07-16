@@ -185,7 +185,6 @@ def random(
         logging.warning(f"{dest_path} does not already exist. Creating it")
         os.mkdir(dest_path)
 
-
     for _ in range(number):
         docket_number = next(create_docket_numbers(court))
         logging.info(f"Finding { docket_number } ... ")

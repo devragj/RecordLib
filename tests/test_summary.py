@@ -27,14 +27,17 @@ def test_parse_pdf_from_path():
         tempdir="tests/data/tmp")
     assert len(summary._xml) > 0
 
-def test_bulk_parse_pdf_from_path():
+def test_bulk_parse_pdf_from_path(caplog):
+    caplog.set_level(logging.INFO)
     paths = os.listdir("tests/data/summaries")
     if len(paths) == 0:
         pytest.fail("No summaries to parse in /tests/data/summaries.")
     fails = []
+    logging.info("Successful parses:")
     for path in paths:
         try:
             summary = Summary(os.path.join(f"tests/data/summaries", path), tempdir = "tests/data/tmp")
+            logging.info(path)
         except:
             fails.append(os.path.split(path)[1])
     if len(fails) > 0:

@@ -20,6 +20,7 @@ from lxml import etree
 from collections import namedtuple
 from datetime import datetime
 import re
+import logging
 
 
 def visit_sentence_length(self, node, vc):
@@ -165,7 +166,7 @@ def parse_pdf(
         raise ValueError("Cannot extract summary text..")
 
     os.remove(os.path.join(tempdir, "tmp.txt"))
-
+    slines = summary.text.split("\n")
     # Parse each page (a header, body, and footer)
     try:
         summary.parsed_pages = summary_page_grammar.parse(summary.text)
@@ -259,7 +260,7 @@ def parse_pdf(
     try:
         parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        pytest.set_trace()
+        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(

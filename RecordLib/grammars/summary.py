@@ -20,8 +20,8 @@ useful_terminals = r"""
     number_w_dec_hyp = ~r"[0-9\.-]"+
     forward_slash = "/"
     section_symbol = "§"
-    single_content_char =  ~r"[\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§\+\<\>]"i
-    content_char_no_ws =  ~r"[\“\”a-z0-9`\"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§\+\<\>]"i
+    single_content_char =  ~r"[\\\“\”a-z0-9`\ \"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§\+\<\>\!]"i
+    content_char_no_ws =  ~r"[\\\“\”a-z0-9`\"=_\.,\-\(\)\'\$\?\*%;:#&\[\]/@§\+\<\>\!]"i
     new_line = "\n"
     ws = " "
 """
@@ -75,7 +75,7 @@ summary_page_grammar = Grammar(
     def_eyecolor = "Eyes:" ws* words?
     def_hair = "Hair:" ws* words?
     def_race = "Race:" ws* words?
-    alias = words+
+    alias = ws? words+
 
     summary_info = ((line / empty_line) !start_of_footer)+ line
 
@@ -102,8 +102,12 @@ summary_body_nonterminals = [
     "dc_num",
     "otn_num",
     "arrest_and_disp",
+    "arrest_disp",
+    "arrest_trial",
+    "legacy_num_cont",
     "arrest_date",
     "disp_date",
+    "prob_psi",
     "disp_judge",
     "def_atty",
     "charges",
@@ -116,6 +120,8 @@ summary_body_nonterminals = [
     "grade",
     "description",
     "closed_sequence_header",
+    "seq_no_header",
+    "sentence_dt_header",
     "open_sequence_header",
     "sequence_disposition",
     "sequence_disposition",
@@ -160,30 +166,50 @@ summary_body_grammar = Grammar(
     case_status = words
     cases_in_county = county new_line case+
     county = ws* words ws*
-    case = ws* case_basics new_line arrest_and_disp new_line charges? (empty_line* / (empty_line* ws* end_of_input))
+    case = ws* case_basics new_line arrest_and_disp charges? (empty_line* / (empty_line* ws* end_of_input))
 
     case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
     docket_num = content_char_no_ws+
-    proc_status = "Proc Status: " words
+    proc_status = "Proc Status: " words?
     dc_num = "DC No: " content_char_no_ws*
     otn_num = "OTN:" ws* content_char_no_ws*
 
-    # There seem to be two different formats for the arrest_and_disp section,
-    # closed cases have one format, and active-ish ones have a different.
-    arrest_and_disp = closed_arrest_and_disp / active_arrest_and_disp
+    # The arrest_disp section can be any combination of a set of lines,
+    # possibly interrupted by a repeated case_basics line.
+    arrest_and_disp = (arrest_disp new_line)?
+                      (case_basics new_line)?
+                      (arrest_trial new_line)?
+                      (legacy_num_cont new_line)? # assuming legacy num won't split pages
+                      (case_basics new_line)?
+                      (def_atty new_line)?
+                      (case_basics new_line)?
+                      (last_actions new_line)?
+                      (case_basics new_line)?
+                      (next_actions new_line)?
+                      (case_basics new_line)?
+                      (disp_date_and_judge new_line)?
+                      (case_basics new_line)?
+                      (prob_psi new_line)?
+                      (case_basics new_line)?
 
-    closed_arrest_and_disp = ws* arrest_date ws+ disp_date ws+ disp_judge (new_line def_atty)?
+
+    arrest_disp = ws* arrest_date ws+ disp_date ws+ disp_judge (ws+ is_appeal)?
+    arrest_trial = ws* arrest_date ws+ trial_date ws+ legacy_num
+    legacy_num_cont = ws+ word
+    def_atty = ws* "Def Atty:" ws+ single_content_char+
+    last_actions = ws+ last_action ws+ last_action_date ws+ last_action_room
+    next_actions = ws+ next_action ws+ next_action_date ws+ next_action_room
+    disp_date_and_judge = ws+ disp_date ws+ disp_judge
+    prob_psi = ws+ "Prob #:" ws+ word? ws+ "PSI#:" ws*
+
+
     arrest_date = "Arrest Dt:" ws? date?
     disp_date = "Disp Date:" ws? date?
     disp_judge = "Disp Judge:" ws? words?
-    def_atty = ws* "Def Atty:" ws+ single_content_char+
-
-    active_arrest_and_disp = ws* arrest_date ws+ trial_date ws+ legacy_num (new_line ws* case_basics)? (new_line def_atty)? (new_line ws* case_basics)? new_line action_list
+    is_appeal = words+
     trial_date = "Trial Dt:" ws? date?
-    legacy_num = "Legacy No:" ws? words?
-    action_list = last_actions new_line next_actions
-    last_actions = ws+ last_action ws+ last_action_date ws+ last_action_room
-    next_actions = ws+ next_action ws+ next_action_date ws+ next_action_room
+    legacy_num = "Legacy No:" ws* words?
+
     last_action = "Last Action:" ws? words?
     last_action_date = "Last Action Date:" ws? date?
     last_action_room = "Last Action Room:" ws? words?
@@ -194,19 +220,27 @@ summary_body_grammar = Grammar(
     # Closed and Active-ish cases have different formats for the sequence table.
     charges = closed_sequences / open_sequences
 
-    closed_sequences = closed_sequence_header+ (closed_sequence* / (line closed_sequence*))?
-    closed_sequence_header = ws+ "Seq No" ws+ "Statute" ws+ "Grade" ws+ "Description" ws+ "Disposition" new_line ws+ "Sentence Dt." ws+ "Sentence Type" ws+ "Program Period" ws+ "Sentence Length" new_line # this is just the labels of columns.
+    closed_sequences = closed_sequence_header+
+                       (closed_sequence* / (line closed_sequence*))?
+    closed_sequence_header = (seq_no_header new_line)+
+                             (sentence_dt_header new_line)+
 
-    # the closed sequence header is interspersed because on page overflows,
-    # it can end up inserted in the middle of a sequence.
-    closed_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description ws+ sequence_disposition ws* new_line (sequence_continued new_line)* closed_sequence_header? (sentencing_info closed_sequence_header?)*
+
+    seq_no_header = ws+ "Seq No" ws+ "Statute" ws+ "Grade" ws+ "Description" ws+ "Disposition"
+    sentence_dt_header = ws+ "Sentence Dt." ws+ "Sentence Type" ws+ "Program Period" ws+ "Sentence Length"
+
+    closed_sequence = ws* sequence_num ws+ statute ws* (grade ws+)? description? ws* sequence_disposition? ws* new_line
+                     (sequence_continued new_line)*
+                     closed_sequence_header?
+                     (empty_line closed_sequence_header)?
+                     (sentencing_info empty_line? closed_sequence_header?)*
 
     open_sequences = open_sequence_header+ (open_sequence+ / (line open_sequence_header open_sequence*))?
     open_sequence_header = ws+ "Seq No" line
-    open_sequence = ws* sequence_num ws+ statute ws+ (grade ws+)? description (ws+ sequence_disposition)? new_line (sequence_continued new_line)? open_sequence_header?
+    open_sequence = ws* sequence_num ws+ statute ws* (grade ws+)? description? (ws+ sequence_disposition)? new_line (sequence_continued new_line)* open_sequence_header?
 
     sequence_num = !date number
-    statute = (number ws+ section_symbol ws+ number_w_dec_hyp (ws+ section_symbol+ ws word)?) / migration
+    statute = ((number / word) ws+ section_symbol ws+ word (ws+ section_symbol+ ws word)?) / migration
     migration = "Migration" ws+ section_symbol ws+ "Migration"
     grade = content_char_no_ws content_char_no_ws?
     description = words+
@@ -215,7 +249,13 @@ summary_body_grammar = Grammar(
         # disappears in the parser.
     sequence_disposition = words+
 
-    sequence_continued = ws+ !(number ws) !date words ws* words?
+    # a sequence_continued is the contiuation of a description of an offense.
+    # We know its a continuation line, and not a new sequence because it doesn't start
+    # with a number. Except sometimes they do start with numbers.
+    # If the line does start with a number, require there are more words immediately
+    # after, to distinguish a sequence like "  2     " from "    13 years of age".
+    sequence_continued = (ws+ !(number ws) !date words ws* words?) /
+                         (ws+ number ws words ws* words?)
 
     sentencing_info = ws+ sentence_date ws+ sentence_type? (ws+ program_period? ws* sentence_length? ws*)? new_line
     sentence_date = date ws
