@@ -27,6 +27,7 @@ useful_terminals = r"""
 """
 
 # List of the terminal symbols for the summary_page_grammar
+# These terminals are the same for CP and MD dockets.
 summary_page_terminals = [
     "ws",
     "number",
@@ -56,18 +57,20 @@ summary_page_nonterminals = [
     "footer",
 ]
 
-summary_page_grammar = Grammar(
-    r"""
-    # Grammar for parsing summary pages, to separate
-    # header, body, and footer for each page.
-    # the body of each page will be combined and separately parsed.
-    summary = first_page following_page*
-    first_page = header caption summary_info footer
-    header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
-    court_name = single_content_char+
+# It can be useful for debugging to include 'new_line' as
+# a terminal so that its included in output xml.
+summary_body_terminals = [
+    "ws",
+    "number",
+    "number_w_dec_hyp",
+    "forward_slash",
+    "single_content_char",
+    "content_char_no_ws",
+    "section_symbol",
+    "migration",
+]
 
-    caption = defendant_name ws+ def_dob ws* def_sex ws* new_line ws* def_addr ws+ def_eyecolor ws* new_line "Aliases:" ws+ def_hair ws* new_line alias? ws+ def_race ws* new_line (alias new_line)* empty_line
-
+shared_summary_page_grammar_nonterminals = r"""
     defendant_name = words+
     def_dob = "DOB:" ws* date?
     def_sex = "Sex:" ws* words?
@@ -76,6 +79,61 @@ summary_page_grammar = Grammar(
     def_hair = "Hair:" ws* words?
     def_race = "Race:" ws* words?
     alias = ws? words+
+    """
+
+
+md_summary_page_grammar = Grammar(
+    r"""
+    # Grammar for parsing CP summary pages, to separate
+    # header, body, and footer for each page.
+    # the body of each page will be combined and separately parsed.
+    summary = first_page following_page*
+
+    first_page = header
+                 caption
+                 (ws* "Aliases:"  alias* new_line)?
+                 empty_line*
+                 summary_info
+                 footer
+
+    header = ws* court_name ws* new_line
+             ws* "Public Court Summary" ws* new_line+
+
+    court_name = single_content_char+
+
+    caption = ws* defendant_name ws+ def_dob ws* def_sex ws* new_line
+              ws* def_addr ws+ def_eyecolor ws* new_line
+              ws+ def_hair ws* new_line
+              ws+ def_race ws* new_line
+
+    summary_info = ((line / empty_line) !start_of_footer)+ line
+
+    footer = start_of_footer (line / empty_line)+ page_break
+
+    start_of_footer = new_line* ws* "MDJS" line
+
+    following_page = ws* "Public Court Summary" ws* new_line
+                     caption
+                     empty_line?
+                     summary_info
+                     footer
+
+
+    """ + shared_summary_page_grammar_nonterminals + useful_terminals
+)
+
+
+cp_summary_page_grammar = Grammar(
+    r"""
+    # Grammar for parsing CP summary pages, to separate
+    # header, body, and footer for each page.
+    # the body of each page will be combined and separately parsed.
+    summary = first_page following_page*
+    first_page = header caption summary_info footer
+    header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
+    court_name = single_content_char+
+
+    caption = defendant_name ws+ def_dob ws* def_sex ws* new_line ws* def_addr ws+ def_eyecolor ws* new_line "Aliases:" ws+ def_hair ws* new_line alias? ws+ def_race ws* new_line (alias new_line)* empty_line
 
     summary_info = ((line / empty_line) !start_of_footer)+ line
 
@@ -86,10 +144,10 @@ summary_page_grammar = Grammar(
     start_of_footer = new_line* ws* "CPCMS" line
 
     """
-    + useful_terminals
+    + shared_summary_page_grammar_nonterminals + useful_terminals
 )
 
-summary_body_nonterminals = [
+cp_summary_body_nonterminals = [
     "summary_body",
     "case_category",
     "case_status",
@@ -101,7 +159,7 @@ summary_body_nonterminals = [
     "proc_status",
     "dc_num",
     "otn_num",
-    "arrest_and_disp",
+    "arrest_disp_actions",
     "arrest_disp",
     "arrest_trial",
     "legacy_num_cont",
@@ -146,27 +204,137 @@ summary_body_nonterminals = [
     "archived_case",
 ]
 
-# It can be useful for debugging to include 'new_line' as
-# a terminal so that its included in output xml.
-summary_body_terminals = [
-    "ws",
-    "number",
-    "number_w_dec_hyp",
-    "forward_slash",
-    "single_content_char",
-    "content_char_no_ws",
-    "section_symbol",
-    "migration",
+md_summary_body_nonterminals = [
+    "summary_body",
+    "case_category",
+    "court_or_county",
+    "court",
+    "county",
+    "cases_with_status",
+    "case_status",
+    "case",
+    "case_basics",
+    "arrest_disp_actions",
+    "docket_num",
+    "proc_status",
+    "proc_stat_cont",
+    "otn_num",
+    "arrest_disp",
+    "case_status",
+    "legacy_num_cont",
+    "arrest_date",
+    "disp_date",
+    "disp_judge",
+    "bail_info",
+    "bail_type",
+    "bail_amount",
+    "bail_status",
+    "charges",
+    "charge_header",
+    "charge",
+    "charge_continued",
+    "statute",
+    "grade",
+    "description",
+    "disposition",
+    "counts",
+    "last_actions",
+    "last_action",
+    "last_action_date",
+    "next_actions",
+    "next_action",
+    "next_action_date",
+    "archives",
+    "archived_case",
 ]
 
-summary_body_grammar = Grammar(
+md_summary_body_grammar = Grammar(
+    r"""
+    summary_body = case_category+ empty_line*
+    case_category = ws* court_or_county new_line cases_with_status+
+
+    court_or_county = court / county
+    court = "Court:" ws* words
+    county = "County:" ws* words
+
+    cases_with_status = ws* case_status ws* new_line empty_line? case+
+    case_status = words
+    case = ws* case_basics new_line arrest_disp_actions charges? (empty_line* / (empty_line* ws* end_of_input))
+
+    case_basics = docket_num ws+ proc_status ws+ otn_num
+
+    docket_num = content_char_no_ws+
+
+    proc_status = "Processing Status:" ws* words?
+    proc_stat_cont = !disp_date words+
+
+    otn_num = ("OTN:" / "OTN/LOTN:") ws* words?
+
+    arrest_disp_actions = (arrest_disp new_line)?
+                          (case_status new_line)?
+                          (last_actions new_line)?
+                          (case_status new_line)?
+                          (next_actions new_line)?
+                          (case_status new_line)?
+                          (bail_info new_line)?
+                          (case_status new_line)?
+
+    arrest_disp = ws* arrest_date (ws+ proc_stat_cont)? ws* disp_date
+    arrest_date = "Arrest Date:" ws* date?
+    disp_date = "Disp. Event Date:" ws* date?
+
+    last_actions = ws* last_action ws+ last_action_date
+    last_action = "Last Action:" ws? words?
+    last_action_date = "Last Action Date:" ws? date?
+
+    next_actions = ws* next_action ws+ next_action_date
+    next_action = "Next Action:" ws? words?
+    next_action_date = "Next Action Date:" ws? date?
+
+    bail_info = ws* bail_type ws+ bail_amount ws+ bail_status
+    bail_type = "Bail Type:" ws* words?
+    bail_amount = "Bail Amount:" ws* words?
+    bail_status = "Bail Status:" ws* words?
+
+    charges = charge_header new_line
+              (charge)*
+
+    charge_header = ws+ "Statute" ws+ "Grade" ws+ "Description" ws+ "Disposition" ws+ "Counts" ws*
+    charge = ws+ statute ws* (grade ws+)? (description ws+)?
+        (disposition ws+)? counts? new_line
+        (charge_continued new_line)*
+
+    # a charge_continued is the contiuation of a description of an offense.
+    # We know its a continuation line, and not a new sequence because it doesn't start
+    # with a number. Except sometimes they do start with numbers.
+    # If the line does start with a number, require there are more words immediately
+    # after, to distinguish a sequence like "  2     " from "    13 years of age".
+    charge_continued = (ws+ !(number ws) !date words ws* words?) /
+                         (ws+ number ws words ws* words?)
+
+    statute = ((number / word) ws+ section_symbol ws+ word (ws+ section_symbol+ ws word)?) / migration
+
+    migration = "Migration" ws+ section_symbol ws+ "Migration"
+
+    grade = content_char_no_ws content_char_no_ws?
+
+    description = words+
+    disposition = words+
+    counts = number+
+
+    archives = ws+ "Archived" ws* new_line (archived_case new_line empty_line*)+
+    archived_case = ws+ docket_num ws+ words
+    """ + useful_terminals
+)
+
+cp_summary_body_grammar = Grammar(
     r"""
     summary_body = case_category+ empty_line*
     case_category = ws* case_status ws* new_line cases_in_county+ archives?
     case_status = words
     cases_in_county = county new_line case+
     county = ws* words ws*
-    case = ws* case_basics new_line arrest_and_disp charges? (empty_line* / (empty_line* ws* end_of_input))
+    case = ws* case_basics new_line arrest_disp_actions charges? (empty_line* / (empty_line* ws* end_of_input))
 
     case_basics = docket_num ws+ proc_status ws+ dc_num ws+ otn_num
     docket_num = content_char_no_ws+
@@ -176,7 +344,7 @@ summary_body_grammar = Grammar(
 
     # The arrest_disp section can be any combination of a set of lines,
     # possibly interrupted by a repeated case_basics line.
-    arrest_and_disp = (arrest_disp new_line)?
+    arrest_disp_actions = (arrest_disp new_line)?
                       (case_basics new_line)?
                       (arrest_trial new_line)?
                       (legacy_num_cont new_line)? # assuming legacy num won't split pages
