@@ -4,12 +4,15 @@ import io
 import parsimonious  # type: ignore
 from parsimonious.nodes import Node  # type: ignore
 from RecordLib.grammars.summary import (
-    summary_page_grammar,
     summary_page_terminals,
     summary_page_nonterminals,
-    summary_body_grammar,
     summary_body_terminals,
-    summary_body_nonterminals,
+    cp_summary_page_grammar,
+    cp_summary_body_grammar,
+    cp_summary_body_nonterminals,
+    md_summary_page_grammar,
+    md_summary_body_grammar,
+    md_summary_body_nonterminals,
 )
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.case import Case
@@ -140,40 +143,94 @@ def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> date:
         return None
 
 
-def parse_pdf(
-    summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
-) -> Summary:
-    """
-    parse a pdf and store different information about the parsing in
-    summary
-    """
-    if hasattr(pdf, "read"):
-        # the pdf attribute is a file object,
-        # and we need to write it out, for pdftotext to use it.
-        pdf_path = os.path.join(tempdir, "tmp.pdf")
-        with open(pdf_path, "wb") as f:
-            f.write(pdf.read())
-    else:
-        pdf_path = pdf
+def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
+    """ handle parsing the rest of an md summary pdf
 
-    out_path = os.path.join(tempdir, "tmp.txt")
-    os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
+    (After parse_pdf has separated pages)
 
+    TODO - it might make sense later to recombine these cp/md functions to make
+    code more DRY, but for now i don't know how different they will need to be from each other."""
+    summary_page_visitor = CustomVisitorFactory(
+        summary_page_terminals, summary_page_nonterminals, dict()
+    ).create_instance()
+    xml_parser = etree.XMLParser(encoding="UTF-8", recover=True)
+    pages_xml_tree = etree.fromstring(
+        summary_page_visitor.visit(parsed_pages), xml_parser
+    )
+
+    # combine the body sections from each page and parse the combined body
+    summary_info_sections = pages_xml_tree.findall(".//summary_info")
+
+    ## Combine the text of the sections into one string
+    ## When there's a page break over sections, then an empty line gets
+    ## inserted, and I'd like to get rid of it, to help the grammars.
+    logging.info(f"Page count: {len(summary_info_sections)}")
+    for i, section in enumerate(summary_info_sections):
+        if section.text[-2] == "\n" and section.text[-1] == " ":
+            if i < (len(summary_info_sections) - 1):
+                if "(Continued)" in summary_info_sections[i + 1].text[0:50]:
+                    section.text = section.text[:-2]
+
+    def find_in_lines(lines, id):
+        for line in lines:
+            if id in line:
+                return True
+
+        return False
+
+    # Then split into lines, so we can remove lines that say (Continued) and other overflow lines.
+    slines = []
+    previous_sec_lines = []
+    for i, sec in enumerate(summary_info_sections):
+        sec_lines = sec.text.split("\n")
+        line_count = len(sec_lines)
+        lines_to_remove = 0
+        previous_lines_to_remove = 0
+        if i > 0:
+            # on pages after the first, remove lines that are duplicated.
+            # if the previous line was empty and
+                # prev line-1 was one of the first case lines
+                # then remove the empty line and the first line of the next section,
+                # because its a repeated case status.
+            case_line_starts = ["^MJ-","^Arr","^Las","^Nex","^Sta"]
+            prev_line = previous_sec_lines[-1].strip()
+            prev_line2 = previous_sec_lines[-2].strip()
+            if any([re.match(start, prev_line)  for start in case_line_starts]):
+                lines_to_remove += 2
+            elif (prev_line == "") and any([re.match(start, prev_line2)  for start in case_line_starts]):
+                lines_to_remove += 2
+                previous_lines_to_remove += 1
+
+            sec_lines = sec_lines[lines_to_remove:]
+            if previous_lines_to_remove > 0:
+                slines = slines[:-previous_lines_to_remove]
+        slines = slines + sec_lines
+        previous_sec_lines = sec_lines
+
+    # And recombine into one string.
+    summary_info_combined = "\n".join(slines)
     try:
-        with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
-            summary.text = f.read()
-    except:
-        raise ValueError("Cannot extract summary text..")
-
-    os.remove(os.path.join(tempdir, "tmp.txt"))
-    slines = summary.text.split("\n")
-    # Parse each page (a header, body, and footer)
-    try:
-        summary.parsed_pages = summary_page_grammar.parse(summary.text)
+        parsed_summary_body = md_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        # pytest.set_trace()
-        raise ValueError("Grammar cannot parse summary.")
+        pytest.set_trace()
+        raise e
 
+    summary_info_visitor = CustomVisitorFactory(
+        summary_body_terminals,
+        md_summary_body_nonterminals,
+        [("sentence_length", visit_sentence_length)],
+    ).create_instance()
+
+    summary_body_xml_tree = etree.fromstring(
+        summary_info_visitor.visit(parsed_summary_body)
+    )
+    return pages_xml_tree, summary_body_xml_tree
+
+
+def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
+    """ handle parsing the rest of a cp summary pdf
+
+    (After parse_pdf has separated pages) """
     summary_page_visitor = CustomVisitorFactory(
         summary_page_terminals, summary_page_nonterminals, dict()
     ).create_instance()
@@ -183,7 +240,7 @@ def parse_pdf(
     # <following_page> ... </following_page> </summary>\
     xml_parser = etree.XMLParser(encoding="UTF-8", recover=True)
     pages_xml_tree = etree.fromstring(
-        summary_page_visitor.visit(summary.parsed_pages), xml_parser
+        summary_page_visitor.visit(parsed_pages), xml_parser
     )
 
     # combine the body sections from each page and parse the combined body
@@ -258,20 +315,70 @@ def parse_pdf(
     summary_info_combined = "\n".join(slines)
 
     try:
-        parsed_summary_body = summary_body_grammar.parse(summary_info_combined)
+        parsed_summary_body = cp_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
         #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
         summary_body_terminals,
-        summary_body_nonterminals,
+        cp_summary_body_nonterminals,
         [("sentence_length", visit_sentence_length)],
     ).create_instance()
 
     summary_body_xml_tree = etree.fromstring(
         summary_info_visitor.visit(parsed_summary_body)
     )
+    return pages_xml_tree, summary_body_xml_tree
+
+
+def parse_pdf(
+    summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
+) -> Summary:
+    """
+    parse a pdf and store different information about the parsing in
+    summary
+
+    The pdf might be a cp or an md summary, so this method figures that out and then hands off the rest of the parsing to the appropriate method.
+    """
+    if hasattr(pdf, "read"):
+        # the pdf attribute is a file object,
+        # and we need to write it out, for pdftotext to use it.
+        pdf_path = os.path.join(tempdir, "tmp.pdf")
+        with open(pdf_path, "wb") as f:
+            f.write(pdf.read())
+    else:
+        pdf_path = pdf
+
+    out_path = os.path.join(tempdir, "tmp.txt")
+    os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
+
+    try:
+        with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
+            summary.text = f.read()
+    except:
+        raise ValueError("Cannot extract summary text..")
+
+    os.remove(os.path.join(tempdir, "tmp.txt"))
+    slines = summary.text.split("\n")
+    # Parse each page (a header, body, and footer)
+    try:
+        summary.parsed_pages = cp_summary_page_grammar.parse(summary.text)
+        summary_type = "CP"
+    except Exception as e:
+        try:
+            summary.parsed_pages = md_summary_page_grammar.parse(summary.text)
+            summary_type = "MD"
+        except Exception as e:
+            pytest.set_trace()
+            raise ValueError("Grammar cannot parse summary.")
+
+    if summary_type == "CP":
+        pages_xml_tree, summary_body_xml_tree = parse_cp_summary(summary.parsed_pages)
+    elif summary_type == "MD":
+        pages_xml_tree, summary_body_xml_tree = parse_md_summary(summary.parsed_pages)
+    else:
+        raise ValueError(f"Summary pages did not parse correctly.")
 
     # combine the caption, header, and body info into a single xml
     # representation of the summary.
@@ -396,6 +503,20 @@ class Summary:
                     )
                 open_charges.append(charge)
 
+            # in mdj summaries, there's only one "charge" element, not different "open" and "closed" elements. And there are no sentences recorded.
+            md_charges = []
+            md_charge_elems = case.xpath(".//charge")
+            for charge in md_charge_elems:
+                charge = Charge(
+                    offense=text_or_blank(charge.find("description")),
+                    statute=text_or_blank(charge.find("statute")),
+                    grade=text_or_blank(charge.find("grade")),
+                    disposition=text_or_blank(charge.find("disposition")),
+                    sentences=[],
+                )
+                md_charges.append(charge)
+
+
             cases.append(
                 Case(
                     status=text_or_blank(case.getparent().getparent()),
@@ -403,7 +524,7 @@ class Summary:
                     docket_number=text_or_blank(case.find("case_basics/docket_num")),
                     otn=text_or_blank(case.find("case_basics/otn_num")),
                     dc=text_or_blank(case.find("case_basics/dc_num")),
-                    charges=closed_charges + open_charges,
+                    charges=closed_charges + open_charges + md_charges,
                     fines_and_costs=None,  # a summary docket never has info about this.
                     arrest_date=date_or_none(
                         case.find("arrest_and_disp/arrest_date")

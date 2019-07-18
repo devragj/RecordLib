@@ -74,10 +74,10 @@ def names(dest_path: str, scraper_url: str, doc_type: str, input_csv: str, outpu
         logging.warning(f"{dest_path} does not already exist. Creating it")
         os.mkdir(dest_path)
     with open(input_csv, 'r') as input_file:
+        reader = csv.DictReader(input_file)
         if output_csv:
             output_file = open(output_csv, "a+")
-            writer = csv.DictWriter(output_file, ["Name", "DOB", "url", "doctype"])
-        reader = csv.DictReader(input_file)
+            writer = csv.DictWriter(output_file, reader.fieldnames + ["Name", "DOB", "url", "doctype"])
         if "Name" not in reader.fieldnames or "DOB" not in reader.fieldnames:
             logging.error("Input-file must have the columns 'Name' and 'DOB'")
             return
@@ -93,6 +93,7 @@ def names(dest_path: str, scraper_url: str, doc_type: str, input_csv: str, outpu
                 })
             if resp.status_code == 200:
                 logging.info(f"Successful search for {row['Name']}")
+                pytest.set_trace()
                 if doc_type.lower() in ["s", "summary", "summaries", "both"]:
                     # download the summary
                     try:

@@ -21,6 +21,8 @@ def analyze(pdf_summary: str, tempdir: str) -> None:
     if pdf_summary is not None:
         rec.add_summary(Summary(pdf_summary, tempdir = tempdir))
 
+    pytest.set_trace()
+    
     analysis = (
         Analysis(rec)
         .rule(expunge_deceased)
@@ -28,5 +30,6 @@ def analyze(pdf_summary: str, tempdir: str) -> None:
         .rule(expunge_nonconvictions)
         .rule(expunge_summary_convictions)
     )
+
 
     print(json.dumps(analysis.analysis, indent=4, default=to_serializable)) #cls=DataClassJSONEncoder))

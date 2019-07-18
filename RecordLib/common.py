@@ -144,20 +144,3 @@ def ts_charge(charge):
 @to_serializable.register(datetime)
 def ts_date(a_date):
     return a_date.isoformat()
-
-# class DataClassJSONEncoder(json.JSONEncoder):
-#     """
-#     Class for encoding objects as JSON.
-#     """
-#     def default(self, obj):
-#         """
-#         Override the default jsonencoder serialization method.
-#
-#         If the object is a dataclass, then use the dataclass method to serialize it.
-#         Otherwise, just do whatever the regular default would be.
-#         """
-#         if is_dataclass(obj):
-#             return asdict(obj)
-#         if isinstance(obj, (date, datetime)):
-#             return(obj.isoformat())
-#         return super().default(obj)
