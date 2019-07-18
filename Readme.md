@@ -96,7 +96,7 @@ Grammars need to be tested on lots of different documents. The tests include tes
 
 You could do this manually by downloading dockets and saving them there. You can also use a helper script that randomly generates docket numbers and then uses [natev/DocketScraperAPI](https://hub.docker.com/r/natev/docketscraper_api) to download those dockets. To do this
 
-1. download and run the DocketScraperAPI image with `docker run natev/DocketScraperAPI -p 5000:8800`
+1. download and run the DocketScraperAPI image with `docker run -p 5000:8800 natev/docketscraper_api`
 2. in this project environment, run `download (summaries | dockets) [-n = 1]`
 
 TODO I would like to try out `hypothesis` for property-based testing.
