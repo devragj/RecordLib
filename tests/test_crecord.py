@@ -64,7 +64,7 @@ def test_add_summary_merge_strategies(example_summary):
     rec = CRecord(Person("Dummy", "Name", None))
     rec.add_summary(example_summary)
     rec.add_summary(summary2, override_person=True)
-    assert rec.cases[0].otn == summary2.get_cases()[0].otn
+    assert rec.cases[0].otn == example_summary.get_cases()[0].otn
     assert rec.person.first_name == summary2.get_defendant().first_name
 
 def test_years_since_last_arrested_or_prosecuted(example_crecord):
