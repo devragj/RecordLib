@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import BinaryIO, Union, List
+from typing import BinaryIO, Union, List, Dict, Tuple, Optional
 import io
 import parsimonious  # type: ignore
 from parsimonious.nodes import Node  # type: ignore
@@ -59,7 +59,7 @@ def visit_sentence_length(self, node, vc):
         r".*\s{5,}(?P<time>[0-9\./]+)\s(?P<unit>\w+)$.*",
         flags=re.IGNORECASE | re.DOTALL,
     )
-    temp_string = node.text
+    # temp_string = node.text
     #    print(temp_string)
     min_length = None
     max_length = None
@@ -133,7 +133,7 @@ def text_or_blank(element: etree.Element) -> str:
         return ""
 
 
-def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> date:
+def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> datetime:
     """
     Return date or None given a string.
     """
@@ -143,7 +143,7 @@ def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> date:
         return None
 
 
-def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
+def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
     """ handle parsing the rest of an md summary pdf
 
     (After parse_pdf has separated pages)
@@ -161,9 +161,9 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
 
-    ## Combine the text of the sections into one string
-    ## When there's a page break over sections, then an empty line gets
-    ## inserted, and I'd like to get rid of it, to help the grammars.
+    # Combine the text of the sections into one string
+    # When there's a page break over sections, then an empty line gets
+    # inserted, and I'd like to get rid of it, to help the grammars.
     logging.info(f"Page count: {len(summary_info_sections)}")
     for i, section in enumerate(summary_info_sections):
         if section.text[-2] == "\n" and section.text[-1] == " ":
@@ -171,31 +171,23 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
                 if "(Continued)" in summary_info_sections[i + 1].text[0:50]:
                     section.text = section.text[:-2]
 
-    def find_in_lines(lines, id):
-        for line in lines:
-            if id in line:
-                return True
-
-        return False
-
     # Then split into lines, so we can remove lines that say (Continued) and other overflow lines.
     slines = []
     previous_sec_lines = []
     for i, sec in enumerate(summary_info_sections):
         sec_lines = sec.text.split("\n")
-        line_count = len(sec_lines)
         lines_to_remove = 0
         previous_lines_to_remove = 0
         if i > 0:
             # on pages after the first, remove lines that are duplicated.
             # if the previous line was empty and
-                # prev line-1 was one of the first case lines
-                # then remove the empty line and the first line of the next section,
-                # because its a repeated case status.
-            case_line_starts = ["^MJ-","^Arr","^Las","^Nex","^Sta"]
+            # prev line-1 was one of the first case lines
+            # then remove the empty line and the first line of the next section,
+            # because its a repeated case status.
+            case_line_starts = ["^MJ-", "^Arr", "^Las", "^Nex", "^Sta"]
             prev_line = previous_sec_lines[-1].strip()
             prev_line2 = previous_sec_lines[-2].strip()
-            if any([re.match(start, prev_line)  for start in case_line_starts]):
+            if any([re.match(start, prev_line) for start in case_line_starts]):
                 lines_to_remove += 2
             elif (prev_line == "") and any([re.match(start, prev_line2)  for start in case_line_starts]):
                 lines_to_remove += 2
@@ -212,7 +204,9 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
     try:
         parsed_summary_body = md_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        pytest.set_trace()
+        # pytest.set_trace()
+        print("here 1")
+        print(str(e))
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -227,7 +221,7 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
     return pages_xml_tree, summary_body_xml_tree
 
 
-def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
+def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
     """ handle parsing the rest of a cp summary pdf
 
     (After parse_pdf has separated pages) """
@@ -246,9 +240,9 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
     # combine the body sections from each page and parse the combined body
     summary_info_sections = pages_xml_tree.findall(".//summary_info")
 
-    ## Combine the text of the sections into one string
-    ## When there's a page break over sections, then an empty line gets
-    ## inserted, and I'd like to get rid of it, to help the grammars.
+    # Combine the text of the sections into one string
+    # When there's a page break over sections, then an empty line gets
+    # inserted, and I'd like to get rid of it, to help the grammars.
     logging.info(f"Page count: {len(summary_info_sections)}")
     for i, section in enumerate(summary_info_sections):
         if section.text[-2] == "\n" and section.text[-1] == " ":
@@ -256,9 +250,9 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
                 if "(Continued)" in summary_info_sections[i + 1].text[0:50]:
                     section.text = section.text[:-2]
 
-    def find_in_lines(lines, id):
+    def find_in_lines(lines, cp_id):
         for line in lines:
-            if id in line:
+            if cp_id in line:
                 return True
 
         return False
@@ -276,7 +270,7 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
                 lines_to_remove += 1
                 if line_count > 2:
                     line = sec_lines[2]
-                    pattern = '(CP\S+)\s'
+                    pattern = r'(CP\S+)\s'
                     match = re.search(pattern, line)
                     if match:
                         cp_id = match.group(1)
@@ -317,7 +311,9 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
     try:
         parsed_summary_body = cp_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        #pytest.set_trace()
+        # pytest.set_trace()
+        print("here 2")
+        print(str(e))
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -332,15 +328,186 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etee.Element]:
     return pages_xml_tree, summary_body_xml_tree
 
 
-def parse_pdf(
-    summary: Summary, pdf: Union[BinaryIO, str], tempdir: str = "tmp"
-) -> Summary:
-    """
-    parse a pdf and store different information about the parsing in
-    summary
+def get_defendant(summary_xml: etree.Element) -> Person:
+    full_name = summary_xml.find("caption/defendant_name").text
+    last_first = [n.strip() for n in full_name.split(",")]
+    def_dob = summary_xml.find("caption/def_dob").text.strip()
+    try:
+        def_dob = datetime.strptime(def_dob, "%m/%d/%Y").date()
+    except ValueError:
+        def_dob = None
+    return Person(last_first[1], last_first[0], def_dob)
 
-    The pdf might be a cp or an md summary, so this method figures that out and then hands off the rest of the parsing to the appropriate method.
+
+def get_cp_cases(summary_xml: etree.Element) -> List:
     """
+    Return a list of the cases described in this Summary sheet.
+    """
+    cases = []
+    case_elements = summary_xml.xpath("//case")
+    for case in case_elements:
+        closed_sequences = case.xpath(".//closed_sequence")
+        closed_charges = []
+        for seq in closed_sequences:
+            charge = Charge(
+                offense=text_or_blank(seq.find("description")),
+                statute=text_or_blank(seq.find("statute")),
+                grade=text_or_blank(seq.find("grade")),
+                disposition=text_or_blank(seq.find("sequence_disposition")),
+                sentences=[],
+            )
+            for sentence in seq.xpath(".//sentencing_info"):
+                charge.sentences.append(
+                    Sentence(
+                        sentence_date=date_or_none(sentence.find("sentence_date")),
+                        sentence_type=text_or_blank(sentence.find("sentence_type")),
+                        sentence_period=text_or_blank(
+                            sentence.find("program_period")
+                        ),
+                        sentence_length=SentenceLength(
+                            min_time=(
+                                text_or_blank(
+                                    sentence.find("sentence_length/min_length/time")
+                                ),
+                                text_or_blank(
+                                    sentence.find("sentence_length/min_length/unit")
+                                ),
+                            ),
+                            max_time=(
+                                text_or_blank(
+                                    sentence.find("sentence_length/max_length/time")
+                                ),
+                                text_or_blank(
+                                    sentence.find("sentence_length/max_length/unit")
+                                ),
+                            ),
+                        ),
+                    )
+                )
+            closed_charges.append(charge)
+
+        open_sequences = case.xpath(".//open_sequence")
+        open_charges = []
+        for seq in open_sequences:
+            charge = Charge(
+                offense=text_or_blank(seq.find("description")),
+                statute=text_or_blank(seq.find("statute")),
+                grade=text_or_blank(seq.find("grade")),
+                disposition=text_or_blank(seq.find("sequence_disposition")),
+                sentences=[],
+            )
+            for sentence in seq.xpath(".//sentencing_info"):
+                charge.sentences.append(
+                    Sentence(
+                        sentence_date=date_or_none(sentence.find("sentence_date")),
+                        sentence_type=text_or_blank(sentence.find("sentence_type")),
+                        sentence_period=text_or_blank(
+                            sentence.find("program_period")
+                        ),
+                        sentence_length=SentenceLength(
+                            min_time=(
+                                text_or_blank(
+                                    sentence.find("sentence_length/min_length/time")
+                                ),
+                                text_or_blank(
+                                    sentence.find("sentence_length/min_length/unit")
+                                ),
+                            ),
+                            max_time=(
+                                text_or_blank(
+                                    sentence.find("sentence_length/max_length/time")
+                                ),
+                                text_or_blank(
+                                    sentence.find("sentence_length/max_length/unit")
+                                ),
+                            ),
+                        ),
+                    )
+                )
+            open_charges.append(charge)
+
+        cases.append(
+            Case(
+                status=text_or_blank(case.getparent().getparent()),
+                county=text_or_blank(case.getparent().find("county")),
+                docket_number=text_or_blank(case.find("case_basics/docket_num")),
+                otn=text_or_blank(case.find("case_basics/otn_num")),
+                dc=text_or_blank(case.find("case_basics/dc_num")),
+                charges=closed_charges + open_charges,
+                fines_and_costs=None,  # a summary docket never has info about this.
+                arrest_date=date_or_none(
+                    case.find("arrest_and_disp/arrest_date")
+                ),
+                disposition_date=date_or_none(
+                    case.find("arrest_and_disp/disp_date")
+                ),
+                judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
+            )
+        )
+    return cases
+
+
+def get_md_cases(summary_xml: etree.Element) -> List:
+    """
+    Return a list of the cases described in this Summary sheet.
+    """
+    cases = []
+    case_elements = summary_xml.xpath("//case")
+    for case in case_elements:
+        # in mdj summaries, there's only one "charge" element, not different "open" and "closed" elements.
+        # And there are no sentences recorded.
+        md_charges = []
+        md_charge_elems = case.xpath(".//charge")
+        for charge in md_charge_elems:
+            charge = Charge(
+                offense=text_or_blank(charge.find("description")),
+                statute=text_or_blank(charge.find("statute")),
+                grade=text_or_blank(charge.find("grade")),
+                disposition=text_or_blank(charge.find("disposition")),
+                sentences=[],
+            )
+            md_charges.append(charge)
+
+        cases.append(
+            Case(
+                status=text_or_blank(case.getparent().getparent()),
+                county=text_or_blank(case.getparent().find("county")),
+                docket_number=text_or_blank(case.find("case_basics/docket_num")),
+                otn=text_or_blank(case.find("case_basics/otn_num")),
+                dc=text_or_blank(case.find("case_basics/dc_num")),
+                charges=md_charges,
+                fines_and_costs=None,  # a summary docket never has info about this.
+                arrest_date=date_or_none(
+                    case.find("arrest_and_disp/arrest_date")
+                ),
+                disposition_date=date_or_none(
+                    case.find("arrest_and_disp/disp_date")
+                ),
+                judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
+            )
+        )
+    return cases
+
+
+cp_processors = {"parse_summary": parse_cp_summary,
+                 "summary_page_grammar": cp_summary_page_grammar,
+                 "get_cases": get_cp_cases}
+
+
+md_processors = {"parse_summary": parse_md_summary,
+                 "summary_page_grammar": md_summary_page_grammar,
+                 "get_cases": get_md_cases}
+
+
+def get_processors(text: str) -> Dict:
+    try:
+        text.index("Magisterial", 0, 100)
+        return md_processors
+    except ValueError:
+        return cp_processors
+
+
+def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
     if hasattr(pdf, "read"):
         # the pdf attribute is a file object,
         # and we need to write it out, for pdftotext to use it.
@@ -355,39 +522,34 @@ def parse_pdf(
 
     try:
         with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
-            summary.text = f.read()
-    except:
+            text = f.read()
+    except IOError:
         raise ValueError("Cannot extract summary text..")
 
     os.remove(os.path.join(tempdir, "tmp.txt"))
-    slines = summary.text.split("\n")
-    # Parse each page (a header, body, and footer)
+    inputs_dictionary = get_processors(text)
+    summary_page_grammar = inputs_dictionary["summary_page_grammar"]
+
     try:
-        summary.parsed_pages = cp_summary_page_grammar.parse(summary.text)
-        summary_type = "CP"
+        parsed_pages = summary_page_grammar.parse(text)
     except Exception as e:
-        try:
-            summary.parsed_pages = md_summary_page_grammar.parse(summary.text)
-            summary_type = "MD"
-        except Exception as e:
-            pytest.set_trace()
-            raise ValueError("Grammar cannot parse summary.")
+        # pytest.set_trace()
+        print("here 3")
+        print(str(e))
+        raise ValueError("Grammar cannot parse summary.")
 
-    if summary_type == "CP":
-        pages_xml_tree, summary_body_xml_tree = parse_cp_summary(summary.parsed_pages)
-    elif summary_type == "MD":
-        pages_xml_tree, summary_body_xml_tree = parse_md_summary(summary.parsed_pages)
-    else:
-        raise ValueError(f"Summary pages did not parse correctly.")
+    parse_summary = inputs_dictionary["parse_summary"]
+    pages_xml_tree, summary_body_xml_tree = parse_summary(parsed_pages)
 
-    # combine the caption, header, and body info into a single xml
-    # representation of the summary.
-    summary._xml = etree.Element("Summary")
-    summary._xml.append(pages_xml_tree.xpath("//header")[0])
-    summary._xml.append(pages_xml_tree.xpath("//caption")[0])
-    summary._xml.append(summary_body_xml_tree)
+    summary_xml = etree.Element("Summary")
+    summary_xml.append(pages_xml_tree.xpath("//header")[0])
+    summary_xml.append(pages_xml_tree.xpath("//caption")[0])
+    summary_xml.append(summary_body_xml_tree)
 
-    return summary
+    defendant = get_defendant(summary_xml)
+    get_cases = inputs_dictionary["get_cases"]
+    cases = get_cases(summary_xml)
+    return defendant, cases
 
 
 class Summary:
@@ -395,144 +557,17 @@ class Summary:
     Information from a Summary docket sheet.
     """
 
-    text: str
-    tempdir: str
-    _xml: etree.Element
-    parsed_pages: parsimonious.nodes.Node
-
     def __init__(self, pdf: Union[BinaryIO, str] = None, tempdir: str = "tmp") -> None:
         if pdf is not None:
-            parse_pdf(self, pdf, tempdir)
+            defendant, cases = parse_pdf(pdf, tempdir)
+            self._defendant = defendant
+            self._cases = cases
+        else:
+            self._defendant = None
+            self._cases = None
 
     def get_defendant(self) -> Person:
-        if self._xml is not None:
-            full_name = self._xml.find("caption/defendant_name").text
-            last_first = [n.strip() for n in full_name.split(",")]
-            def_dob = self._xml.find("caption/def_dob").text.strip()
-            try:
-                def_dob = datetime.strptime(def_dob, "%m/%d/%Y").date()
-            except ValueError:
-                def_dob = None
-            return Person(last_first[1], last_first[0], def_dob)
-        return Person(None, None, None)
+        return self._defendant
 
     def get_cases(self) -> List:
-        """
-        Return a list of the cases described in this Summary sheet.
-        """
-        cases = []
-        case_elements = self._xml.xpath("//case")
-        for case in case_elements:
-            closed_sequences = case.xpath(".//closed_sequence")
-            closed_charges = []
-            for seq in closed_sequences:
-                charge = Charge(
-                    offense=text_or_blank(seq.find("description")),
-                    statute=text_or_blank(seq.find("statute")),
-                    grade=text_or_blank(seq.find("grade")),
-                    disposition=text_or_blank(seq.find("sequence_disposition")),
-                    sentences=[],
-                )
-                for sentence in seq.xpath(".//sentencing_info"):
-                    charge.sentences.append(
-                        Sentence(
-                            sentence_date=date_or_none(sentence.find("sentence_date")),
-                            sentence_type=text_or_blank(sentence.find("sentence_type")),
-                            sentence_period=text_or_blank(
-                                sentence.find("program_period")
-                            ),
-                            sentence_length=SentenceLength(
-                                min_time=(
-                                    text_or_blank(
-                                        sentence.find("sentence_length/min_length/time")
-                                    ),
-                                    text_or_blank(
-                                        sentence.find("sentence_length/min_length/unit")
-                                    ),
-                                ),
-                                max_time=(
-                                    text_or_blank(
-                                        sentence.find("sentence_length/max_length/time")
-                                    ),
-                                    text_or_blank(
-                                        sentence.find("sentence_length/max_length/unit")
-                                    ),
-                                ),
-                            ),
-                        )
-                    )
-                closed_charges.append(charge)
-
-            open_sequences = case.xpath(".//open_sequence")
-            open_charges = []
-            for seq in open_sequences:
-                charge = Charge(
-                    offense=text_or_blank(seq.find("description")),
-                    statute=text_or_blank(seq.find("statute")),
-                    grade=text_or_blank(seq.find("grade")),
-                    disposition=text_or_blank(seq.find("sequence_disposition")),
-                    sentences=[],
-                )
-                for sentence in seq.xpath(".//sentencing_info"):
-                    charge.sentences.append(
-                        Sentence(
-                            sentence_date=date_or_none(sentence.find("sentence_date")),
-                            sentence_type=text_or_blank(sentence.find("sentence_type")),
-                            sentence_period=text_or_blank(
-                                sentence.find("program_period")
-                            ),
-                            sentence_length=SentenceLength(
-                                min_time=(
-                                    text_or_blank(
-                                        sentence.find("sentence_length/min_length/time")
-                                    ),
-                                    text_or_blank(
-                                        sentence.find("sentence_length/min_length/unit")
-                                    ),
-                                ),
-                                max_time=(
-                                    text_or_blank(
-                                        sentence.find("sentence_length/max_length/time")
-                                    ),
-                                    text_or_blank(
-                                        sentence.find("sentence_length/max_length/unit")
-                                    ),
-                                ),
-                            ),
-                        )
-                    )
-                open_charges.append(charge)
-
-            # in mdj summaries, there's only one "charge" element, not different "open" and "closed" elements. And there are no sentences recorded.
-            md_charges = []
-            md_charge_elems = case.xpath(".//charge")
-            for charge in md_charge_elems:
-                charge = Charge(
-                    offense=text_or_blank(charge.find("description")),
-                    statute=text_or_blank(charge.find("statute")),
-                    grade=text_or_blank(charge.find("grade")),
-                    disposition=text_or_blank(charge.find("disposition")),
-                    sentences=[],
-                )
-                md_charges.append(charge)
-
-
-            cases.append(
-                Case(
-                    status=text_or_blank(case.getparent().getparent()),
-                    county=text_or_blank(case.getparent().find("county")),
-                    docket_number=text_or_blank(case.find("case_basics/docket_num")),
-                    otn=text_or_blank(case.find("case_basics/otn_num")),
-                    dc=text_or_blank(case.find("case_basics/dc_num")),
-                    charges=closed_charges + open_charges + md_charges,
-                    fines_and_costs=None,  # a summary docket never has info about this.
-                    arrest_date=date_or_none(
-                        case.find("arrest_and_disp/arrest_date")
-                    ),
-                    disposition_date=date_or_none(
-                        case.find("arrest_and_disp/disp_date")
-                    ),
-                    judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
-                )
-            )
-        return cases
+        return self._cases

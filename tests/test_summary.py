@@ -19,13 +19,13 @@ def test_parse_pdf_from_file():
     summary = Summary(
         pdf=open("tests/data/CourtSummaryReport.pdf", "rb"),
         tempdir="tests/data/tmp")
-    assert len(summary.text) > 0
+    assert len(summary.get_cases()) > 0
 
 def test_parse_pdf_from_path():
     summary = Summary(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
-    assert len(summary._xml) > 0
+    assert len(summary.get_cases()) > 0
 
 def test_bulk_parse_pdf_from_path(caplog):
     caplog.set_level(logging.INFO)
@@ -36,9 +36,10 @@ def test_bulk_parse_pdf_from_path(caplog):
     logging.info("Successful parses:")
     for path in paths:
         try:
-            summary = Summary(os.path.join(f"tests/data/summaries", path), tempdir = "tests/data/tmp")
+            summary = Summary(os.path.join(f"tests/data/summaries", path), tempdir="tests/data/tmp")
             logging.info(path)
         except:
+            print(path)
             fails.append(os.path.split(path)[1])
     if len(fails) > 0:
         logging.error(f"{ len(fails) } / {len(paths)} summaries failed to parse:")
@@ -52,8 +53,9 @@ def test_add_summary_to_crecord():
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
     rec = CRecord(Person("John", "Smith", date(1998, 1, 1)))
-    rec.add_summary(summary)
-    rec.person.first_name == summary._xml.xpath("caption/defendant_name")[0].text
+    rec.add_summary(summary, override_person=True)
+    assert len(rec.person.first_name) > 0
+    assert rec.person.first_name != "John"
 
 def test_get_defendant():
     summary = Summary(
