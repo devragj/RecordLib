@@ -1,8 +1,16 @@
-from __future__ import annotations
-from typing import BinaryIO, Union, List, Dict, Tuple, Optional
-import io
-import parsimonious  # type: ignore
+"""
+Parsing a Summary from a PDF.
+
+The most important thing is that this module provides a method, `parse_pdf`.
+This method should be passed to new Summary() objects if you want that Summary object to extract information from a pdf file. 
+
+"""
+from typing import Dict, Tuple, List, Union, BinaryIO
+from lxml import etree
 from parsimonious.nodes import Node  # type: ignore
+from RecordLib.case import Case
+from RecordLib.common import Person, Charge, Sentence, SentenceLength
+from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.grammars.summary import (
     summary_page_terminals,
     summary_page_nonterminals,
@@ -14,133 +22,18 @@ from RecordLib.grammars.summary import (
     md_summary_body_grammar,
     md_summary_body_nonterminals,
 )
-from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
-from RecordLib.case import Case
-from RecordLib.common import Person, Charge, Sentence, SentenceLength
-import pytest
 import os
-from lxml import etree
-from collections import namedtuple
-from datetime import datetime
-import re
 import logging
+import re
+from .utilities import *
 
 
-def visit_sentence_length(self, node, vc):
-    """
-    Custom node visitor for parsing a setence in a conviction.
-
-    returns an xml tree along the lines of
-        <sentence_length>
-            <min_length> <time> __ </time> <unit> __ </unit> </min_length>
-            <max_length> <time> __ </time> <unit> __ </unit> </max_length>
-        </sentence_length>
-    """
-
-    # Sentence lengths can appear in lots of formats, so this attempts to parse different
-    # possibilities.
-    min_pattern = re.compile(
-        r".*(?:min of|Min:) (?P<time>[0-9\./]*) (?P<unit>\w+).*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    max_pattern = re.compile(
-        r".*(?:max of|Max:) (?P<time>[0-9\./]*) (?P<unit>\w+).*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    # Original from DocketParse
-    # range_pattern = re.compile(r".*?(?P<min_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<min_unit>\w+ )?(?:to|-)? (?P<max_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<max_unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
-
-    range_pattern = re.compile(
-        ".*: (?P<min_time>[0-9\.\/]+) (?P<min_unit>\w+)?(?:to|-)?.*: (?P<max_time>[0-9\.\/]+) (?P<max_unit>\w+).*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-
-    single_term_pattern = re.compile(
-        r".*\s{5,}(?P<time>[0-9\./]+)\s(?P<unit>\w+)$.*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    # temp_string = node.text
-    #    print(temp_string)
-    min_length = None
-    max_length = None
-    min_length_match = re.match(min_pattern, node.text)
-    max_length_match = re.match(max_pattern, node.text)
-    range = re.match(range_pattern, node.text)
-    single_term = re.match(single_term_pattern, node.text)
-
-    if min_length_match is not None:
-        min_length = (
-            f"<min_length> <time> {min_length_match.group('time')} </time> "
-            + f"<unit> {min_length_match.group('unit')} </unit> </min_length>"
-        )
-        if max_length_match is None:
-            max_length = (
-                f"<max_length> <time> {min_length_match.group('time')} </time> "
-                + f" <unit> {min_length_match.group('unit')} </unit> </max_length>"
-            )
-
-    if max_length_match is not None:
-        max_length = (
-            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
-            % (max_length_match.group("time"), max_length_match.group("unit"))
-        )
-        if min_length_match is None:
-            min_length = (
-                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-                % (max_length_match.group("time"), max_length_match.group("unit"))
-            )
-
-    if range is not None:
-        if range.group("min_unit") is not None:
-            min_length = (
-                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-                % (range.group("min_time"), range.group("min_unit"))
-            )
-        else:
-            min_length = (
-                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-                % (range.group("min_time"), range.group("max_unit"))
-            )
-        max_length = (
-            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
-            % (range.group("max_time"), range.group("max_unit"))
-        )
-
-    if single_term is not None:
-        min_length = (
-            "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-            % (single_term.group("time"), single_term.group("unit"))
-        )
-        max_length = (
-            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
-            % (single_term.group("time"), single_term.group("unit"))
-        )
-
-    contents = self.stringify(vc)
-    if min_length is not None and max_length is not None:
-        contents = min_length + " " + max_length
-
-    return " <sentence_length> %s </sentence_length> " % contents
-
-
-def text_or_blank(element: etree.Element) -> str:
-    """
-    Extract the text of an element, if any, or return a blank string.
-    """
+def get_processors(text: str) -> Dict:
     try:
-        return element.text.strip()
-    except AttributeError:
-        return ""
-
-
-def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> datetime:
-    """
-    Return date or None given a string.
-    """
-    try:
-        return datetime.strptime(date_element.text.strip(), fmtstr).date()
-    except (ValueError, AttributeError):
-        return None
+        text.index("Magisterial", 0, 100)
+        return md_processors
+    except ValueError:
+        return cp_processors
 
 
 def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
@@ -499,15 +392,11 @@ md_processors = {"parse_summary": parse_md_summary,
                  "get_cases": get_md_cases}
 
 
-def get_processors(text: str) -> Dict:
-    try:
-        text.index("Magisterial", 0, 100)
-        return md_processors
-    except ValueError:
-        return cp_processors
-
-
 def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
+    """
+    Parser method that can take a source and return a Person and Cases,
+    used to build a CRecord.
+    """
     if hasattr(pdf, "read"):
         # the pdf attribute is a file object,
         # and we need to write it out, for pdftotext to use it.
@@ -550,24 +439,3 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
     get_cases = inputs_dictionary["get_cases"]
     cases = get_cases(summary_xml)
     return defendant, cases
-
-
-class Summary:
-    """
-    Information from a Summary docket sheet.
-    """
-
-    def __init__(self, pdf: Union[BinaryIO, str] = None, tempdir: str = "tmp") -> None:
-        if pdf is not None:
-            defendant, cases = parse_pdf(pdf, tempdir)
-            self._defendant = defendant
-            self._cases = cases
-        else:
-            self._defendant = None
-            self._cases = None
-
-    def get_defendant(self) -> Person:
-        return self._defendant
-
-    def get_cases(self) -> List:
-        return self._cases
