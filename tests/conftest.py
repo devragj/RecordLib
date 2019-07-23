@@ -4,6 +4,8 @@ from RecordLib.common import Charge, Person, Sentence, SentenceLength
 from RecordLib.crecord import CRecord
 from RecordLib.summary import Summary
 from datetime import date
+import redis
+from RecordLib.redis_helper import RedisHelper
 
 @pytest.fixture
 def example_summary():
@@ -63,3 +65,14 @@ def example_crecord(example_person, example_case):
     return CRecord(
         person=example_person,
         cases = [example_case])
+
+@pytest.fixture
+def redis_helper():
+    """ A redis client.
+
+    N.B. I don't know a way for this fixture to yield r and the rollback whatever a test does with the database. So tests using this fixture need to roll themselves back.
+    """
+    redis_helper = RedisHelper(host='localhost', port=6379, db=0,decode_responses=True, env="test")
+    yield redis_helper
+    for key in redis_helper.r.scan_iter("test:*"):
+        redis_helper.r.delete(key)
