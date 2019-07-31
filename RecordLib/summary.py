@@ -17,6 +17,8 @@ from RecordLib.grammars.summary import (
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.case import Case
 from RecordLib.common import Person, Charge, Sentence, SentenceLength
+from RecordLib.overflow import (
+    MDJFirstCoupleLinesOverflow, MDJOverflowInChargeList)
 import pytest
 import os
 from lxml import etree
@@ -184,7 +186,14 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
             # prev line-1 was one of the first case lines
             # then remove the empty line and the first line of the next section,
             # because its a repeated case status.
-            case_line_starts = ["^MJ-", "^Arr", "^Las", "^Nex", "^Sta"]
+            case_line_starts = ["^MJ-", "^Arr", "^Las", "^Nex", "^Bail"]
+            preceeding_blanks = 0
+            for ln in reversed(previous_sec_lines):
+                if ln.strip() != "":
+                    prev_nonblank_line = ln
+                    break
+                preceeding_blanks += 1
+
             prev_line = previous_sec_lines[-1].strip()
             prev_line2 = previous_sec_lines[-2].strip()
             if any([re.match(start, prev_line) for start in case_line_starts]):
@@ -192,6 +201,30 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
             elif (prev_line == "") and any([re.match(start, prev_line2)  for start in case_line_starts]):
                 lines_to_remove += 2
                 previous_lines_to_remove += 1
+            elif re.search("§", prev_nonblank_line) and any(
+                    [re.search("Program Type", ln) for ln in sec_lines[2:6]]):
+                # Catch when page overflows from the end of the list of charges to
+                # the list of sentences.
+                lines_to_remove += 2
+                previous_lines_to_remove = preceeding_blanks
+            elif re.search("Statute", prev_nonblank_line):
+                # Catch when page overlows just after the header of the charges section.
+                lines_to_remove += 3
+                previous_lines_to_remove = preceeding_blanks
+            elif len(sec_lines) <= 4:
+                # Catch the overflow case when the only overflow lines are repeated lines. I think if there are fewer than 4 lines on the page, then they're not important.
+                lines_to_remove = len(sec_lines)
+            elif MDJFirstCoupleLinesOverflow.condition(previous_sec_lines, sec_lines):
+                previous_sec_lines_filtered, sec_lines = MDJFirstCoupleLinesOverflow.remove_overflow(
+                    previous_sec_lines, sec_lines)
+                # this len() - len() operation only needed while the conditions above
+                # don't use OverflowFilters. OverflowFilters directly return the
+                # lines of the next and previous sectinos.
+                previous_lines_to_remove = len(previous_sec_lines) - len(previous_sec_lines_filtered)
+            elif MDJOverflowInChargeList.condition(previous_sec_lines, sec_lines):
+                _, sec_lines = MDJOverflowInChargeList.remove_overflow(
+                    slines, sec_lines
+                )
 
             sec_lines = sec_lines[lines_to_remove:]
             if previous_lines_to_remove > 0:
@@ -201,12 +234,18 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
 
     # And recombine into one string.
     summary_info_combined = "\n".join(slines)
+
+    # Remove.
+    summary_info_visitor = CustomVisitorFactory(
+        summary_body_terminals,
+        md_summary_body_nonterminals,
+        [("sentence_length", visit_sentence_length)],
+    ).create_instance()
+
     try:
         parsed_summary_body = md_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        # pytest.set_trace()
-        print("here 1")
-        print(str(e))
+        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -311,9 +350,7 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
     try:
         parsed_summary_body = cp_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        # pytest.set_trace()
-        print("here 2")
-        print(str(e))
+        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
