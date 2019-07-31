@@ -30,6 +30,45 @@ There are I think five kinds of objects involved in this framework.
 4. Analysis - some sort of object that encapsulates how different rules apply to a record
 5. Document Generator - a function that takes an analysis and information about a user (i.e., their attorney identification info) and produces a set of documents that includes drafts of petitions for a court.
 
+
+## Usage
+
+### download_docs
+
+`download_docs` is a cli that can collect summary sheets or dockets for testing purposes. It relies on having the DocketScraperAPI application running.
+
+See the script's help information for details.
+
+```
+me: download_docs --help
+Usage: download_docs [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  docket-numbers  Download dockets or summary sheets for the docket numbers...
+  names           Download dockets from a list of names.
+  random          Download <n> random "summary" documents or "docket"...
+```
+
+### analyze
+
+`analyze` is a cli for reviewing a record for expungements and sealings. Currently, you can pass it a single summary sheet. It will build a criminal record out of the summary sheet and then return a json object that reports what expungements and sealings the record may be eligible for.
+
+```
+me: analyze --help
+Usage: analyze [OPTIONS]
+
+Options:
+  -ps, --pdf-summary PATH    [required]
+  -td, --tempdir PATH
+  -rc, --redis-collect TEXT  connection to redis, in the form
+                             [host]:[port]:[db number]:[environment name]. For
+                             example, 'localhost:6379:0:development'
+  --help                     Show this message and exit.
+```
+
 ## Aspirational Example Usage
 
 	person = Person(first_name="Joan", last_name="Smith", date_of_birth=date(1970, 1, 1))
@@ -59,7 +98,7 @@ There are I think five kinds of objects involved in this framework.
 
     remaining_charges = analysis_container.modified_record
     analysis = analysis_container.analysis
-    
+
 	analysis ==
 	{
 		personInfo: {},

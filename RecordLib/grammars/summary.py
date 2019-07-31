@@ -68,6 +68,7 @@ summary_body_terminals = [
     "content_char_no_ws",
     "section_symbol",
     "migration",
+    "ungraded",
 ]
 
 shared_summary_page_grammar_nonterminals = r"""
@@ -91,7 +92,8 @@ md_summary_page_grammar = Grammar(
 
     first_page = header
                  caption
-                 (ws* "Aliases:"  alias* new_line)?
+                 (ws* "Aliases:"  alias* new_line
+                    (ws* alias+ new_line)* )?
                  empty_line*
                  summary_info
                  footer
@@ -210,6 +212,7 @@ md_summary_body_nonterminals = [
     "court_or_county",
     "court",
     "county",
+    "county_name_only",
     "cases_with_status",
     "case_status",
     "case",
@@ -233,6 +236,11 @@ md_summary_body_nonterminals = [
     "charge_header",
     "charge",
     "charge_continued",
+    "sentence",
+    "sentence_type",
+    "sentence_date",
+    "sentence_length",
+    "program_period",
     "statute",
     "grade",
     "description",
@@ -251,17 +259,26 @@ md_summary_body_nonterminals = [
 md_summary_body_grammar = Grammar(
     r"""
     summary_body = case_category+ empty_line*
-    case_category = ws* court_or_county new_line cases_with_status+
+    case_category = ws* court_or_county new_line
+                    (cases_with_status+ / empty_line)
 
-    court_or_county = court / county
+    court_or_county = court / county / statewide
     court = "Court:" ws* words
     county = "County:" ws* words
+    statewide = ws* "Statewide"
+    county_name_only = ws+ word  # i.e., "Cambria", not "County: Cambria"
 
-    cases_with_status = ws* case_status ws* new_line empty_line? case+
+    cases_with_status = ws* case_status ws* new_line
+                        empty_line? empty_line?
+                        (case+ /
+                         (empty_line* &(((ws* county) /
+                                         (county_name_only))
+                                        new_line)))
+                        # there may be a county/status line w/ no cases included
     case_status = words
-    case = ws* case_basics new_line arrest_disp_actions charges? (empty_line* / (empty_line* ws* end_of_input))
+    case = (county_name_only new_line empty_line?)? ws* case_basics new_line arrest_disp_actions charges? (empty_line* / (empty_line* ws* end_of_input))
 
-    case_basics = docket_num ws+ proc_status ws+ otn_num
+    case_basics = docket_num ws+ (proc_status ws+)? otn_num
 
     docket_num = content_char_no_ws+
 
@@ -280,7 +297,7 @@ md_summary_body_grammar = Grammar(
                           (case_status new_line)?
 
     arrest_disp = ws* arrest_date (ws+ proc_stat_cont)? ws* disp_date
-    arrest_date = "Arrest Date:" ws* date?
+    arrest_date = "Arrest Date:" (ws* date)?
     disp_date = "Disp. Event Date:" ws* date?
 
     last_actions = ws* last_action ws+ last_action_date
@@ -292,7 +309,7 @@ md_summary_body_grammar = Grammar(
     next_action_date = "Next Action Date:" ws? date?
 
     bail_info = ws* bail_type ws+ bail_amount ws+ bail_status
-    bail_type = "Bail Type:" ws* words?
+    bail_type = "Bail Type:" (ws* !bail_amount words)?
     bail_amount = "Bail Amount:" ws* words?
     bail_status = "Bail Status:" ws* words?
 
@@ -302,7 +319,7 @@ md_summary_body_grammar = Grammar(
     charge_header = ws+ "Statute" ws+ "Grade" ws+ "Description" ws+ "Disposition" ws+ "Counts" ws*
     charge = ws+ statute ws* (grade ws+)? (description ws+)?
         (disposition ws+)? counts? new_line
-        (charge_continued new_line)*
+        (charge_continued new_line)* sentences?
 
     # a charge_continued is the contiuation of a description of an offense.
     # We know its a continuation line, and not a new sequence because it doesn't start
@@ -312,11 +329,28 @@ md_summary_body_grammar = Grammar(
     charge_continued = (ws+ !(number ws) !date words ws* words?) /
                          (ws+ number ws words ws* words?)
 
+    sentences = empty_line+ sentence_header new_line sentence+
+    sentence_header = ws+ "Program Type" ws+ "Sentence Date" ws+ "Sentence Length"
+                      ws+ "Program Period"
+
+    # the &word lookahead functions to make sure this line is not
+    # simply an empty line w/ a space or two. It must have _some_
+    # text content, even if we can't guarantee it'll have any particular
+    # details of the sentence filled in.
+    sentence = ws+ &word sentence_type? ws* sentence_date? ws*
+               sentence_length? ws* program_period? new_line
+
+    sentence_type = words+
+    sentence_date = date+
+    sentence_length = words+
+    program_period = words+
+
     statute = ((number / word) ws+ section_symbol ws+ word (ws+ section_symbol+ ws word)?) / migration
 
     migration = "Migration" ws+ section_symbol ws+ "Migration"
 
-    grade = content_char_no_ws content_char_no_ws?
+    grade = ungraded / (content_char_no_ws content_char_no_ws?)
+    ungraded = "NONE"
 
     description = words+
     disposition = words+
