@@ -3,13 +3,16 @@ from RecordLib.case import Case
 from RecordLib.common import Charge, Person, Sentence, SentenceLength
 from RecordLib.crecord import CRecord
 from RecordLib.summary import Summary
+from RecordLib.summary.pdf import parse_pdf as parse_summary_pdf
 from datetime import date
 import redis
 from RecordLib.redis_helper import RedisHelper
 
 @pytest.fixture
 def example_summary():
-    return Summary("tests/data/CourtSummaryReport.pdf", tempdir="tests/data/tmp")
+    return Summary(
+        parse_summary_pdf,
+        raw_source="tests/data/CourtSummaryReport.pdf", tempdir="tests/data/tmp")
 
 @pytest.fixture
 def example_person():
