@@ -127,20 +127,28 @@ class Charge:
     disposition: str
     sentences: List[Sentence]
 
-@functools.singledispatch
-def to_serializable(val):
-    """
-    single_dispatch is for letting me define how different classes should serialize.
+    def is_conviction(self) -> bool:
+        """Is this charge a conviction?
 
-    There's a single default serializer (this method), and then additional methods that replace this method depending on the type sent to the method.
-    """
-    return str(val)
+        There are lots of different dispositions, and this helps identify if a disp. counts as a conviction or not.
+        """
+        if re.match("^Guilty", self.disposition.strip()):
+            return True
+        else:
+            return False
 
-@to_serializable.register(Charge)
-def ts_charge(charge):
-    return asdict(charge)
+    def get_statute_chapter(self) -> int:
+        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+).*")
+        match = patt.match(self.statute)
+        if match:
+            return int(match.group("chapt"))
+        else:
+            return None
 
-@to_serializable.register(date)
-@to_serializable.register(datetime)
-def ts_date(a_date):
-    return a_date.isoformat()
+    def get_statute_section(self) -> int:
+        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+).*")
+        match = patt.match(self.statute)
+        if match:
+            return int(match.group("section"))
+        else:
+            return None

@@ -1,4 +1,6 @@
 from RecordLib import ruledefs
+from RecordLib.ruledefs.seal import (
+    not_felony1, fines_and_costs_paid, is_misdemeanor_or_ungraded)
 from RecordLib.common import Sentence, SentenceLength
 from datetime import date
 import pytest
@@ -76,3 +78,23 @@ def test_expunge_nonconvictions(example_crecord, example_charge, disp):
 
     assert analysis["expunge_nonconvictions"]["conclusion"] == "Expunge all cases"
     assert len(mod_rec.cases) == 0
+
+def test_seal_convictions(example_crecord, example_charge):
+    example_crecord.cases[0].charges[0].grade = "F1"
+    mod_rec, analysis = ruledefs.seal_convictions(example_crecord, dict())
+
+    assert analysis["Seal Convictions"].value["sealings"] == []
+
+def test_fines_and_costs_paid(example_crecord):
+    example_crecord.cases[0].fines_and_costs = 100
+    assert bool(fines_and_costs_paid(example_crecord)) is False
+    example_crecord.cases[0].fines_and_costs = 0
+    assert bool(fines_and_costs_paid(example_crecord)) is True
+
+def test_is_misdemeanor_or_ungraded(example_charge):
+    example_charge.grade = "M2"
+    assert bool(is_misdemeanor_or_ungraded(example_charge)) is True
+    example_charge.grade = ""
+    assert bool(is_misdemeanor_or_ungraded(example_charge)) is True
+    example_charge.grade = "F2"
+    assert bool(is_misdemeanor_or_ungraded(example_charge)) is False

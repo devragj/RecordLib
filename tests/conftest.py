@@ -26,6 +26,8 @@ def example_sentencelength():
         max_time=("25", "Year")
     )
 
+
+
 @pytest.fixture
 def example_sentence(example_sentencelength):
     return Sentence(
@@ -34,6 +36,8 @@ def example_sentence(example_sentencelength):
         sentence_period="180 days",
         sentence_length=example_sentencelength
     )
+
+
 
 @pytest.fixture
 def example_charge(example_sentence):

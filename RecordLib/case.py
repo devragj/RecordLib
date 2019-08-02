@@ -1,9 +1,11 @@
+from __future__ import annotations
 from dataclasses import asdict
 from RecordLib.common import Charge, Person, Sentence
 from typing import List
 from datetime import date
 import pytest
 import logging
+from dateutil.relativedelta import relativedelta
 
 class Case:
     """
@@ -44,6 +46,14 @@ class Case:
         self.arrest_date = arrest_date
         self.disposition_date = disposition_date
         self.judge = judge
+        self.dc = dc
+
+    def years_passed_disposition(self) -> int:
+        """ The number of years that have passed since the disposition date of this case."""
+        try:
+            return relativedelta(date.today(), self.disposition_date).years
+        except:
+            return 0
 
     def last_action(self) -> date:
         """
@@ -95,7 +105,27 @@ class Case:
             "arrest_date": self.arrest_date,
             "disposition_date": self.disposition_date,
             "judge": self.judge,
+            "dc": self.dc
         }
+
+    def partialcopy(self) -> Case:
+        """
+        Return a new Case that contains all the static info of this case, but no Charges.
+
+        This method is used in rules a lot for building analyses of records.
+        """
+        return Case(
+            docket_number = self.docket_number,
+            otn = self.otn,
+            charges = [],
+            fines_and_costs = self.fines_and_costs,
+            status = self.status,
+            county = self.county,
+            arrest_date = self.arrest_date,
+            disposition_date = self.disposition_date,
+            judge = self.judge,
+            dc = self.dc
+        )
 
     @staticmethod
     def order_cases_by_last_action(case):

@@ -1,6 +1,6 @@
 import click
 import logging
-from RecordLib.common import to_serializable # DataClassJSONEncoder
+from RecordLib.serializers import to_serializable # DataClassJSONEncoder
 from RecordLib.crecord import CRecord
 from RecordLib.summary import Summary
 from RecordLib.analysis import Analysis
@@ -10,6 +10,7 @@ from RecordLib.ruledefs import (
     expunge_nonconvictions,
     expunge_deceased,
     expunge_over_70,
+    seal_convictions
 )
 import pytest
 import json
@@ -38,6 +39,7 @@ def analyze(pdf_summary: str, tempdir: str, redis_collect: str) -> None:
         .rule(expunge_over_70)
         .rule(expunge_nonconvictions)
         .rule(expunge_summary_convictions)
+        .rule(seal_convictions)
     )
 
 
