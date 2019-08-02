@@ -2,7 +2,7 @@
 Parsing a Summary from a PDF.
 
 The most important thing is that this module provides a method, `parse_pdf`.
-This method should be passed to new Summary() objects if you want that Summary object to extract information from a pdf file. 
+This method returns a Summary object.
 
 """
 from typing import Dict, Tuple, List, Union, BinaryIO
@@ -31,6 +31,8 @@ import pytest
 import os
 import logging
 import re
+
+from RecordLib.summary import Summary
 from .utilities import *
 
 
@@ -433,7 +435,7 @@ md_processors = {"parse_summary": parse_md_summary,
                  "get_cases": get_md_cases}
 
 
-def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
+def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     """
     Parser method that can take a source and return a Person and Cases,
     used to build a CRecord.
@@ -479,4 +481,4 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
     defendant = get_defendant(summary_xml)
     get_cases = inputs_dictionary["get_cases"]
     cases = get_cases(summary_xml)
-    return defendant, cases
+    return Summary(defendant, cases)
