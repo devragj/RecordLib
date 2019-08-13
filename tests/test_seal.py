@@ -156,24 +156,79 @@ def test_no_paramilitary_training(example_crecord):
     d = no_paramilitary_training(example_crecord, conviction_limit=1, within_years=15)
     assert bool(d) is False 
 
-@pytest.mark.skip("not tested yet")
 def test_no_abuse_of_corpse(example_crecord):
-    pass
- 
-@pytest.mark.skip("not tested yet")
+    example_crecord.cases[0].charges[0].statute = "18 § 5510"
+    example_crecord.cases[0].disposition_date = date(2019, 1, 1)
+    d = no_abuse_of_corpse(example_crecord, conviction_limit=1, within_years=15)
+    assert bool(d) is False 
+    example_crecord.cases[0].charges[0].statute = "18 § 5550"
+    d = no_abuse_of_corpse(example_crecord, conviction_limit=1, within_years=15)
+    assert bool(d) is True
+
 def test_no_weapons_of_escape(example_crecord):
-    pass
-
-@pytest.mark.skip("not tested yet")
+    example_crecord.cases[0].charges[0].statute = "18 § 5122"
+    example_crecord.cases[0].disposition_date = date(2019, 1, 1)
+    d = no_weapons_of_escape(example_crecord, conviction_limit=1, within_years=15)
+    assert bool(d) is False
+    
+    example_crecord.cases[0].charges[0].statute = "18 § 122"
+    d = no_weapons_of_escape(example_crecord,1,15)
+    assert bool(d) is True
+    
 def test_no_failure_to_register(example_crecord):
-    pass
-
-@pytest.mark.skip("not tested yet")
-def test_no_intercourse_w_animal(example_crecord):
-    pass
-
-@pytest.mark.skip("not tested yet")
-def test_no_indecent_exposure(example_crecord):
-    pass
-
+    example_crecord.cases[0].charges[0].statute = "18 § 4915.1"
+    example_crecord.cases[0].disposition_date = date(2019, 1, 1)
+    d = no_failure_to_register(example_crecord, conviction_limit=1, within_years=15)
+    assert bool(d) is False
+    
+    example_crecord.cases[0].charges[0].statute = "18 § 122"
+    d = no_failure_to_register(example_crecord,1,15)
+    assert bool(d) is True
  
+
+
+def test_no_intercourse_w_animal(example_crecord):
+    example_crecord.cases[0].charges[0].statute = "18 § 3129"
+    example_crecord.cases[0].disposition_date = date(2019, 1, 1)
+    d = no_sexual_intercourse_w_animal(example_crecord, conviction_limit=1, within_years=15)
+    assert bool(d) is False
+    
+    example_crecord.cases[0].charges[0].statute = "18 § 122"
+    d = no_sexual_intercourse_w_animal(example_crecord,1,15)
+    assert bool(d) is True
+ 
+
+def test_no_indecent_exposure(example_crecord):
+    example_crecord.cases[0].charges[0].statute = "18 § 3127"
+    example_crecord.cases[0].charges[0].disposition_date = date(2019, 1, 1)
+    d = no_indecent_exposure(example_crecord, conviction_limit=1, within_years=15)
+    assert bool(d) is False
+    
+    example_crecord.cases[0].charges[0].statute = "18 § 122"
+    d = no_indecent_exposure(example_crecord,1,15)
+    assert bool(d) is True
+ 
+def test_no_corruption_of_minors_offense(example_charge):
+    example_charge.statute = "18 § 1201.1"
+    d = no_corruption_of_minors_offense(example_charge, penalty_limit=20, conviction_limit=1, within_years=20)
+    assert bool(d) is True
+
+def test_no_sexual_offense(example_crecord, example_charge):
+    example_crecord.cases[0].charges[0].statute = "18 § 2901(a.1)"
+    example_crecord.cases[0].charges[0].disposition_date = date(2019, 1, 1)
+    d = no_sexual_offense(example_crecord, penalty_limit=20, conviction_limit=1, within_years=20)
+    assert bool(d) is False
+
+    example_charge.statute = "18 § 1201.1"
+    d = no_sexual_offense(example_charge, penalty_limit=20, conviction_limit=1, within_years=20)
+    assert bool(d) is True
+
+def test_no_firearms_offense(example_crecord, example_charge):
+    example_crecord.cases[0].charges[0].statute = "18 § 6101"
+    example_crecord.cases[0].charges[0].disposition_date = date(2019, 1, 1)
+    d = no_firearms_offense(example_crecord, penalty_limit=20, conviction_limit=1, within_years=20)
+    assert bool(d) is False
+
+    example_charge.statute = "18 § 1201.1"
+    d = no_firearms_offense(example_charge, penalty_limit=20, conviction_limit=1, within_years=20)
+    assert bool(d) is True

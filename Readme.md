@@ -160,3 +160,7 @@ Right now pdf-to-text parsing is done with pdftotext. I think it works really we
 
 **Handing uncertainty**
 Its important that an Analysis be able to say that how a rule applies to a case or charge is uncertain. For example, if the grade is missing from a charge, the answer to expungement questions isn't True or False, its "we don't know because ..."  
+
+## Additional Notes
+
+Statutes contain a lot of section symbols: §. To make this symbol using vim or vim inspired keybindings, use CTL-K SE. That's Control K, then the uppercase letters S and E.

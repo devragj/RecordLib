@@ -141,14 +141,23 @@ class Charge:
         patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+).*")
         match = patt.match(self.statute)
         if match:
-            return int(match.group("chapt"))
+            return float(match.group("chapt"))
         else:
             return None
 
     def get_statute_section(self) -> int:
-        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+).*")
+        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*).*")
         match = patt.match(self.statute)
         if match:
-            return int(match.group("section"))
+            return float(match.group("section"))
         else:
             return None
+
+
+    def get_statute_subsections(self) -> str:
+        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*)\s*(?P<subsections>[\(\)A-Za-z0-9\.]+).*")
+        match = patt.match(self.statute)
+        if match:
+            return match.group("subsections")
+        else:
+             return ""

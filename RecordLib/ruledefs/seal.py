@@ -113,7 +113,8 @@ def not_felony1(charge: Charge) -> Decision:
     """
     Any F1 graded offense disqualifies a whole record from sealing. 18 PA Code 9122.1(b)(2)(i)
 
-    This returns a True decision if the charge was NOT a felony1 conviction.
+    Returns:
+        a True decision if the charge was NOT a felony1 conviction.
     """
     decision = Decision(name="Is the charge an F1 conviction?")
     if charge.grade.strip() == "":
@@ -141,7 +142,8 @@ def not_murder(charge: Charge) -> Decision:
     """
     Checks if a charge was a conviction for murder. 
     
-    Returns true if the charge was NOT a murder conviction.
+    Returns:
+         true if the charge was NOT a murder conviction.
 
     TODO The Expungement Generator's test is for the statute 18 PaCS 1502. Does the implementation here even work? Need to find real murder convictions to see.
     """
@@ -168,6 +170,9 @@ def no_f1_convictions(crecord: CRecord) -> Decision:
 
     This method only checks for F1 and murder convictions, 
     not for convictions punishable by more than 20 years which are not F1 or murder.
+
+    Returns:
+        True if the charge is not a disqualifying conviction.
     """
     decision = Decision(name="No F1 or murder convictions in the record?")
     decision.reasoning = [
@@ -186,6 +191,9 @@ def is_misdemeanor_or_ungraded(charge: Charge) -> Decision:
 
     This only really checks if the offense was an M or ungraded. It doesn't know the maximum 
     penalty of an offense.
+
+    Returns:
+        True if the charge is not a disqualifying conviction.
     """
     decision = Decision(
         name="The offense is a misdemeanor or nongraded offense w/ a penalty of <= 5 years."
@@ -217,18 +225,29 @@ def no_offense_against_family(
 
     Individuals ineligible after 2 convictions within 15 years of an offense against the family 
     if a felony or punishable by more than 2 years. 18 Pa.C.S. 9122.1(b)(3)(ii)(B)
+
+    Returns:
+        True if the charge was NOT a disqualifying offense, or if the record does NOT contain any 
+        disqulifying offenses.
     """
     # Presume a Charge
     try:
         decision = Decision(
             name=f"Charge for {item.statute} is not an offense against the family.",
             reasoning=[
-                item.is_conviction() and 
-                item.get_statute_chapter() == 18 and 
-                item.get_statute_section() > 4300 and
+                item.is_conviction(), 
+                item.get_statute_chapter() == 18, 
+                item.get_statute_section() > 4300,
                 item.get_statute_section() < 4500
             ])
         decision.value = not all(decision.reasoning)
+    except TypeError:
+        # `item`'s get_statute functions returned something that doesn't have < > defined, such as None.
+        decision = Decision(
+            name=f"Charge for {item.statute} is not an offense against the family.",
+            reasoning = "The statute doesn't appear to be one of the Article D offense statutes.",
+            value=True
+        )
     except AttributeError:
         # `item` may be a whole record.
         decision = Decision(
@@ -251,7 +270,7 @@ def no_firearms_offense(
     within_years: int,
 ) -> Decision:
     """
-    No disqualifying convictions for firearms offenses. 
+    No disqualifying convictions for firearms offenses. (Chapter 61 offenses) 
     
     No sealing conviction if punishable by more than two years for Chapter 61 (firearms) offenses. 
     18 Pa.C.S. 9122.1(b)(1)(iii)
@@ -259,10 +278,40 @@ def no_firearms_offense(
     No sealing record if contains any conviction ithin 20 years for a felony or offense 
     punishable >= 7 years for Chapter 61 offenses. 18 Pa.C.S. 9122.1(b)(2)(ii)(A)(II)
 
+    Returns:
+        True if the charge was NOT a disqualifying offense, or if the record does NOT contain any 
+        disqulifying offenses.
+ 
     """
-    return Decision(
-        name="Not a firearms offense", value=True, reasoning="Not implemented yet."
-    )
+    # assume item is a charge.
+    try:
+        decision = Decision(
+            name=f"Charge for {item.statute} is not a firearms offense.",
+            reasoning=[
+                item.get_statute_chapter() == 18, 
+                item.get_statute_section() > 6100,
+                item.get_statute_section() < 6200
+            ])
+        decision.value = not all(decision.reasoning)
+    except TypeError:
+        # `item`'s get_statute functions returned something that doesn't have < > defined, such as None.
+        decision = Decision(
+            name=f"Charge for {item.statute} is not a Chapter 61 firearms offense.",
+            reasoning = "The statute doesn't appear to be one of the Article D offense statutes.",
+            value=True
+        )
+    except AttributeError:
+        # `item` may be a whole record.
+        decision = Decision(
+            name=(f"Not convicted within {within_years} more than {conviction_limit} times " +
+                  f"of felony or offense punishable by {penalty_limit} years."),
+            # reasoning should be a list of charges w/in 20 years where no_offense_fam(charge) is False
+            reasoning = [no_firearms_offense(charge, penalty_limit=penalty_limit, conviction_limit=conviction_limit, within_years=within_years)
+                         for case in item.cases for charge in case.charges
+                         if case.years_passed_disposition() <= within_years]
+        )
+        decision.value = len(list(filter(lambda d: bool(d) is False, decision.reasoning))) < conviction_limit
+    return decision
 
 
 def no_sexual_offense(
@@ -281,13 +330,47 @@ def no_sexual_offense(
     No sealing a record if it contains any conviction within 20 years for a felony or 
     offense punishable >= 7 years, for offenses under 42 Pa.C.S. §§ 9799.14 (relating to sexual 
     offenses and tier system) and 9799.55 (relating to registration). 18 PaCS 9122.1(b)(2)(ii)(A)(IV)
+
+    Returns:
+        True if the charge was NOT a disqualifying offense, or if the record does NOT contain any 
+        disqulifying offenses.
     """
-    return Decision(
-        name="Not a sexual offense", value=True, reasoning="Not implemented yet."
-    )
+    # 18 Pa.C.S. 9799.14 and 9799.55 relate to quite a few other offenses.
+    tiered_sex_offenses = ["2901a.1", "2902b",
+					"2903b", "2904", "2910b", "3011b", "3121", "3122.1b", "3123",
+					"3124.1", "3124.2a", "3124.2a.1", "3124.2a2", "3124.2a3",
+					"3125", "3126a1", "3126a2", "3126a3", "3126a4", "3126a5",
+					"3126a6", "3126a7", "3126a8", "4302b", "5902b", "5902b.1",
+					"5903a3ii", "5903a4ii", "5903a5ii", "5903a6", "6301a1ii",
+                    "6312", "6318", "6320", "7507.1"]
+    # presume item is a Charge
+    try:
+        decision = Decision(name="This charge is not a disqualifying sexual or registration offense?")
+        patt = re.compile(r"^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*)\s*(?P<subsections>[\(\)A-Za-z0-9\.]+).*")
+        matches = patt.match(item.statute)
+        if not matches:
+            decision.reasoning = "This doesn't appear to be one of the tiered sex offense statutes."
+            decision.value = True
+        else:
+            this_offense = matches.group("section") + matches.group("subsections").replace("(","").replace(")","")
+            decision.reasoning = [item.is_conviction(), 
+                                  item.get_statute_chapter() == 18,
+                                  this_offense in tiered_sex_offenses]
+            decision.value = not all(decision.reasoning)
+    except AttributeError: 
+        # item is a CRecord
+        decision = Decision(
+            name=(f"Not convicted within {within_years} more than {conviction_limit} times " +
+                  f"of certain sexual or registration-related offenses punishable by {penalty_limit} years"),
+            reasoning = [no_sexual_offense(charge, penalty_limit=penalty_limit, conviction_limit=conviction_limit, within_years=within_years)
+                         for case in item.cases for charge in case.charges
+                         if case.years_passed_disposition() <= within_years]
+        )
+        decision.value = len(list(filter(lambda d: bool(d) is False, decision.reasoning))) < conviction_limit
+    return decision
 
 
-def no_corruption_of_minors(
+def no_corruption_of_minors_offense(
     charge: Charge, penalty_limit: int, conviction_limit: int, within_years: int
 ) -> Decision:
     """
@@ -296,10 +379,22 @@ def no_corruption_of_minors(
     No sealing a conviction if it was punishable by more than two years for offenses under 
     section 6301(a)(1), corruption of minors. 18 Pa.C.S. 9122.1(b)(1)(v)
 
+    Returns:
+        a True Decision if the charge was NOT a disqualifying offense. Otherwise a False Decision.
     """
-    return Decision(
-        name="Not a corruption of minors offense", value=True, reasoning="Not implemented yet."
-    )
+    decision = Decision(name="This charge is not a disqualifying corruption of minors offense?")
+    patt = re.compile(r"^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*)\s*(?P<subsections>[\(\)A-Za-z0-9\.]+).*")
+    matches = patt.match(charge.statute)
+    if not matches:
+        decision.reasoning = "This doesn't appear to be one of the tiered sex offense statutes."
+        decision.value = True
+    else:
+        this_offense = matches.group("section") + matches.group("subsections").replace("(","").replace(")","")
+        decision.reasoning = [charge.is_conviction(), 
+                                charge.get_statute_chapter() == 18,
+                                this_offense == "6301a1"]
+        decision.value = not all(decision.reasoning)
+    return decision
 
 
 def offenses_punishable_by_two_or_more_years(
@@ -317,6 +412,10 @@ def offenses_punishable_by_two_or_more_years(
     The Expungement Generator uses the charge grade as a proxy for this. See Charge.php:284.
 
     So will RecordLib.
+
+    Returns:
+        A Decision we'll call `d`. `bool(d)` is True if there were no offenses punishable by more than 
+        two years in `crecord`.
 
     """
     # Grades that approximately the grades of offenses that also have penalty's of two or more years.
@@ -338,18 +437,22 @@ def offenses_punishable_by_two_or_more_years(
 def no_indecent_exposure(crecord, conviction_limit: int, within_years: int=15) -> Decision:
     """
     Cannot seal if record contains conviction for indecent exposure within 15 years.
-    
     18 PaCS 9122.1(b)(2)(iii)(B)(I)
+    
+    Returns:
+        A Decision we'll call `d`. `bool(d)` is True if there were no indecent exposure 
+        offenses in `crecord`.
+
     """
     decision = Decision(
         name="No indecent exposure convictions in this record.",
-        reasoning=[not (case.years_passed_disposition() < within_years and
+        reasoning=[charge for case in crecord.cases for charge in case.charges if 
+            (case.years_passed_disposition() < within_years and
                         charge.is_conviction() and 
                         charge.get_statute_chapter() == 18 and
-                        charge.get_statute_section() == 3127)
-                   for case in crecord.cases for charge in case.charges]
+                        charge.get_statute_section() == 3127)]
     )
-    decision.value = all(decision.reasoning)
+    decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
 
@@ -360,16 +463,19 @@ def no_sexual_intercourse_w_animal(
     Cannot seal if record contains conviction for intercourse w/ animal within 15 years.
 
     18 PA.C.S. 9122.1(b)(2)(iii)(B)(II)
+    
+    Returns:
+        Decision that is True if there were no sexual intercourse w/ animal convictions in the record.  
     """
     decision = Decision(
         name="No intercourse with animals convictions in this record.",
-        reasoning=[not (case.years_passed_disposition() < within_years and
+        reasoning=[charge for case in crecord.cases for charge in case.charges if 
+                       (case.years_passed_disposition() < within_years and
                         charge.is_conviction() and 
                         charge.get_statute_chapter() == 18 and
-                        charge.get_statute_section() == 3129)
-                   for case in crecord.cases for charge in case.charges]
+                        charge.get_statute_section() == 3129)]
     )
-    decision.value = all(decision.reasoning)
+    decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
 
@@ -379,17 +485,20 @@ def no_failure_to_register(
     Cannot seal if record contains conviction for failure to register within 15 years.
 
     18 PA.C.S. 9122.1(b)(2)(iii)(B)(III)
+
+    Returns:
+        a Decision that is True if there were no failure-to-register offenses in the record.
     """
     decision = Decision(
         name="No failure-to-register convictions in this record.",
-        reasoning=[not (case.years_passed_disposition() < within_years and
+        reasoning=[charge for case in crecord.cases for charge in case.charges if 
+                       (case.years_passed_disposition() < within_years and
                         charge.is_conviction() and 
                         charge.get_statute_chapter() == 18 and
                         (charge.get_statute_section() == 4915.1 or
-                         charge.get_statute_section() == 4915.2))
-                   for case in crecord.cases for charge in case.charges]
+                         charge.get_statute_section() == 4915.2))]
     )
-    decision.value = all(decision.reasoning)
+    decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
 
@@ -402,13 +511,13 @@ def no_weapons_of_escape(
     """
     decision = Decision(
         name="No possion-of-implement-of-escape convictions in this record.",
-        reasoning=[not (case.years_passed_disposition() < within_years and
+        reasoning=[charge for case in crecord.cases for charge in case.charges if 
+                       (case.years_passed_disposition() < within_years and
                         charge.is_conviction() and 
                         charge.get_statute_chapter() == 18 and
-                        charge.get_statute_section() == 5122)
-                   for case in crecord.cases for charge in case.charges]
+                        charge.get_statute_section() == 5122)]
     )
-    decision.value = all(decision.reasoning)
+    decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
 
@@ -422,13 +531,13 @@ def no_abuse_of_corpse(
     """
     decision = Decision(
         name="No abuse of corpse convictions in this record.",
-        reasoning=[not (case.years_passed_disposition() < within_years and
+        reasoning = [charge for case in crecord.cases for charge in case.charges if 
+                       (case.years_passed_disposition() < within_years and
                         charge.is_conviction() and 
                         charge.get_statute_chapter() == 18 and
-                        charge.get_statute_section() == 5510)
-                   for case in crecord.cases for charge in case.charges]
+                        charge.get_statute_section() == 5510)]
     )
-    decision.value = all(decision.reasoning)
+    decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
 
@@ -442,14 +551,13 @@ def no_paramilitary_training(
     """
     decision = Decision(
         name="No paramilitary training offenses in this record.",
-        # list where TRUE indicates a charge that is not a paramil. conviction.
-        reasoning=[not (case.years_passed_disposition() < within_years and
+        reasoning=[charge for case in crecord.cases for charge in case.charges if 
+                       (case.years_passed_disposition() < within_years and
                         charge.is_conviction() and 
                         charge.get_statute_chapter() == 18 and
-                        charge.get_statute_section() == 5515)
-                   for case in crecord.cases for charge in case.charges]
+                        charge.get_statute_section() == 5515)]
     )
-    decision.value = all(decision.reasoning)
+    decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
 def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
@@ -545,7 +653,7 @@ def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
                         conviction_limit=1,
                         within_years=float("Inf"),
                     ),
-                    no_corruption_of_minors(
+                    no_corruption_of_minors_offense(
                         charge,
                         penalty_limit=2,
                         conviction_limit=1,

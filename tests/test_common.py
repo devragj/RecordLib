@@ -84,8 +84,11 @@ def test_charge_is_conviction(example_charge, disposition, is_a_conviction):
 
 def test_charge_get_section(example_charge):
     example_charge.statute = "18 § 1234"
-    example_charge.get_statute_section() == 1234
+    assert example_charge.get_statute_section() == 1234
+    example_charge.statute = "18 § 4815.1"
+    assert example_charge.get_statute_section() == 4815.1
 
 def test_charge_get_chapter(example_charge):
     example_charge.statute = "18 § 1234"
     example_charge.get_statute_chapter() == 18
+
