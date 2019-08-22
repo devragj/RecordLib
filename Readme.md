@@ -71,11 +71,16 @@ Options:
 
 ### React App
 
+Initial setup:
+For the backend, create a directory named `tmp` 
+inside the directory `backend/cleanslate`.
+Run `pipenv install` within the outer RecordLib directory.
+For the frontend, run `yarn install` within the directory `frontend`.
+
 To run the app, first start the Django REST backend.
 To start the backend, in the outer RecordLib directory,
 type `pipenv shell`.
-Then `cd backend` and then 
-`python manage.py runserver`.
+Then `cd backend` and then `python manage.py runserver`.
 
 Next, start the frontend.
 To do this, open a new terminal window
