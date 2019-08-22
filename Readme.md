@@ -69,6 +69,23 @@ Options:
   --help                     Show this message and exit.
 ```
 
+### React App
+
+To run the app, first start the Django REST backend.
+To start the backend, in the outer RecordLib directory,
+type `pipenv shell`.
+Then `cd backend` and then 
+`python manage.py runserver`.
+
+Next, start the frontend.
+To do this, open a new terminal window
+and navigate to  the frontend directory. 
+Then type `yarn start`. 
+
+Currently, you can upload a Summary PDF.
+The app will display information from the `CRecord`
+generated from the Summary.
+
 ## Aspirational Example Usage
 
 	person = Person(first_name="Joan", last_name="Smith", date_of_birth=date(1970, 1, 1))
