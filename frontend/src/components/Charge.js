@@ -1,5 +1,6 @@
 import React from "react";
 import Sentence from "./Sentence";
+import ShowHideList from "./ShowHideList";
 
 function Charge(props) {
     const chargeStyle = {display: 'grid', gridTemplateColumns: '450px 350px', margin: '15px', border: '1px solid black', borderRadius: '10px', padding: '10px', width: '820px'};
@@ -16,8 +17,7 @@ function Charge(props) {
             <div>Disposition: {props.disposition}</div>
             {props.sentences.length > 0 &&
                 <div style={{gridColumn: "1 / 3"}}>
-                    <h5>Sentences</h5>
-                    {sentencesRendered}
+                        <ShowHideList hidden={true} title="Sentences" list={sentencesRendered} />
                 </div>
             }
         </div>

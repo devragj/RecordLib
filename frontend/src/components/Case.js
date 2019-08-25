@@ -1,5 +1,6 @@
 import React from "react";
 import Charge from "./Charge";
+import ShowHideList from "./ShowHideList";
 
 function Case(props) {
     const caseStyle = {display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px', border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px'};
@@ -20,8 +21,7 @@ function Case(props) {
             <div>Disposition Date: {props.disposition_date}</div>
             {props.charges.length > 0 &&
                 <div style={{gridColumn: "1 / 4"}}>
-                    <h5>Charges</h5>
-                    {chargesRendered}
+                        <ShowHideList hidden={true} title="Charges" list={chargesRendered} />
                 </div>
             }
         </div>
