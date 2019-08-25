@@ -70,6 +70,10 @@ Options:
 ```
 
 ### React App
+The backend requires the command-line utility pdftotext.  This utility is included in
+most Linux distributions.  For other operating systems, find it here: 
+http://www.xpdfreader.com/download.html.  Download the command line tools and 
+place pdftotext somewhere in your PATH.
 
 Initial setup:
 For the backend, create a directory named `tmp` 
@@ -84,7 +88,7 @@ Then `cd backend` and then `python manage.py runserver`.
 
 Next, start the frontend.
 To do this, open a new terminal window
-and navigate to  the frontend directory. 
+and navigate to  the `frontend` directory. 
 Then type `yarn start`. 
 
 Currently, you can upload a Summary PDF.
