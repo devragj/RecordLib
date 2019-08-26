@@ -50,7 +50,8 @@ class FileUploadView(APIView):
                 tempdir=tempdir)
             rec.add_summary(summary)
 
-            json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=serialize)
+            json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=serialize)
+            # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=serialize)
             return Response(json_to_send, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)

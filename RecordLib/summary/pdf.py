@@ -453,7 +453,7 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
 
     try:
-        with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
+        with open(os.path.join(tempdir, "tmp.txt"), "r",  encoding='utf8') as f:
             text = f.read()
     except IOError:
         raise ValueError("Cannot extract summary text..")
