@@ -9,7 +9,6 @@ from __future__ import annotations
 import cerberus as cb  # type: ignore
 import yaml
 from typing import List
-import pytest
 from RecordLib.summary import Summary
 from RecordLib.common import Charge, Person
 from RecordLib.case import Case
