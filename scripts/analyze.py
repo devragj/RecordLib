@@ -15,6 +15,7 @@ from RecordLib.ruledefs import (
 import pytest
 import json
 
+
 @click.command()
 @click.option("--pdf-summary", "-ps", type=click.Path(), required=True, default=None)
 @click.option("--tempdir", "-td", type=click.Path(), default="tests/data/tmp")

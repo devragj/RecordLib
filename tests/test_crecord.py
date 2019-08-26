@@ -67,6 +67,13 @@ def test_add_summary_merge_strategies(example_summary):
     assert rec.cases[0].otn != summary2.get_cases()[0].otn
     assert rec.person.first_name == summary2.get_defendant().first_name
 
+def test_add_docket(example_docket):
+    rec = CRecord(Person("dummy", "name", None))
+    rec.add_docket(example_docket)
+    assert len(rec.cases) == 1
+    assert rec.person.first_name != "dummy"
+
+
 def test_years_since_last_arrested_or_prosecuted(example_crecord):
     example_crecord.cases[0].arrest_date = date(2010, 1, 1)
     example_crecord.cases[0].disposition_date = date(2010, 1, 1)

@@ -16,5 +16,6 @@ setup(
         [console_scripts]
         download_docs=scripts.download_dockets:cli
         analyze=scripts.analyze:analyze
+        parse=scripts.parse:parse
     ''',
 )

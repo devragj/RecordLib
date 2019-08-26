@@ -129,3 +129,23 @@ class CRecord:
                 logging.info(f"Case with docket { new_case.docket_number } already part of record, no merge strategy selected. Ignoring duplicate.")
 
         return self
+
+
+    def add_docket(self: CRecord, docket: Docket) -> CRecord:
+        """
+        Add a docket to this criminal record and return the record.
+
+        Args:
+            docket (Docket): a Docket object, perhaps from a parsed pdf.
+
+        Returns:
+            This CRecord, with the information from `docket` incorporated into the record.
+        """    
+        replaced = False
+        self.person = docket._defendant
+        for i, case in enumerate(self.cases):
+            if case.docket_number == docket._case.docket_number:
+                replaced = True
+                self.cases[i] = docket._case
+        if replaced is False: self.cases.append(docket._case)
+        return self
