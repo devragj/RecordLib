@@ -22,6 +22,7 @@ from RecordLib.grammars.summary import (
     md_summary_body_grammar,
     md_summary_body_nonterminals,
 )
+from RecordLib.parsingutilities import get_text_from_pdf
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.case import Case
 from RecordLib.common import Person, Charge, Sentence, SentenceLength
@@ -440,25 +441,8 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     Parser method that can take a source and return a Person and Cases,
     used to build a CRecord.
     """
-    if hasattr(pdf, "read"):
-        # the pdf attribute is a file object,
-        # and we need to write it out, for pdftotext to use it.
-        pdf_path = os.path.join(tempdir, "tmp.pdf")
-        with open(pdf_path, "wb") as f:
-            f.write(pdf.read())
-    else:
-        pdf_path = pdf
+    text = get_text_from_pdf(pdf, tempdir)
 
-    out_path = os.path.join(tempdir, "tmp.txt")
-    os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
-
-    try:
-        with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
-            text = f.read()
-    except IOError:
-        raise ValueError("Cannot extract summary text..")
-
-    os.remove(os.path.join(tempdir, "tmp.txt"))
     inputs_dictionary = get_processors(text)
     summary_page_grammar = inputs_dictionary["summary_page_grammar"]
 
