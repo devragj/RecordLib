@@ -8,7 +8,7 @@ import logging
 def test_pdf_factory_one():
     try:
         filename = os.listdir("tests/data/dockets")[0]
-        dk = Docket.from_pdf(os.path.join("tests/data/dockets", filename), tempdir="tests/data/tmp")
+        dk, _ = Docket.from_pdf(os.path.join("tests/data/dockets", filename), tempdir="tests/data/tmp")
     except:
         pytest.fail("Cannot create Docket object")
     assert isinstance(dk._case, Case)
@@ -28,14 +28,21 @@ def test_pdf_factory_bulk(caplog):
     files = os.listdir("tests/data/dockets")
     total_dockets = len(files)
     successes = 0
+    error_list = []
     for f in files:
         try:
             logging.info(f"Parsing {f}")
-            Docket.from_pdf(os.path.join("tests/data/dockets", f), tempdir="tests/data/tmp")
+            _, errs = Docket.from_pdf(os.path.join("tests/data/dockets", f), tempdir="tests/data/tmp")
+            if len(errs) > 0:
+                error_list = error_list + [(f, errs)]
             successes += 1
             logging.info(f"    {f} parsed.")
         except Exception as e:
             logging.error(f"    {f} failed to parse.")
+    
+    if len(error_list) > 0:
+        logging.error(f"{len(error_list)} cases had non-fatal parsing errors.")
+        pytest.fail(f"{len(error_list)} cases had non-fatal parsing errors.")
     if successes < total_dockets:
         logging.error(f"Only {successes}/{total_dockets} parsed.")
         pytest.fail(f"Only {successes}/{total_dockets} parsed.")

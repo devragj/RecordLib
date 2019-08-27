@@ -342,6 +342,8 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, 
     Returns:
         The Person to whom the docket relates, and the Case to which the Docket relates.
     """
+    # a list of strings
+    errors = []
     # pdf to raw text
     txt = get_text_from_pdf(pdf, tempdir=tempdir)
 
@@ -362,6 +364,7 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, 
             except Exception as e:
                 slines = section_text.split("\n")
                 #pytest.set_trace()
+                errors.append(f"    Text for {section_name} failed to parse.")
                 logging.error(f"    Text for {section_name} failed to parse.")
                 continue
             visitor = CustomVisitorFactory(terminals, nonterminals, custom_visitors).create_instance()
@@ -380,4 +383,4 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, 
     # i.e. defendant_name = section_tree.xpath("//caption/name")[0].text
     defendant = get_person(sections_tree)
     case = get_case(sections_tree)
-    return  defendant, case
+    return  defendant, case, errors

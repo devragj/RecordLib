@@ -13,7 +13,8 @@ def parse(path, doctype, tempdir):
     if doctype == "summary":
         print("Not implemented yet")
     elif doctype == "docket":
-        d = Docket.from_pdf(path, tempdir)
+        d, errs = Docket.from_pdf(path, tempdir)
         print(d._defendant)
         print(d._case)
+        print(errs)
     print("Done.") 
