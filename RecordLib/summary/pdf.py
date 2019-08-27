@@ -22,6 +22,7 @@ from RecordLib.grammars.summary import (
     md_summary_body_grammar,
     md_summary_body_nonterminals,
 )
+from RecordLib.parsingutilities import get_text_from_pdf
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.case import Case
 from RecordLib.common import Person, Charge, Sentence, SentenceLength
@@ -274,6 +275,10 @@ def get_defendant(summary_xml: etree.Element) -> Person:
         def_dob = None
     return Person(last_first[1], last_first[0], def_dob)
 
+def either(a,b):
+    if a is not None:
+        return a
+    return b
 
 def get_cp_cases(summary_xml: etree.Element) -> List:
     """
@@ -361,7 +366,6 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                     )
                 )
             open_charges.append(charge)
-
         cases.append(
             Case(
                 status=text_or_blank(case.getparent().getparent()),
@@ -372,12 +376,13 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                 charges=closed_charges + open_charges,
                 fines_and_costs=None,  # a summary docket never has info about this.
                 arrest_date=date_or_none(
-                    case.find("arrest_and_disp/arrest_date")
+                    either(case.find("arrest_disp_actions/arrest_disp/arrest_date"),
+                           case.find("arrest_disp_actions/arrest_trial/arrest_date"))
                 ),
                 disposition_date=date_or_none(
-                    case.find("arrest_and_disp/disp_date")
+                    case.find("arrest_disp_actions/arrest_disp/disp_date")
                 ),
-                judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
+                judge=text_or_blank(case.find("arrest_disp_actions/arrest_disp/disp_judge")),
             )
         )
     return cases
@@ -414,12 +419,12 @@ def get_md_cases(summary_xml: etree.Element) -> List:
                 charges=md_charges,
                 fines_and_costs=None,  # a summary docket never has info about this.
                 arrest_date=date_or_none(
-                    case.find("arrest_and_disp/arrest_date")
+                    case.find("arrest_disp_actions/arrest_disp/arrest_date")
                 ),
                 disposition_date=date_or_none(
-                    case.find("arrest_and_disp/disp_date")
+                    case.find("arrest_disp_actions/arrest_disp/disp_date")
                 ),
-                judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
+                judge=text_or_blank(case.find("arrest_disp_actions/arrest_disp/disp_judge")),
             )
         )
     return cases
@@ -440,25 +445,8 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     Parser method that can take a source and return a Person and Cases,
     used to build a CRecord.
     """
-    if hasattr(pdf, "read"):
-        # the pdf attribute is a file object,
-        # and we need to write it out, for pdftotext to use it.
-        pdf_path = os.path.join(tempdir, "tmp.pdf")
-        with open(pdf_path, "wb") as f:
-            f.write(pdf.read())
-    else:
-        pdf_path = pdf
+    text = get_text_from_pdf(pdf, tempdir)
 
-    out_path = os.path.join(tempdir, "tmp.txt")
-    os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
-
-    try:
-        with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
-            text = f.read()
-    except IOError:
-        raise ValueError("Cannot extract summary text..")
-
-    os.remove(os.path.join(tempdir, "tmp.txt"))
     inputs_dictionary = get_processors(text)
     summary_page_grammar = inputs_dictionary["summary_page_grammar"]
 
@@ -466,8 +454,6 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
         parsed_pages = summary_page_grammar.parse(text)
     except Exception as e:
         # pytest.set_trace()
-        print("here 3")
-        print(str(e))
         raise ValueError("Grammar cannot parse summary.")
 
     parse_summary = inputs_dictionary["parse_summary"]
@@ -477,7 +463,6 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     summary_xml.append(pages_xml_tree.xpath("//header")[0])
     summary_xml.append(pages_xml_tree.xpath("//caption")[0])
     summary_xml.append(summary_body_xml_tree)
-
     defendant = get_defendant(summary_xml)
     get_cases = inputs_dictionary["get_cases"]
     cases = get_cases(summary_xml)
