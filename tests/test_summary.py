@@ -85,3 +85,17 @@ def test_get_sentences():
                     assert (isinstance(sentence.sentence_length.max_time, timedelta) or sentence.sentence_length.max_time is None)
                 except:
                     pytest.fail("Could not get sentence from charge.")
+
+def test_get_arrest_date():
+    summary = parse_pdf(
+        pdf=open("tests/data/CourtSummaryReport.pdf", "rb"),
+        tempdir="tests/data/tmp")
+    cases = summary.get_cases()
+    # There's not a standard example summary pdf to run tests on, so can't assume much about the contents of 
+    # the summary being parsed here.
+    # In the summary being parsed, an arrest date might be missing from a case, 
+    # but its unlikely there's _no_ case with an arrest date.
+    # If you're testing this on a summary that has no arrest dates ...
+    # find a different summary to use for testing.
+    arrest_dates = [case.arrest_date for case in cases if case.arrest_date is not None]
+    assert len(arrest_dates) > 0

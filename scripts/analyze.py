@@ -12,6 +12,7 @@ from RecordLib.ruledefs import (
     expunge_over_70,
     seal_convictions
 )
+from RecordLib.summary.pdf import parse_pdf as parse_pdf_summary
 import pytest
 import json
 
@@ -23,7 +24,7 @@ import json
 def analyze(pdf_summary: str, tempdir: str, redis_collect: str) -> None:
     rec = CRecord()
     if pdf_summary is not None:
-        rec.add_summary(Summary(pdf_summary, tempdir = tempdir))
+        rec.add_summary(parse_pdf_summary(pdf_summary, tempdir = tempdir))
 
     if redis_collect is not None:
         try:

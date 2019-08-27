@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import List
 from RecordLib.common import Person
 
-
 class Summary:
     """
     Track information about a summary.
     """
+
 
     def __init__(self, defendant: Person = None, cases: List = None) -> None:
         self._defendant = defendant
