@@ -20,8 +20,11 @@ from datetime import *
 
 
 def serialize(obj):
-    """JSON serializer for objects not serializable by default json code"""
+    """Temporary JSON serializer.
 
+    Todo:
+        Replace this with updated code from RecordLib.serializers.py.
+    """
     if isinstance(obj, date):
         serial = obj.isoformat()
         return serial
@@ -40,6 +43,14 @@ def serialize(obj):
 class FileUploadView(APIView):
     # noinspection PyMethodMayBeStatic
     def post(self, request, *args, **kwargs):
+        """Process a Summary PDF file and return JSON to the user.
+
+        This method expects a Summary PDF file to be posted by the frontend.
+        Code from RecordLib is used to read the file, parse it,
+        and store the extracted information in a CRecord object.
+        Information in the CRecord is then serialized as JSON
+        and returned to the frontend.
+        """
         try:
             pdf_file = request.data["file"]
             rec = CRecord()
@@ -51,6 +62,7 @@ class FileUploadView(APIView):
             rec.add_summary(summary)
 
             json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=serialize)
+            # Uncomment for human-readable JSON.  Also comment out the above line.
             # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=serialize)
             return Response(json_to_send, status=status.HTTP_200_OK)
         except Exception as e:
