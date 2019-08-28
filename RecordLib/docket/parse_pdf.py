@@ -37,6 +37,7 @@ def text_to_pages(txt: str) -> etree:
         return visitor.visit(nodes)
     except Exception as e:
         slines = txt.split("\n")
+        #breakpoint()
         logging.error("text_to_pages failed.")
     return None
 

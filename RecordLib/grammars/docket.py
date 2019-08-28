@@ -121,8 +121,10 @@ body = ((section !start_of_footer)* section) /
        (line line (section !start_of_footer)* section) /
        (line line line (section !start_of_footer)* section) /
        (line line line line (section !start_of_footer)* section) /
-       (line line line line line (section !start_of_footer)* section) /
-       ((line !start_of_footer !section)+ line &start_of_footer) 
+       (line line line line line empty_line* (section !start_of_footer)* section) /
+       (line line line line line line empty_line* (section !start_of_footer)* section) /
+       (line line line line line line line empty_line* (section !start_of_footer)* section) /
+       (((line / empty_line) !start_of_footer !section)+ (line / empty_line) &start_of_footer) 
        # this last rule is a catch-all meant to only catch pages
        # with a few extra lines in htme  
 section = section_case_info /
@@ -267,7 +269,8 @@ sequence_description_continued = (ws ws+ !number !name_line !charge_replaced wor
                                  (ws ws+ !number !name_line !charge_replaced word_no_comma comma ws word_no_comma ws word_no_comma (ws !date word_no_comma)* (new_line / end_of_input)) /
                                  (ws ws+ ~r".*accommodation.*"i (new_line / end_of_input)) /# burglary offenses involving overnight accomm. are frequent 2-line offenses.
                                  (ws ws+ ~r".*Revoked\).*"i (new_line / end_of_input)) /# as in a disp. of (ARD Revoked).
-                                 (ws ws+ ~r".*Offense.*"i (new_line / end_of_input)) # lines identifying an offense often start w/ a number, i.e. 1st Offense, so fail other tests.
+                                 (ws ws+ ~r".*Offense.*"i (new_line / end_of_input)) /
+                                 (ws ws+ ~r".*[Defendant|Parent].*"i (new_line / end_of_input)) # lines identifying an offense often start w/ a number, i.e. 1st Offense, so fail other tests.
 
 charge_replaced = ws* "Replaced by" ws* words (new_line / end_of_input)
 
@@ -357,7 +360,7 @@ charges_nonterminals = ["charges", "charges_heading", "charge", "charge_continue
 
 charges = \
 r"""
-charges = charges_heading new_line 
+charges = (charges_heading new_line)? 
           (charge (new_line / end_of_input) 
           (charge_continued (new_line / end_of_input))*)+
 
@@ -386,6 +389,7 @@ case_information = (cross_court_line new_line)?
                    otn_line new_line
                    issuing_auth_line new_line
                    arrest_line new_line 
+                   (!complaint_line line)?
                    complaint_line (new_line / end_of_input)
                    line*
                    empty_line*
