@@ -14,7 +14,6 @@ hypothesis = "*"
 [packages]
 cerberus = "*"
 pyyaml = "*"
-parsimonious = "*"
 lxml = "*"
 recordlib = {path = ".", editable = true}
 requests = "*"
@@ -22,6 +21,7 @@ e1839a8 = {path = ".",editable = true}
 black = "*"
 python-dateutil = "*"
 redis = "*"
+parsimonious = "*"
 
 [requires]
 python_version = "3.7"
