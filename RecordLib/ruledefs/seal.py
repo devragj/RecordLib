@@ -421,7 +421,7 @@ def offenses_punishable_by_two_or_more_years(
     # Grades that approximately the grades of offenses that also have penalty's of two or more years.
     proxy_grades = ["F1", "F2", "F3", "F", "M1", "M2"]
     decision = Decision(
-        name="The record has no more than three misdemeanor convictions in the last 20 years.",
+        name=f"The record has no more than {conviction_limit} convictions for offenses punishable by two or more years in the last {within_years} years.",
         reasoning=[
             charge for case in crecord.cases for charge in case.charges 
                 if (charge.is_conviction() and 
