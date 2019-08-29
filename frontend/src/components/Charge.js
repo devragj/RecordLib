@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
+
 import Sentence from "./Sentence";
 import ShowHideList from "./ShowHideList";
 
@@ -18,6 +19,7 @@ function Charge(props) {
             <div>Statute: {statute}</div>
             <div>Disposition: {disposition}</div>
             {sentences.length > 0 &&
+
                 <div style={{gridColumn: "1 / 3"}}>
                         <ShowHideList hidden={true} title="Sentences" list={sentencesRendered} />
                 </div>
@@ -34,5 +36,6 @@ Charge.propTypes = {
     disposition: PropTypes.string,
     sentences: PropTypes.array.isRequired
 }
+
 
 export default Charge;

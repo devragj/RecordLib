@@ -43,6 +43,7 @@ ShowHideList.propTypes = {
      * An array of JSX rendered by the containing component.
      */
     list: PropTypes.array.isRequired
+
 }
 
 export default ShowHideList;

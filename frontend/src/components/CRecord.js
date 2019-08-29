@@ -14,6 +14,7 @@ function CRecord(props) {
         <div className="cRecord" style={cRecordStyle}>
             <Defendant {...defendant}/>
             <Cases cases={cases}/>
+
         </div>
     );
 }

@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
+
 import Charge from "./Charge";
 import ShowHideList from "./ShowHideList";
 
@@ -9,6 +10,7 @@ function Case(props) {
     const chargesRendered = charges.map((charge, index) => {
             const charge_id = docket_number + 'Charge' + (index + 1).toString();
             return <Charge {...charge} key={charge_id} charge_id={charge_id}/>
+
         }
     );
 
@@ -22,6 +24,7 @@ function Case(props) {
             <div>Arrest Date: {arrest_date}</div>
             <div>Disposition Date: {disposition_date}</div>
             {charges.length > 0 &&
+
                 <div style={{gridColumn: "1 / 4"}}>
                         <ShowHideList hidden={true} title="Charges" list={chargesRendered} />
                 </div>
