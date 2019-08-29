@@ -17,7 +17,8 @@ def example_summary():
 @pytest.fixture
 def example_docket():
     docket_path = os.listdir("tests/data/dockets")[0]
-    return Docket.from_pdf(os.path.join("tests","data","dockets",docket_path), tempdir="tests/data/tmp")
+    d, errs = Docket.from_pdf(os.path.join("tests","data","dockets",docket_path), tempdir="tests/data/tmp")
+    return d
 
 @pytest.fixture
 def example_person():
