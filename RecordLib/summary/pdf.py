@@ -1,8 +1,16 @@
-from __future__ import annotations
-from typing import BinaryIO, Union, List, Dict, Tuple, Optional
-import io
-import parsimonious  # type: ignore
+"""
+Parsing a Summary from a PDF.
+
+The most important thing is that this module provides a method, `parse_pdf`.
+This method returns a Summary object.
+
+"""
+from typing import Dict, Tuple, List, Union, BinaryIO
+from lxml import etree
 from parsimonious.nodes import Node  # type: ignore
+from RecordLib.case import Case
+from RecordLib.common import Person, Charge, Sentence, SentenceLength
+from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.grammars.summary import (
     summary_page_terminals,
     summary_page_nonterminals,
@@ -14,133 +22,27 @@ from RecordLib.grammars.summary import (
     md_summary_body_grammar,
     md_summary_body_nonterminals,
 )
+from RecordLib.parsingutilities import get_text_from_pdf
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.case import Case
 from RecordLib.common import Person, Charge, Sentence, SentenceLength
+from RecordLib.overflow import (
+    MDJFirstCoupleLinesOverflow, MDJOverflowInChargeList)
 import pytest
 import os
-from lxml import etree
-from collections import namedtuple
-from datetime import datetime
-import re
 import logging
+import re
+
+from RecordLib.summary import Summary
+from .utilities import *
 
 
-def visit_sentence_length(self, node, vc):
-    """
-    Custom node visitor for parsing a setence in a conviction.
-
-    returns an xml tree along the lines of
-        <sentence_length>
-            <min_length> <time> __ </time> <unit> __ </unit> </min_length>
-            <max_length> <time> __ </time> <unit> __ </unit> </max_length>
-        </sentence_length>
-    """
-
-    # Sentence lengths can appear in lots of formats, so this attempts to parse different
-    # possibilities.
-    min_pattern = re.compile(
-        r".*(?:min of|Min:) (?P<time>[0-9\./]*) (?P<unit>\w+).*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    max_pattern = re.compile(
-        r".*(?:max of|Max:) (?P<time>[0-9\./]*) (?P<unit>\w+).*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    # Original from DocketParse
-    # range_pattern = re.compile(r".*?(?P<min_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<min_unit>\w+ )?(?:to|-)? (?P<max_time>(?:[0-9\.\/]+(?:\s|$))+)(?P<max_unit>\w+).*", flags=re.IGNORECASE|re.DOTALL)
-
-    range_pattern = re.compile(
-        ".*: (?P<min_time>[0-9\.\/]+) (?P<min_unit>\w+)?(?:to|-)?.*: (?P<max_time>[0-9\.\/]+) (?P<max_unit>\w+).*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-
-    single_term_pattern = re.compile(
-        r".*\s{5,}(?P<time>[0-9\./]+)\s(?P<unit>\w+)$.*",
-        flags=re.IGNORECASE | re.DOTALL,
-    )
-    # temp_string = node.text
-    #    print(temp_string)
-    min_length = None
-    max_length = None
-    min_length_match = re.match(min_pattern, node.text)
-    max_length_match = re.match(max_pattern, node.text)
-    range = re.match(range_pattern, node.text)
-    single_term = re.match(single_term_pattern, node.text)
-
-    if min_length_match is not None:
-        min_length = (
-            f"<min_length> <time> {min_length_match.group('time')} </time> "
-            + f"<unit> {min_length_match.group('unit')} </unit> </min_length>"
-        )
-        if max_length_match is None:
-            max_length = (
-                f"<max_length> <time> {min_length_match.group('time')} </time> "
-                + f" <unit> {min_length_match.group('unit')} </unit> </max_length>"
-            )
-
-    if max_length_match is not None:
-        max_length = (
-            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
-            % (max_length_match.group("time"), max_length_match.group("unit"))
-        )
-        if min_length_match is None:
-            min_length = (
-                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-                % (max_length_match.group("time"), max_length_match.group("unit"))
-            )
-
-    if range is not None:
-        if range.group("min_unit") is not None:
-            min_length = (
-                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-                % (range.group("min_time"), range.group("min_unit"))
-            )
-        else:
-            min_length = (
-                "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-                % (range.group("min_time"), range.group("max_unit"))
-            )
-        max_length = (
-            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
-            % (range.group("max_time"), range.group("max_unit"))
-        )
-
-    if single_term is not None:
-        min_length = (
-            "<min_length> <time> %s </time> <unit> %s </unit> </min_length>"
-            % (single_term.group("time"), single_term.group("unit"))
-        )
-        max_length = (
-            "<max_length> <time> %s </time> <unit> %s </unit> </max_length>"
-            % (single_term.group("time"), single_term.group("unit"))
-        )
-
-    contents = self.stringify(vc)
-    if min_length is not None and max_length is not None:
-        contents = min_length + " " + max_length
-
-    return " <sentence_length> %s </sentence_length> " % contents
-
-
-def text_or_blank(element: etree.Element) -> str:
-    """
-    Extract the text of an element, if any, or return a blank string.
-    """
+def get_processors(text: str) -> Dict:
     try:
-        return element.text.strip()
-    except AttributeError:
-        return ""
-
-
-def date_or_none(date_element: etree.Element, fmtstr: str = "%m/%d/%Y") -> datetime:
-    """
-    Return date or None given a string.
-    """
-    try:
-        return datetime.strptime(date_element.text.strip(), fmtstr).date()
-    except (ValueError, AttributeError):
-        return None
+        text.index("Magisterial", 0, 100)
+        return md_processors
+    except ValueError:
+        return cp_processors
 
 
 def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
@@ -184,7 +86,14 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
             # prev line-1 was one of the first case lines
             # then remove the empty line and the first line of the next section,
             # because its a repeated case status.
-            case_line_starts = ["^MJ-", "^Arr", "^Las", "^Nex", "^Sta"]
+            case_line_starts = ["^MJ-", "^Arr", "^Las", "^Nex", "^Bail"]
+            preceeding_blanks = 0
+            for ln in reversed(previous_sec_lines):
+                if ln.strip() != "":
+                    prev_nonblank_line = ln
+                    break
+                preceeding_blanks += 1
+
             prev_line = previous_sec_lines[-1].strip()
             prev_line2 = previous_sec_lines[-2].strip()
             if any([re.match(start, prev_line) for start in case_line_starts]):
@@ -192,6 +101,30 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
             elif (prev_line == "") and any([re.match(start, prev_line2)  for start in case_line_starts]):
                 lines_to_remove += 2
                 previous_lines_to_remove += 1
+            elif re.search("§", prev_nonblank_line) and any(
+                    [re.search("Program Type", ln) for ln in sec_lines[2:6]]):
+                # Catch when page overflows from the end of the list of charges to
+                # the list of sentences.
+                lines_to_remove += 2
+                previous_lines_to_remove = preceeding_blanks
+            elif re.search("Statute", prev_nonblank_line):
+                # Catch when page overlows just after the header of the charges section.
+                lines_to_remove += 3
+                previous_lines_to_remove = preceeding_blanks
+            elif len(sec_lines) <= 4:
+                # Catch the overflow case when the only overflow lines are repeated lines. I think if there are fewer than 4 lines on the page, then they're not important.
+                lines_to_remove = len(sec_lines)
+            elif MDJFirstCoupleLinesOverflow.condition(previous_sec_lines, sec_lines):
+                previous_sec_lines_filtered, sec_lines = MDJFirstCoupleLinesOverflow.remove_overflow(
+                    previous_sec_lines, sec_lines)
+                # this len() - len() operation only needed while the conditions above
+                # don't use OverflowFilters. OverflowFilters directly return the
+                # lines of the next and previous sectinos.
+                previous_lines_to_remove = len(previous_sec_lines) - len(previous_sec_lines_filtered)
+            elif MDJOverflowInChargeList.condition(previous_sec_lines, sec_lines):
+                _, sec_lines = MDJOverflowInChargeList.remove_overflow(
+                    slines, sec_lines
+                )
 
             sec_lines = sec_lines[lines_to_remove:]
             if previous_lines_to_remove > 0:
@@ -201,12 +134,18 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
 
     # And recombine into one string.
     summary_info_combined = "\n".join(slines)
+
+    # Remove.
+    summary_info_visitor = CustomVisitorFactory(
+        summary_body_terminals,
+        md_summary_body_nonterminals,
+        [("sentence_length", visit_sentence_length)],
+    ).create_instance()
+
     try:
         parsed_summary_body = md_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        # pytest.set_trace()
-        print("here 1")
-        print(str(e))
+        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -311,9 +250,7 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
     try:
         parsed_summary_body = cp_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        # pytest.set_trace()
-        print("here 2")
-        print(str(e))
+        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -338,6 +275,10 @@ def get_defendant(summary_xml: etree.Element) -> Person:
         def_dob = None
     return Person(last_first[1], last_first[0], def_dob)
 
+def either(a,b):
+    if a is not None:
+        return a
+    return b
 
 def get_cp_cases(summary_xml: etree.Element) -> List:
     """
@@ -425,7 +366,6 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                     )
                 )
             open_charges.append(charge)
-
         cases.append(
             Case(
                 status=text_or_blank(case.getparent().getparent()),
@@ -436,12 +376,13 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                 charges=closed_charges + open_charges,
                 fines_and_costs=None,  # a summary docket never has info about this.
                 arrest_date=date_or_none(
-                    case.find("arrest_and_disp/arrest_date")
+                    either(case.find("arrest_disp_actions/arrest_disp/arrest_date"),
+                           case.find("arrest_disp_actions/arrest_trial/arrest_date"))
                 ),
                 disposition_date=date_or_none(
-                    case.find("arrest_and_disp/disp_date")
+                    case.find("arrest_disp_actions/arrest_disp/disp_date")
                 ),
-                judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
+                judge=text_or_blank(case.find("arrest_disp_actions/arrest_disp/disp_judge")),
             )
         )
     return cases
@@ -478,12 +419,12 @@ def get_md_cases(summary_xml: etree.Element) -> List:
                 charges=md_charges,
                 fines_and_costs=None,  # a summary docket never has info about this.
                 arrest_date=date_or_none(
-                    case.find("arrest_and_disp/arrest_date")
+                    case.find("arrest_disp_actions/arrest_disp/arrest_date")
                 ),
                 disposition_date=date_or_none(
-                    case.find("arrest_and_disp/disp_date")
+                    case.find("arrest_disp_actions/arrest_disp/disp_date")
                 ),
-                judge=text_or_blank(case.find("arrest_and_disp/disp_judge")),
+                judge=text_or_blank(case.find("arrest_disp_actions/arrest_disp/disp_judge")),
             )
         )
     return cases
@@ -499,34 +440,13 @@ md_processors = {"parse_summary": parse_md_summary,
                  "get_cases": get_md_cases}
 
 
-def get_processors(text: str) -> Dict:
-    try:
-        text.index("Magisterial", 0, 100)
-        return md_processors
-    except ValueError:
-        return cp_processors
+def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
+    """
+    Parser method that can take a source and return a Person and Cases,
+    used to build a CRecord.
+    """
+    text = get_text_from_pdf(pdf, tempdir)
 
-
-def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
-    if hasattr(pdf, "read"):
-        # the pdf attribute is a file object,
-        # and we need to write it out, for pdftotext to use it.
-        pdf_path = os.path.join(tempdir, "tmp.pdf")
-        with open(pdf_path, "wb") as f:
-            f.write(pdf.read())
-    else:
-        pdf_path = pdf
-
-    out_path = os.path.join(tempdir, "tmp.txt")
-    os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
-
-    try:
-        with open(os.path.join(tempdir, "tmp.txt"), "r") as f:
-            text = f.read()
-    except IOError:
-        raise ValueError("Cannot extract summary text..")
-
-    os.remove(os.path.join(tempdir, "tmp.txt"))
     inputs_dictionary = get_processors(text)
     summary_page_grammar = inputs_dictionary["summary_page_grammar"]
 
@@ -534,8 +454,6 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
         parsed_pages = summary_page_grammar.parse(text)
     except Exception as e:
         # pytest.set_trace()
-        print("here 3")
-        print(str(e))
         raise ValueError("Grammar cannot parse summary.")
 
     parse_summary = inputs_dictionary["parse_summary"]
@@ -545,29 +463,7 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple:
     summary_xml.append(pages_xml_tree.xpath("//header")[0])
     summary_xml.append(pages_xml_tree.xpath("//caption")[0])
     summary_xml.append(summary_body_xml_tree)
-
     defendant = get_defendant(summary_xml)
     get_cases = inputs_dictionary["get_cases"]
     cases = get_cases(summary_xml)
-    return defendant, cases
-
-
-class Summary:
-    """
-    Information from a Summary docket sheet.
-    """
-
-    def __init__(self, pdf: Union[BinaryIO, str] = None, tempdir: str = "tmp") -> None:
-        if pdf is not None:
-            defendant, cases = parse_pdf(pdf, tempdir)
-            self._defendant = defendant
-            self._cases = cases
-        else:
-            self._defendant = None
-            self._cases = None
-
-    def get_defendant(self) -> Person:
-        return self._defendant
-
-    def get_cases(self) -> List:
-        return self._cases
+    return Summary(defendant, cases)

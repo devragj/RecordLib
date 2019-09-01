@@ -63,3 +63,16 @@ def test_order_cases_by_last_action(example_case):
     example_case.arrest_date = date(2019,2,1)
     s = sorted([example_case, case2], key=Case.order_cases_by_last_action)
     s[1] == case2
+
+def test_partialcopy(example_case):
+    new_case = example_case.partialcopy()
+    assert id(new_case) != id(example_case)
+    assert len(example_case.charges) > 0
+    assert len(new_case.charges) == 0
+
+def test_years_passed_disposition(example_case):
+    example_case.disposition_date = date(2000, 1, 1)
+    assert example_case.years_passed_disposition() > 18
+
+    example_case.disposition_date = date.today()
+    assert example_case.years_passed_disposition() == 0

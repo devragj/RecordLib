@@ -69,3 +69,26 @@ def test_charge():
     assert char.offense == "Eating w/ mouth open"
     assert char.grade == "M2"
     assert char.disposition == "Guilty Plea"
+
+
+@pytest.mark.parametrize("disposition, is_a_conviction", (
+    ("Guilty",True),
+    ("Not Guilty",False),
+    ("Nolle Prossed",False),
+    ("Withdrawn",False),
+    ("",False)
+))
+def test_charge_is_conviction(example_charge, disposition, is_a_conviction):
+    example_charge.disposition = disposition
+    assert example_charge.is_conviction() == is_a_conviction
+
+def test_charge_get_section(example_charge):
+    example_charge.statute = "18 § 1234"
+    assert example_charge.get_statute_section() == 1234
+    example_charge.statute = "18 § 4815.1"
+    assert example_charge.get_statute_section() == 4815.1
+
+def test_charge_get_chapter(example_charge):
+    example_charge.statute = "18 § 1234"
+    example_charge.get_statute_chapter() == 18
+

@@ -1,4 +1,4 @@
-from RecordLib.summary import Summary
+from RecordLib.summary.pdf import parse_pdf
 from RecordLib.crecord import CRecord
 from RecordLib.common import Person
 from RecordLib.case import Case
@@ -9,20 +9,20 @@ import logging
 
 def test_init():
     try:
-        summary = Summary(
+        parse_pdf(
             pdf=open("tests/data/CourtSummaryReport.pdf", "rb"),
             tempdir="tests/data/tmp")
     except:
         pytest.fail("Creating Summary object failed.")
 
 def test_parse_pdf_from_file():
-    summary = Summary(
+    summary = parse_pdf(
         pdf=open("tests/data/CourtSummaryReport.pdf", "rb"),
         tempdir="tests/data/tmp")
     assert len(summary.get_cases()) > 0
 
 def test_parse_pdf_from_path():
-    summary = Summary(
+    summary = parse_pdf(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
     assert len(summary.get_cases()) > 0
@@ -36,7 +36,7 @@ def test_bulk_parse_pdf_from_path(caplog):
     logging.info("Successful parses:")
     for path in paths:
         try:
-            summary = Summary(os.path.join(f"tests/data/summaries", path), tempdir="tests/data/tmp")
+            summary = parse_pdf(pdf=os.path.join(f"tests/data/summaries", path), tempdir="tests/data/tmp")
             logging.info(path)
         except:
             print(path)
@@ -49,7 +49,7 @@ def test_bulk_parse_pdf_from_path(caplog):
 
 
 def test_add_summary_to_crecord():
-    summary = Summary(
+    summary = parse_pdf(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
     rec = CRecord(Person("John", "Smith", date(1998, 1, 1)))
@@ -58,7 +58,7 @@ def test_add_summary_to_crecord():
     assert rec.person.first_name != "John"
 
 def test_get_defendant():
-    summary = Summary(
+    summary = parse_pdf(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
     assert len(summary.get_defendant().first_name) > 0
@@ -66,7 +66,7 @@ def test_get_defendant():
     assert summary.get_defendant().date_of_birth > date(1900, 1, 1)
 
 def test_get_cases():
-    summary = Summary(
+    summary = parse_pdf(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
     assert len(summary.get_cases()) > 0
@@ -74,7 +74,7 @@ def test_get_cases():
     assert isinstance(summary.get_cases()[0], Case)
 
 def test_get_sentences():
-    summary = Summary(
+    summary = parse_pdf(
         pdf="tests/data/CourtSummaryReport.pdf",
         tempdir="tests/data/tmp")
     cases = summary.get_cases()
@@ -85,3 +85,17 @@ def test_get_sentences():
                     assert (isinstance(sentence.sentence_length.max_time, timedelta) or sentence.sentence_length.max_time is None)
                 except:
                     pytest.fail("Could not get sentence from charge.")
+
+def test_get_arrest_date():
+    summary = parse_pdf(
+        pdf=open("tests/data/CourtSummaryReport.pdf", "rb"),
+        tempdir="tests/data/tmp")
+    cases = summary.get_cases()
+    # There's not a standard example summary pdf to run tests on, so can't assume much about the contents of 
+    # the summary being parsed here.
+    # In the summary being parsed, an arrest date might be missing from a case, 
+    # but its unlikely there's _no_ case with an arrest date.
+    # If you're testing this on a summary that has no arrest dates ...
+    # find a different summary to use for testing.
+    arrest_dates = [case.arrest_date for case in cases if case.arrest_date is not None]
+    assert len(arrest_dates) > 0

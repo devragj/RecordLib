@@ -2,12 +2,23 @@ import pytest
 from RecordLib.case import Case
 from RecordLib.common import Charge, Person, Sentence, SentenceLength
 from RecordLib.crecord import CRecord
-from RecordLib.summary import Summary
+from RecordLib.summary.pdf import parse_pdf as parse_summary_pdf
+from RecordLib.docket import Docket
 from datetime import date
+import redis
+from RecordLib.redis_helper import RedisHelper
+import os
 
 @pytest.fixture
 def example_summary():
-    return Summary("tests/data/CourtSummaryReport.pdf", tempdir="tests/data/tmp")
+    return parse_summary_pdf(
+        pdf="tests/data/CourtSummaryReport.pdf", tempdir="tests/data/tmp")
+
+@pytest.fixture
+def example_docket():
+    docket_path = os.listdir("tests/data/dockets")[0]
+    d, errs = Docket.from_pdf(os.path.join("tests","data","dockets",docket_path), tempdir="tests/data/tmp")
+    return d
 
 @pytest.fixture
 def example_person():
@@ -24,6 +35,8 @@ def example_sentencelength():
         max_time=("25", "Year")
     )
 
+
+
 @pytest.fixture
 def example_sentence(example_sentencelength):
     return Sentence(
@@ -32,6 +45,8 @@ def example_sentence(example_sentencelength):
         sentence_period="180 days",
         sentence_length=example_sentencelength
     )
+
+
 
 @pytest.fixture
 def example_charge(example_sentence):
@@ -63,3 +78,14 @@ def example_crecord(example_person, example_case):
     return CRecord(
         person=example_person,
         cases = [example_case])
+
+@pytest.fixture
+def redis_helper():
+    """ A redis client.
+
+    N.B. I don't know a way for this fixture to yield r and the rollback whatever a test does with the database. So tests using this fixture need to roll themselves back.
+    """
+    redis_helper = RedisHelper(host='localhost', port=6379, db=0,decode_responses=True, env="test")
+    yield redis_helper
+    for key in redis_helper.r.scan_iter("test:*"):
+        redis_helper.r.delete(key)

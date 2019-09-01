@@ -2,7 +2,7 @@
 Collect rule-functions that take a record and return an analysis of
 how the rule applies to the record.
 
-18 PA 9122 deals with Expungements
+18 Pa.C.S. 9122 deals with Expungements
 https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
 """
 from RecordLib.crecord import CRecord
@@ -18,7 +18,7 @@ def expunge_over_70(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
     """
     Analyze a crecord for expungements if the defendant is over 70.
 
-    18 PA 9122(b)(1) provides for expungements of an individual who
+    18 Pa.C.S. 9122(b)(1) provides for expungements of an individual who
     is 70 or older, and has been free of arrest or prosecution for 10
     years following the final release from confinement or supervision.
     """
@@ -51,7 +51,7 @@ def expunge_deceased(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
     """
     Analyze a crecord for expungments if the individual has been dead for three years.
 
-    18 PA 9122(b)(2) provides for expungement of records for an individual who has been dead for three years.
+    18 Pa.C.S. 9122(b)(2) provides for expungement of records for an individual who has been dead for three years.
     """
     conditions = {"deceased_three_years": crecord.person.years_dead() > 3}
 
@@ -75,7 +75,7 @@ def expunge_summary_convictions(
     """
     Analyze crecord for expungements of summary convictions.
 
-    18 PA 9122(b)(3)(i) and (ii) provide for expungement of summary convictions if the individual has been free of arrest or prosecution for five years following the conviction for the offense.
+    18 Pa.C.S. 9122(b)(3)(i) and (ii) provide for expungement of summary convictions if the individual has been free of arrest or prosecution for five years following the conviction for the offense.
 
     Not available if person got ARD for certain offenses listed in (b.1)
 
@@ -128,7 +128,7 @@ def expunge_summary_convictions(
 
 def expunge_nonconvictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
     """
-    18 Pa. 9122(a) provides that non-convictions (cases are closed with no disposition recorded) "shall be expunged."
+    18 Pa.C.S. 9122(a) provides that non-convictions (cases are closed with no disposition recorded) "shall be expunged."
     """
     conditions = {"Nonconvictions can always be expunged.": True}
     expungements = []
@@ -137,7 +137,8 @@ def expunge_nonconvictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, d
     modified_record = CRecord(person=crecord.person)
     if all(conditions.values()):
         for case in crecord.cases:
-            any_expungements = False
+            unexpunged_case = copy.deepcopy(case)
+            unexpunged_case.charges = []
             expungements_this_case = {
                 "docket_number": case.docket_number,
                 "charges": list()}
@@ -156,12 +157,12 @@ def expunge_nonconvictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, d
                 ):
                     num_expungeable_charges += 1
                     expungements_this_case["charges"].append(charge)
-                    any_expungements = True
+                else:
+                    unexpunged_case.charges.append(charge)
             if len(expungements_this_case["charges"]) > 0:
                 expungements.append(expungements_this_case)
-
-            if any_expungements is False:
-                modified_record.cases.append(copy.deepcopy(case))
+            if len(expungements_this_case["charges"]) < len(case.charges):
+                modified_record.cases.append(unexpunged_case)
 
     if num_expungeable_charges == 0:
         conclusion = "No expungements possible"
