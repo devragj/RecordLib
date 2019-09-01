@@ -100,21 +100,33 @@ def names(dest_path: str, scraper_url: str, doc_type: str, input_csv: str, outpu
             name = row["Name"].split(" ")
             first_name = name[0]
             last_name = name[-1]
-            for court_to_search in courts:
-                resp = requests.post(f"{scraper_url}/searchName/{court_to_search}",
-                    json={
-                        "first_name": first_name,
-                        "last_name": last_name,
-                        "dob": row["DOB"]
-                    })
-                if resp.status_code == 200:
-                    logging.info(f"Successful search for {row['Name']}")
-                    if doc_type.lower() in ["s", "summary", "summaries", "both"]:
-                        # download the summary
-                        try:
-                            logging.info("... Downloading summary")
-                            row["url"] = resp.json()["dockets"][0]["summary_url"]
-                            row["doctype"] = "summary"
+            resp = requests.post(f"{scraper_url}/searchName/{court}",
+                json={
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "dob": row["DOB"]
+                })
+            if resp.status_code == 200:
+                logging.info(f"Successful search for {row['Name']}")
+                if doc_type.lower() in ["s", "summary", "summaries", "both"]:
+                    # download the summary
+                    try:
+                        logging.info("... Downloading summary")
+                        row["url"] = resp.json()["dockets"][0]["summary_url"]
+                        row["doctype"] = "summary"
+                        download(row["url"], dest_path, row["Name"], doc_type)
+                    except:
+                        logging.error(f"... No summary found for {row['Name']}.")
+                        row["url"] = ""
+                        row["doctype"] = ""
+                    if output_csv: writer.writerow(row)
+                if doc_type.lower() in ["d", "docket", "both"]:
+                    logging.info("... Downloading dockets")
+                    try:
+                        for i, docket in enumerate(resp.json()["dockets"]):
+                            logging.info(f"... ({ str(i) })")
+                            row["url"] = docket["docket_sheet_url"]
+                            row["doctype"] = "docket"
                             if output_csv: writer.writerow(row)
                             download(row["url"], dest_path, row["Name"], doc_type)
                         except:
