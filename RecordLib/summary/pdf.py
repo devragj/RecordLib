@@ -445,6 +445,7 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     Parser method that can take a source and return a Person and Cases,
     used to build a CRecord.
     """
+
     text = get_text_from_pdf(pdf, tempdir)
 
     inputs_dictionary = get_processors(text)
