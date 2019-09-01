@@ -69,6 +69,32 @@ Options:
   --help                     Show this message and exit.
 ```
 
+### React App
+The backend requires the command-line utility pdftotext.  This utility is included in
+most Linux distributions.  For other operating systems, find it here: 
+http://www.xpdfreader.com/download.html.  Download the command line tools and 
+place pdftotext somewhere in your PATH.
+
+Initial setup:
+For the backend, create a directory named `tmp` 
+inside the directory `backend/cleanslate`.
+Run `pipenv install` within the outer RecordLib directory.
+For the frontend, run `yarn install` within the directory `frontend`.
+
+To run the app, first start the Django REST backend.
+To start the backend, in the outer RecordLib directory,
+type `pipenv shell`.
+Then `cd backend` and then `python manage.py runserver`.
+
+Next, start the frontend.
+To do this, open a new terminal window
+and navigate to  the `frontend` directory. 
+Then type `yarn start`. 
+
+Currently, you can upload a Summary PDF.
+The app will display information from the `CRecord`
+generated from the Summary.
+
 ## Aspirational Example Usage
 
 	person = Person(first_name="Joan", last_name="Smith", date_of_birth=date(1970, 1, 1))
