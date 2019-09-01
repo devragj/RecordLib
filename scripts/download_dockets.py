@@ -93,17 +93,18 @@ def names(dest_path: str, scraper_url: str, doc_type: str, input_csv: str, outpu
                 })
             if resp.status_code == 200:
                 logging.info(f"Successful search for {row['Name']}")
-                pytest.set_trace()
                 if doc_type.lower() in ["s", "summary", "summaries", "both"]:
                     # download the summary
                     try:
                         logging.info("... Downloading summary")
                         row["url"] = resp.json()["dockets"][0]["summary_url"]
                         row["doctype"] = "summary"
-                        if output_csv: writer.writerow(row)
                         download(row["url"], dest_path, row["Name"], doc_type)
                     except:
                         logging.error(f"... No summary found for {row['Name']}.")
+                        row["url"] = ""
+                        row["doctype"] = ""
+                    if output_csv: writer.writerow(row)
                 if doc_type.lower() in ["d", "docket", "both"]:
                     logging.info("... Downloading dockets")
                     try:
