@@ -129,10 +129,10 @@ def names(dest_path: str, scraper_url: str, doc_type: str, input_csv: str, outpu
                             row["doctype"] = "docket"
                             if output_csv: writer.writerow(row)
                             download(row["url"], dest_path, row["Name"], doc_type)
-                        except:
-                            logging.error(f"... No summary found for {row['Name']}.")
-                            row["url"] = ""
-                            row["doctype"] = "none"
+                    except:
+                        logging.error(f"... No summary found for {row['Name']}.")
+                        row["url"] = ""
+                        row["doctype"] = "none"
                     if doc_type.lower() in ["d", "docket", "both"]:
                         logging.info("... Downloading dockets")
                         try:
