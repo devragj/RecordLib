@@ -628,6 +628,7 @@ def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
                 # Conditions that determine whether this charge is sealable
                 #  See 91 Pa.C.S. 9122.1(b)(1)
                 charge_decision.reasoning = [
+                    charge.set_grade(),
                     is_misdemeanor_or_ungraded(charge),
                     no_danger_to_person_offense(
                         charge,

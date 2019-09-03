@@ -8,4 +8,5 @@ data/
 .pytest_cache
 .mypy_cache
 .vscode
+.env
 *.sqlite3

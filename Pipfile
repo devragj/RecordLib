@@ -10,6 +10,7 @@ recordlib = {path = ".",editable = true}
 black = "*"
 click = "*"
 hypothesis = "*"
+mysql-connector-python = "*"
 
 [packages]
 cerberus = "*"
