@@ -69,7 +69,58 @@ Options:
   --help                     Show this message and exit.
 ```
 
-### React App
+## Developing
+
+The whole project lives in a single repository, but it has three pieces:
+
+1. The legal logic in `RecordLib/`
+2. A Django web api in `backend/`
+3. A Reach frontend in `frontend/`
+
+To start developing, clone the repository and install dependencies from the root directory with `pipenv install`.
+
+### Legal logic
+
+The `RecordLib` directory contains modules for parsing and analyzing records. 
+
+#### Setup
+
+`RecordLib` also depends on the utility pdftotext. This utility is included in
+most Linux distributions.  For other operating systems, find it here: 
+http://www.xpdfreader.com/download.html.  Download the command line tools and 
+place pdftotext somewhere in your PATH.
+
+The library also recommends that you set up a database of mappings from statutes to offense grades.
+RecordLib needs to be able to guess the grade of an offense, when the grade is not recorded. The project
+currently uses the same implementation as the ExpungementGenerator. There is a mysql database (sql dump is here: https://github.com/NateV/Expungement-Generator/blob/master/Expungement-Generator/migrations/2%20-%20cpcms_aopc_summary.sql) 
+
+Set up a mysql database and import this dump file `mysql -u username -p database_name < file.sql`.
+
+Then set up a `.env` file in the root directory of the project with the variables:
+
+```
+mysql_host=localhost
+mysql_user=myuser
+mysql_pw=WhateverYourPasswordIs
+```
+
+Reload your virtual environment with `exit` and `pipenv shell`. You can confirm if the database is working with `pytest tests/test_getgrade.py`. If the database connection fails, you'll see a Error in the test's output and the tests will fail. 
+
+#### Testing
+
+Run automated tests with `pytest`.
+
+Grammars need to be tested on lots of different documents. The tests include tests that will try to parse all the dockets in a folder `tests/data/[summaries|dockets]`. If you want those tests to be meaningful, you need to put dockets there.
+
+You could do this manually by downloading dockets and saving them there. You can also use a helper script that randomly generates docket numbers and then uses [natev/DocketScraperAPI](https://hub.docker.com/r/natev/docketscraper_api) to download those dockets. To do this
+
+1. download and run the DocketScraperAPI image with `docker run -p 5000:8800 natev/docketscraper_api`
+2. in this project environment, run `download (summaries | dockets) [-n = 1]`
+
+
+
+### Django backend 
+
 The backend requires the command-line utility pdftotext.  This utility is included in
 most Linux distributions.  For other operating systems, find it here: 
 http://www.xpdfreader.com/download.html.  Download the command line tools and 
@@ -78,13 +129,15 @@ place pdftotext somewhere in your PATH.
 Initial setup:
 For the backend, create a directory named `tmp` 
 inside the directory `backend/cleanslate`.
-Run `pipenv install` within the outer RecordLib directory.
 For the frontend, run `yarn install` within the directory `frontend`.
 
 To run the app, first start the Django REST backend.
 To start the backend, in the outer RecordLib directory,
 type `pipenv shell`.
 Then `cd backend` and then `python manage.py runserver`.
+
+
+### React App frontend
 
 Next, start the frontend.
 To do this, open a new terminal window
@@ -94,6 +147,7 @@ Then type `yarn start`.
 Currently, you can upload a Summary PDF.
 The app will display information from the `CRecord`
 generated from the Summary.
+
 
 ## Aspirational Example Usage
 
@@ -153,18 +207,7 @@ Right now I'm working on several pieces more or less simultaneously.
 3. RuleDef functions - functions that take a CRecord and apply a single legal rule to it. I'm trying to figure out the right thing to return.
 
 
-## Testing
 
-Run automated tests with `pytest`.
-
-Grammars need to be tested on lots of different documents. The tests include tests that will try to parse all the dockets in a folder `tests/data/[summaries|dockets]`. If you want those tests to be meaningful, you need to put dockets there.
-
-You could do this manually by downloading dockets and saving them there. You can also use a helper script that randomly generates docket numbers and then uses [natev/DocketScraperAPI](https://hub.docker.com/r/natev/docketscraper_api) to download those dockets. To do this
-
-1. download and run the DocketScraperAPI image with `docker run -p 5000:8800 natev/docketscraper_api`
-2. in this project environment, run `download (summaries | dockets) [-n = 1]`
-
-TODO I would like to try out `hypothesis` for property-based testing.
 
 
 ## Developing Grammars
