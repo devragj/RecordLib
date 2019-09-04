@@ -90,5 +90,22 @@ def test_charge_get_section(example_charge):
 
 def test_charge_get_chapter(example_charge):
     example_charge.statute = "18 § 1234"
-    example_charge.get_statute_chapter() == 18
+    assert example_charge.get_statute_chapter() == 18
 
+def test_charge_get_statute_subsections(example_charge):
+    example_charge.statute = "75 § 3802 §§ A1*"
+    assert example_charge.get_statute_subsections() == "A1*"
+
+def test_charge_get_grade(example_charge):
+    example_charge.statute = "10 § 162.12"
+
+    # Grade doesn't change if its already set.
+    example_charge.grade = "F1"
+    assert example_charge.set_grade()
+    assert example_charge.grade == "F1"
+
+    # But if the grade is blank, then a new grade will be assigned.
+    example_charge.grade = ""
+    grade_decision = example_charge.set_grade()
+    assert grade_decision.value == "M1"
+    assert example_charge.grade == "M1"

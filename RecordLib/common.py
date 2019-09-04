@@ -13,6 +13,8 @@ from datetime import timedelta
 from typing import Optional
 from dateutil.relativedelta import relativedelta
 import json
+from RecordLib.decision import Decision
+from RecordLib.guess_grade import guess_grade
 
 @dataclass
 class Person:
@@ -127,6 +129,31 @@ class Charge:
     disposition: str
     sentences: List[Sentence]
 
+    def set_grade(self) -> Decision:
+        """ Ensure the grade property of this Charge is set and return a decision explaining how it was set.
+
+        Many charges are ungraded because of clerical deficiencies, especially in Philadelphia. 
+        Knowing the grade of an offense is critical to many parts of an analysis. 
+
+        If a charge already has a grade assigned, this function will simply return it. If the charge 
+        does not yet have a grade assigned, then this function will assign one using a database to guess the 
+        appropriate grade. 
+
+        If the function cannot find the right grade, the empty string will be assigned. 
+
+        The function will return a Decision explaining how it set the grade.
+        """
+        d = Decision(name=f"Grade for the offense, {self.statute}")
+        if self.grade is not None and self.grade != "":
+            d.value = self.grade
+            d.reasoning = f"A grade of {self.grade} is already assigned."
+        else:
+            grades = guess_grade(self)
+            self.grade = grades[0][0]
+            d.value = self.grade
+            d.reasoning = f"Assigned {self.grade}, with probablity {grades[0][1]}. Other possibilities are {grades[1:]}."
+        return d
+
     def is_conviction(self) -> bool:
         """Is this charge a conviction?
 
@@ -137,7 +164,7 @@ class Charge:
         else:
             return False
 
-    def get_statute_chapter(self) -> int:
+    def get_statute_chapter(self) -> float:
         patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+).*")
         match = patt.match(self.statute)
         if match:
@@ -145,7 +172,7 @@ class Charge:
         else:
             return None
 
-    def get_statute_section(self) -> int:
+    def get_statute_section(self) -> float:
         patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*).*")
         match = patt.match(self.statute)
         if match:
@@ -155,7 +182,7 @@ class Charge:
 
 
     def get_statute_subsections(self) -> str:
-        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*)\s*(?P<subsections>[\(\)A-Za-z0-9\.]+).*")
+        patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*)\s*§§\s*(?P<subsections>[\(\)A-Za-z0-9\.\*]+)\s*.*")
         match = patt.match(self.statute)
         if match:
             return match.group("subsections")
