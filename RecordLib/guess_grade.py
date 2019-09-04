@@ -1,6 +1,7 @@
 from typing import Tuple, Union, List
 import mysql.connector
 import os
+import logging 
 
 def int_or_float(n: float) -> Union[int, float]:
     """
@@ -15,16 +16,26 @@ def percent_to_float(s: str) -> float:
     """
     Return the float representation of a string containing a percent.
 
-    For ex., "10%" returns 10.0
+    For ex., "10%" returns 0.1
+
+    Args:
+        s (str): A string representing a percent, such as "10%"
+    
+    Returns:
+        A float representing a probability, such as 0.1
     """
     try:
-        return float(s.strip("%"))
+        return float(s.strip("%"))/100
     except:
         return 0.0
 
 def guess_grade(ch: "Charge") -> List[Tuple[str, float]]:
     """
     Guess the grade of a charge.
+
+    This implementation of a grade guesser uses the Expungement Generator's CPCMS AOPC database. 
+    
+    See the mysql dump file at https://github.com/NateV/Expungement-Generator/blob/master/Expungement-Generator/migrations/2%20-%20cpcms_aopc_summary.sql 
 
     Args:
         ch (Charge): A criminal Charge.
@@ -34,10 +45,14 @@ def guess_grade(ch: "Charge") -> List[Tuple[str, float]]:
     """
     if ch.get_statute_section() == "" or ch.get_statute_chapter() == "":
         return ("Unknown", 1)
-    cnx = mysql.connector.connect(user=os.environ['mysql_user'], password=os.environ['mysql_pw'],
-                              host=os.environ['mysql_host'],
-                              database='cpcms_aopc_summary')
-    cur = cnx.cursor()
+    try:
+        cnx = mysql.connector.connect(user=os.environ['mysql_user'], password=os.environ['mysql_pw'],
+                                      host=os.environ['mysql_host'],
+                                      database='cpcms_aopc_summary')
+        cur = cnx.cursor()
+    except:
+        logging.error("mysql error. Is the CPCMS database set up? Returning a guess that this charge is ungraded.")
+        return [("", 1)]
     chapter = int_or_float(ch.get_statute_chapter())
     section = int_or_float(ch.get_statute_section())
     if ch.get_statute_subsections() == "":
