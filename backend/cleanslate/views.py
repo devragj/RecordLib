@@ -4,6 +4,7 @@ from rest_framework import status
 
 from RecordLib.crecord import CRecord
 from RecordLib.summary.pdf import parse_pdf
+from RecordLib.serializers import to_serializable
 from RecordLib.summary import Summary
 from RecordLib.analysis import Analysis
 from RecordLib.ruledefs import (
@@ -17,27 +18,6 @@ import json
 import os
 import os.path
 from datetime import *
-
-
-def serialize(obj):
-    """Temporary JSON serializer.
-
-    Todo:
-        Replace this with updated code from RecordLib.serializers.py.
-    """
-    if isinstance(obj, date):
-        serial = obj.isoformat()
-        return serial
-
-    if isinstance(obj, time):
-        serial = obj.isoformat()
-        return serial
-
-    if isinstance(obj, timedelta):
-        serial = str(obj)
-        return serial
-
-    return obj.__dict__
 
 
 class FileUploadView(APIView):
@@ -61,11 +41,10 @@ class FileUploadView(APIView):
                 tempdir=tempdir)
             rec.add_summary(summary)
 
-            json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=serialize)
+            json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
             # Uncomment for human-readable JSON.  Also comment out the above line.
-            # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=serialize)
+            # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)
             return Response(json_to_send, status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
-
