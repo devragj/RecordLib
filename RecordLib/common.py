@@ -2,19 +2,16 @@
 Common, simple dataclasses live here.
 """
 from __future__ import annotations
-from dataclasses import dataclass, asdict, is_dataclass
-from typing import List, Tuple
-import functools
-from datetime import date, datetime
-import pytest
+from dataclasses import dataclass
+from typing import List, Tuple, Optional
+from datetime import date, timedelta
 import re
 import logging
-from datetime import timedelta
-from typing import Optional
 from dateutil.relativedelta import relativedelta
 import json
 from RecordLib.decision import Decision
 from RecordLib.guess_grade import guess_grade
+
 
 @dataclass
 class Person:
@@ -47,6 +44,7 @@ class Person:
         else:
             return float("-Inf")
 
+
 class SentenceLength:
     """
     Track info about the length of a sentence
@@ -56,18 +54,19 @@ class SentenceLength:
     max_time: timedelta
 
     @staticmethod
-    def calculate_days(length: str, unit: str) -> float:
+    def calculate_days(length: str, unit: str) -> Optional[timedelta]:
         """
         Calculate the number of days represented by the pair `length` and `unit`.
 
-        Sentences are ovent given in terms like "90 days" or "100 months". This method attempts to calculate the number of days that these phrases describe.
+        Sentences are often given in terms like "90 days" or "100 months".
+        This method attempts to calculate the number of days that these phrases describe.
 
         Args:
             length (str): A string that can be converted to an integer
             unit (str): A unit of time, Days, Months, or Years
         """
         if length == "" or str == "":
-            return(timedelta(days=0))
+            return timedelta(days=0)
         if re.match("day", unit.strip(), re.IGNORECASE):
             try:
                 return timedelta(days=float(length.strip()))
@@ -112,7 +111,7 @@ class Sentence:
 
     def sentence_complete_date(self):
         try:
-            return self.sentence_length.max_time + self.sentence_date
+            return self.sentence_date + self.sentence_length.max_time
         except:
             return None
 
@@ -164,7 +163,7 @@ class Charge:
         else:
             return False
 
-    def get_statute_chapter(self) -> float:
+    def get_statute_chapter(self) -> Optional[float]:
         patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+).*")
         match = patt.match(self.statute)
         if match:
@@ -172,7 +171,7 @@ class Charge:
         else:
             return None
 
-    def get_statute_section(self) -> float:
+    def get_statute_section(self) -> Optional[float]:
         patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*).*")
         match = patt.match(self.statute)
         if match:
@@ -180,11 +179,10 @@ class Charge:
         else:
             return None
 
-
     def get_statute_subsections(self) -> str:
         patt = re.compile("^(?P<chapt>\d+)\s*§\s(?P<section>\d+\.?\d*)\s*§§\s*(?P<subsections>[\(\)A-Za-z0-9\.\*]+)\s*.*")
         match = patt.match(self.statute)
         if match:
             return match.group("subsections")
         else:
-             return ""
+            return ""
