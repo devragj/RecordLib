@@ -11,6 +11,8 @@ black = "*"
 click = "*"
 hypothesis = "*"
 mysql-connector-python = "*"
+pytest-django = "*"
+pytest-pythonpath = "*"
 
 [packages]
 cerberus = "*"
@@ -18,7 +20,7 @@ pyyaml = "*"
 lxml = "*"
 recordlib = {path = ".", editable = true}
 requests = "*"
-e1839a8 = {path = ".",editable = true}
+e1839a8 = {path = ".", editable = true}
 black = "*"
 python-dateutil = "*"
 redis = "*"
