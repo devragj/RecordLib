@@ -6,7 +6,7 @@ name = "pypi"
 [dev-packages]
 pytest = "*"
 mypy = "*"
-recordlib = {path = ".",editable = true}
+recordlib = {path = ".", editable = true}
 black = "*"
 click = "*"
 hypothesis = "*"
