@@ -21,11 +21,10 @@ def get_text_from_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> str:
         pdf_path = pdf
     out_path = os.path.join(tempdir, "tmp.txt")
     os.system(f'pdftotext -layout -enc "UTF-8" { pdf_path } { out_path }')
-
     try:
         with open(os.path.join(tempdir, "tmp.txt"), "r", encoding="utf8") as f:
             text = f.read()
-    except IOError:
+    except IOError as e:
         raise ValueError("Cannot extract pdf text..")
 
     os.remove(os.path.join(tempdir, "tmp.txt"))
