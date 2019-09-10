@@ -45,6 +45,7 @@ class Person:
             return float("-Inf")
 
 
+@dataclass
 class SentenceLength:
     """
     Track info about the length of a sentence
@@ -89,13 +90,15 @@ class SentenceLength:
             logging.warning(f"Could not understand unit of time: { unit }")
         return None
 
-    def __init__(self, min_time: Tuple[str], max_time: Tuple[str]):
+    @classmethod
+    def from_tuples(cls, min_time: Tuple[str, str], max_time: Tuple[str, str]):
         """
         With two tuples in the form (time-as-string, unit),
         create an object that represents a length of a sentence.
         """
-        self.min_time = SentenceLength.calculate_days(*min_time)
-        self.max_time = SentenceLength.calculate_days(*max_time)
+        min_time = SentenceLength.calculate_days(*min_time)
+        max_time = SentenceLength.calculate_days(*max_time)
+        return cls(min_time=min_time, max_time=max_time)
 
 
 @dataclass
