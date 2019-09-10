@@ -38,9 +38,9 @@ def test_sentence():
         sentence_date=date(2010, 1, 1),
         sentence_type="Probation",
         sentence_period="90 days",
-        sentence_length=SentenceLength(
-            min_time=("90","Day"),
-            max_time=("90","Day")
+        sentence_length=SentenceLength.from_tuples(
+            min_time=("90", "Day"),
+            max_time=("90", "Day")
         )
     )
     assert st.sentence_complete_date() == date(2010, 1, 1) + timedelta(days=90)
@@ -52,7 +52,7 @@ def test_calculate_days():
     assert SentenceLength.calculate_days(" Other", "Values") is None
 
 def test_SentenceLength():
-    lng = SentenceLength(
+    lng = SentenceLength.from_tuples(
         min_time=("30", " Day(s)"),
         max_time=("1", "Year(s)")
     )

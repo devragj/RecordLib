@@ -31,8 +31,8 @@ def example_person():
 
 @pytest.fixture
 def example_sentencelength():
-    return SentenceLength(
-        min_time=("10","Year"),
+    return SentenceLength.from_tuples(
+        min_time=("10", "Year"),
         max_time=("25", "Year")
     )
 

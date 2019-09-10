@@ -23,9 +23,6 @@ from RecordLib.grammars.summary import (
     md_summary_body_nonterminals,
 )
 from RecordLib.parsingutilities import get_text_from_pdf
-from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
-from RecordLib.case import Case
-from RecordLib.common import Person, Charge, Sentence, SentenceLength
 from RecordLib.overflow import (
     MDJFirstCoupleLinesOverflow, MDJOverflowInChargeList)
 import pytest
@@ -305,7 +302,7 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                         sentence_period=text_or_blank(
                             sentence.find("program_period")
                         ),
-                        sentence_length=SentenceLength(
+                        sentence_length=SentenceLength.from_tuples(
                             min_time=(
                                 text_or_blank(
                                     sentence.find("sentence_length/min_length/time")
@@ -345,7 +342,7 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                         sentence_period=text_or_blank(
                             sentence.find("program_period")
                         ),
-                        sentence_length=SentenceLength(
+                        sentence_length=SentenceLength.from_tuples(
                             min_time=(
                                 text_or_blank(
                                     sentence.find("sentence_length/min_length/time")
