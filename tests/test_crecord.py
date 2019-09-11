@@ -4,6 +4,7 @@ import pytest
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import copy
+from RecordLib.serializers import to_serializable
 
 def test_init():
     dob = date(2010, 1,1)
@@ -96,3 +97,8 @@ def test_invalid_schema():
                 "first_name": "Blank"
             }
         })
+
+def test_from_dict(example_crecord):
+    serialized = to_serializable(example_crecord)
+    crec2 = CRecord.from_dict(serialized)
+    assert example_crecord.person.last_name == crec2.person.last_name

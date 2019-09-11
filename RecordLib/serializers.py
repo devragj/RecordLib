@@ -1,7 +1,9 @@
 import functools
 from RecordLib.common import Charge, Person, Sentence, SentenceLength
 from RecordLib.case import Case
-from RecordLib.ruledefs import Decision
+from RecordLib.crecord import CRecord
+from RecordLib.decision import Decision
+from RecordLib.analysis import Analysis
 from datetime import date, datetime, timedelta
 
 
@@ -15,14 +17,20 @@ def to_serializable(val):
     """
     return str(val)
 
+@to_serializable.register(type(None))
+def td_none(n):
+    return ""
+
+@to_serializable.register(list)
+def ts_list(a_list):
+    return [to_serializable(i) for i in a_list]
 
 @to_serializable.register(Case)
 @to_serializable.register(Charge)
 @to_serializable.register(Person)
 @to_serializable.register(Sentence)
-@to_serializable.register(SentenceLength)
 def ts_object(an_object):
-    return an_object.__dict__
+    return {k:to_serializable(v) for k, v in an_object.__dict__.items() if v is not None}
 
 
 @to_serializable.register(date)
@@ -51,7 +59,27 @@ def td_decision(dec):
         "reasoning": to_serializable(dec.reasoning)
     }
 
+@to_serializable.register(CRecord)
+def td_crecord(crec):
+    return {
+        "person": to_serializable(crec.person),
+        "cases": [to_serializable(c) for c in crec.cases]
+    }
 
-# @to_serializable.register(SentenceLength)
-# def ts_sentencelength(sentence_length):
-#     return f"{sentence_length.min_time} days to {sentence_length.max_time} days"
+    
+@to_serializable.register(SentenceLength)
+def ts_sentencelength(sentence_length):
+     return {
+         "min_time": sentence_length.min_time.days,
+         "min_unit": "days",
+         "max_time": sentence_length.max_time.days,
+         "max_unit": "days"
+     }
+
+@to_serializable.register(Analysis)
+def ts_analysis(analysis):
+    return {
+        "rec": to_serializable(analysis.rec),
+        "modified_rec": to_serializable(analysis.modified_rec),
+        "analysis": to_serializable(analysis.analysis)
+    }

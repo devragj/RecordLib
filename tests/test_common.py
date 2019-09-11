@@ -2,6 +2,7 @@ from RecordLib.common import *
 from dataclasses import asdict
 from datetime import date, timedelta
 import pytest
+from RecordLib.serializers import to_serializable
 
 def test_person():
     per = Person("John", "Smeth", date(2010, 1, 1), date(2020, 1, 1))
@@ -109,3 +110,9 @@ def test_charge_get_grade(example_charge):
     grade_decision = example_charge.set_grade()
     assert grade_decision.value == "M1"
     assert example_charge.grade == "M1"
+
+
+def test_person_from_dict(example_person):
+    ser = to_serializable(example_person)
+    per2 = Person.from_dict(ser)
+    assert example_person.last_name == per2.last_name

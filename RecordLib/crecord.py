@@ -63,6 +63,21 @@ class CRecord:
     Track information about a criminal record
     """
 
+    @staticmethod
+    def from_dict(dct: dict) -> Optional[CRecord]:
+        try:
+            try:
+                person = Person.from_dict(dct["person"])
+            except: 
+                person = None
+            try: 
+                cases = [Case.from_dict(c) for c in dct["cases"]]
+            except:
+                cases = []
+            return CRecord(person = person, cases = cases)
+        except:
+            return None
+
     person: Person
     cases: List[Case]
     validator: cb.Validator
@@ -79,12 +94,14 @@ class CRecord:
             self.cases = cases
 
     def to_dict(self) -> dict:
+        # TODO Delete
         return {
             "person": asdict(self.person),
             "cases": [c.to_dict() for c in self.cases],
         }
 
     def validate(self, crecord_schema: str = "CRecord.yml") -> bool:
+        # TODO Delete
         schema = yaml.load(open(crecord_schema, "r"), Loader=yaml.SafeLoader)
         self.validator = cb.Validator(schema)
         data = self.to_dict()

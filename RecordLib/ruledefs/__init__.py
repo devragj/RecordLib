@@ -6,4 +6,4 @@ from .ruledefs import (
 )
 
 from .seal import (
-    seal_convictions, Decision, not_felony1)
+    seal_convictions, not_felony1)
