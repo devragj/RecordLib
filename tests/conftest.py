@@ -8,7 +8,8 @@ from datetime import date
 import redis
 from RecordLib.redis_helper import RedisHelper
 import os
-from django.test import Client 
+#from django.test import Client 
+from rest_framework.test import APIClient
 
 @pytest.fixture
 def example_summary():
@@ -95,4 +96,4 @@ def redis_helper():
 @pytest.fixture
 def dclient():
     """ Django test client """
-    return Client()
+    return APIClient()

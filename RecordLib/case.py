@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import asdict
 from RecordLib.common import Charge, Person, Sentence
-from typing import List
+from typing import List, Optional
 from datetime import date
 import pytest
 import logging
@@ -23,6 +23,25 @@ class Case:
     arrest_date: date
     disposition_date: date
     judge: str
+
+    @staticmethod
+    def from_dict(dct: str) -> Optional[Case]:
+        """Create a Case from a dict"""
+        try:
+            return Case(
+                status = dct.get("status"),
+                county = dct.get("county"),
+                docket_number = dct["docket_number"], # if there's no docket_number at least, this should fail
+                otn = dct.get("otn"),
+                dc = dct.get("dc"),
+                charges = [Charge.from_dict(c) for c in (dct.get("charges") or [])],
+                fines_and_costs = dct.get("fines_and_costs"),
+                arrest_date = dct.get("arrest_date"),
+                disposition_date = dct.get("disposition_date"),
+                judge = dct.get("judge")
+            )
+        except:
+            return None
 
     def __init__(
         self,

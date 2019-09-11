@@ -3,6 +3,7 @@ from RecordLib.common import Charge
 import pytest
 from datetime import date
 from dataclasses import asdict
+from RecordLib.serializers import to_serializable
 
 
 def test_case(example_sentence):
@@ -76,3 +77,10 @@ def test_years_passed_disposition(example_case):
 
     example_case.disposition_date = date.today()
     assert example_case.years_passed_disposition() == 0
+
+
+def test_from_dict(example_case):
+    assert Case.from_dict({"invalid": "stuff"}) is None
+    ser = to_serializable(example_case)
+    c2 = Case.from_dict(ser)
+    assert c2.docket_number == example_case.docket_number

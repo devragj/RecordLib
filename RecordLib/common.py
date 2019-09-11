@@ -24,6 +24,17 @@ class Person:
     date_of_birth: date
     date_of_death: Optional[date] = None
 
+    @staticmethod
+    def from_dict(dct: dict) -> Person:
+        """ Create a Person from a dict decribing one. """
+        if dct is not None:
+            return Person(
+                first_name = dct.get("first_name"),
+                last_name = dct.get("last_name"),
+                date_of_birth = dct.get("date_of_birth"), 
+                date_of_death = dct.get("date_of_death")
+            )
+
     def age(self) -> int:
         """ Age in years """
         today = date.today()
@@ -53,6 +64,22 @@ class SentenceLength:
 
     min_time: timedelta
     max_time: timedelta
+
+    @staticmethod
+    def from_dict(dct: dict) -> SentenceLength:
+        """
+        Create a SentenceLength object from a dict.
+
+        The dict will not have tuples as __init__ would expect, but rather four keys: 
+        * min_unit
+        * min_time
+        * max_unit
+        * max_time
+        """
+        slength = SentenceLength(
+            (str(dct.get("min_time")), dct.get("min_unit")),
+            (str(dct.get("max_time")), dct.get("max_unit")))
+        return slength
 
     @staticmethod
     def calculate_days(length: str, unit: str) -> Optional[timedelta]:
@@ -112,6 +139,11 @@ class Sentence:
     sentence_period: str
     sentence_length: SentenceLength
 
+    @staticmethod
+    def from_dict(dct: dict) -> Sentence:
+        dct["sentence_length"] = SentenceLength.from_dict(dct.get("sentence_length"))
+        return Sentence(**dct)
+
     def sentence_complete_date(self):
         try:
             return self.sentence_date + self.sentence_length.max_time
@@ -130,6 +162,14 @@ class Charge:
     statute: str
     disposition: str
     sentences: List[Sentence]
+
+    @staticmethod
+    def from_dict(dct: dict) -> Charge:
+        try:
+            dct["sentences"] = [Sentence.from_dict(s) for s in dct.get("sentences")] or []
+            return Charge(**dct)
+        except:
+            return None
 
     def set_grade(self) -> Decision:
         """ Ensure the grade property of this Charge is set and return a decision explaining how it was set.
