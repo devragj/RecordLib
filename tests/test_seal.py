@@ -4,6 +4,7 @@ from RecordLib.crecord import CRecord, Charge
 import json
 from RecordLib.serializers import to_serializable
 from datetime import date
+from RecordLib.petitions import Sealing
 
 def test_seal(example_crecord):
     example_crecord.cases[0].fines_and_costs = 0
@@ -15,11 +16,33 @@ def test_seal(example_crecord):
         statute="14 s 123",
         sentences=[],
     )
-    mod_rec, analysis = seal_convictions(example_crecord, Decision("Seal convictions"))
-    res = json.dumps(analysis, default=to_serializable, indent=4)
-    assert len(analysis["Seal Convictions"].value["sealings"]) == 1
+    mod_rec, analysis = seal_convictions(example_crecord)
+    assert len(analysis.value) == 1
+    assert isinstance(analysis.value[0], Sealing)
+    assert len(mod_rec.cases) == 0
 
-
+def test_partial_seal(example_crecord):
+    example_crecord.cases[0].fines_and_costs = 0
+    example_crecord.cases[0].disposition_date = date(1990, 1, 1)
+    example_crecord.cases[0].charges[0] = Charge(
+        offense="Being silly",
+        grade="M1",
+        disposition="Guilty",
+        statute="14 s 123",
+        sentences=[],
+    )
+    new_charge = Charge(
+        offense="Overzealous puzzle-assembling, using a firearm",
+        grade="S",
+        disposition="Guilty",
+        statute="18 § 6101",
+        sentences=[],
+    )
+    example_crecord.cases[0].charges.append(new_charge)
+    mod_rec, analysis = seal_convictions(example_crecord)
+    assert "puzzle-assembling" in mod_rec.cases[0].charges[0].offense
+    assert "silly" in analysis.value[0].cases[0].charges[0].offense
+ 
 def test_no_danger_to_person_offense(example_crecord):
     example_crecord.cases[0].charges[0] = Charge(
         offense="Being silly",
@@ -232,3 +255,20 @@ def test_no_firearms_offense(example_crecord, example_charge):
     example_charge.statute = "18 § 1201.1"
     d = no_firearms_offense(example_charge, penalty_limit=20, conviction_limit=1, within_years=20)
     assert bool(d) is True
+
+
+
+
+def test_fines_and_costs_paid(example_crecord):
+    example_crecord.cases[0].fines_and_costs = 100
+    assert bool(fines_and_costs_paid(example_crecord)) is False
+    example_crecord.cases[0].fines_and_costs = 0
+    assert bool(fines_and_costs_paid(example_crecord)) is True
+
+def test_is_misdemeanor_or_ungraded(example_charge):
+    example_charge.grade = "M2"
+    assert bool(is_misdemeanor_or_ungraded(example_charge)) is True
+    example_charge.grade = ""
+    assert bool(is_misdemeanor_or_ungraded(example_charge)) is True
+    example_charge.grade = "F2"
+    assert bool(is_misdemeanor_or_ungraded(example_charge)) is False

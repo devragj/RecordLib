@@ -4,8 +4,29 @@ how the rule applies to the record.
 
 18 Pa.C.S. 9122 deals with Expungements
 https://www.legis.state.pa.us/cfdocs/legis/LI/consCheck.cfm?txtType=HTM&ttl=18&div=0&chpt=91
+
+
+
+Ruledefs return Decisions of the type
+
+Decision
+    name: str,
+    value: [Petition],
+    reasoning: [Decision]
+
+Simple Decisions have the type
+
+Decision:
+    name: str
+    value: bool
+    reasoning: [Decision] | str
+
+
 """
 from RecordLib.crecord import CRecord
+from RecordLib.common import Person
+from RecordLib.decision import Decision
+from RecordLib.petitions import Expungement, Sealing
 import pytest
 import copy
 from typing import Tuple
@@ -13,8 +34,29 @@ from dateutil.relativedelta import relativedelta
 from datetime import date
 import re
 
+def is_over_age(person: Person, age_limit: int) -> Decision:
+    return Decision(
+        name=f"Is {person.first_name} over {age_limit}?",
+        value=person.age() > 70,
+        reasoning=f"{person.first_name} is {person.age()}"
+    )
 
-def expunge_over_70(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
+def years_since_last_contact(crec: CRecord, year_min: int) -> Decision:
+    return Decision(
+        name=f"Has {crec.person.first_name} been free of arrest or prosecution for {year_min} years?",
+        value=crec.years_since_last_arrested_or_prosecuted() >= 10,
+        reasoning=f"It has been {crec.years_since_last_arrested_or_prosecuted()} years."
+    )
+
+def years_since_final_release(crec: CRecord, year_min: int) -> Decision:
+    return Decision(
+        name=f"Has it been at least {year_min} years since {crec.person.first_name}'s final release from custody?",
+        value=crec.years_since_final_release() > year_min,
+        reasoning=f"It has been {crec.years_since_final_release()}."
+    )
+
+
+def expunge_over_70(crecord: CRecord) -> Tuple[CRecord, Decision]:
     """
     Analyze a crecord for expungements if the defendant is over 70.
 
@@ -22,56 +64,59 @@ def expunge_over_70(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
     is 70 or older, and has been free of arrest or prosecution for 10
     years following the final release from confinement or supervision.
     """
-    conditions = {
-        "age_over_70": crecord.person.age() > 70,
-        "years_since_last_arrested_or_prosecuted": crecord.years_since_last_arrested_or_prosecuted()
-        > 10,
-        "years_since_final_release": crecord.years_since_final_release() > 10,
-    }
+    conclusion = Decision(
+        name = "A record can be expunged for a person over 70.",
+        reasoning = [
+            is_over_age(crecord.person, 70),
+            years_since_last_contact(crecord, 10),
+            years_since_final_release(crecord, 10)
+        ]
+    ) 
 
-    if all(conditions.values()):
-        conclusion = "Expunge cases"
+    if all(conclusion.reasoning):
+        exps = [Expungement(person=crecord.person, cases=[c]) for c in crecord.cases]
+        for e in exps:
+            e.type = Expungement.FULL_EXPUNGEMENT
+        conclusion.value = exps
         modified_record = CRecord(person=copy.deepcopy(crecord.person), cases=[])
     else:
-        conclusion = "No expungements possible"
+        conclusion.value = []
         modified_record = crecord
-    analysis.update(
-        {
-            "age_over_70_expungements": {
-                "conditions": conditions,
-                "conclusion": conclusion,
-            }
-        }
-    )
-
-    return modified_record, analysis
+    
+    return modified_record, conclusion
 
 
-def expunge_deceased(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
+def expunge_deceased(crecord: CRecord) -> Tuple[CRecord, Decision]:
     """
     Analyze a crecord for expungments if the individual has been dead for three years.
 
     18 Pa.C.S. 9122(b)(2) provides for expungement of records for an individual who has been dead for three years.
     """
-    conditions = {"deceased_three_years": crecord.person.years_dead() > 3}
-
-    if all(conditions.values()):
-        conclusion = "Expunge cases"
-        modified_record = CRecord(person=copy.deepcopy(crecord.person), cases=[])
-    else:
-        conclusion = "No expungements possible"
-        modified_record = crecord
-
-    analysis.update(
-        {"deceased_expungements": {"conditions": conditions, "conclusion": conclusion}}
+    conclusion = Decision(
+        name="A deceased person's record can be expunged after three years.",
+        reasoning = [Decision(
+            name=f"Has {crecord.person.first_name} been deceased for 3 years?",
+            value=crecord.person.years_dead() > 3,
+            reasoning=f"{crecord.person.first_name} is not dead, as far as I know." if crecord.person.years_dead() < 0 else f"It has been {crecord.person.years_dead()} since {crecord.person.first_name}'s death."
+        )]
     )
 
-    return modified_record, analysis
+    if all(conclusion.reasoning):
+        exps = [Expungement(crecord.person, c) for c in crecord.cases]
+        for e in exps:
+            e.type = Expungement.FULL_EXPUNGEMENT
+        conclusion.value = exps
+        modified_record = CRecord(person=copy.deepcopy(crecord.person), cases=[])
+    else:
+        conclusion.value = []
+        modified_record = crecord
+
+    return modified_record, conclusion
 
 
 def expunge_summary_convictions(
-    crecord: CRecord, analysis: dict
-) -> Tuple[CRecord, dict]:
+    crecord: CRecord
+) -> Tuple[CRecord, Decision]:
     """
     Analyze crecord for expungements of summary convictions.
 
@@ -79,106 +124,135 @@ def expunge_summary_convictions(
 
     Not available if person got ARD for certain offenses listed in (b.1)
 
+    Returns:
+        The function creates a Decision. The Value of the decision is a list of the Petions that can be
+        generated according to this rule. The Reasoning of the decision is a list of decisions. The first
+        decision is the global requirement for any expungement under this rule. The following decisions
+        are a decision about the expungeability of each case. Each case-decision, contains its own explanation
+        of what charges were or were not expungeable.  
+
     TODO excluding ARD offenses from expungements here.
 
     TODO grades are often missing. We should tell users we're uncertain.
     """
-    conditions = {
-        "arrest_free_five_years": crecord.years_since_last_arrested_or_prosecuted() > 5
-    }
-    expungements = []
-    num_charges = 0
-    num_expungeable_charges = 0
-    modified_record = CRecord(person=crecord.person)
-    for case in crecord.cases:
-        any_expungements = False
-        expungements_this_case = {"docket_number": case.docket_number}
-        for charge in case.charges:
-            num_charges += 1
-            if charge.grade.strip() == "S":
-                num_expungeable_charges += 1
-                expungements_this_case.update({"charge": charge})
-                any_expungements = True
-        expungements.append(expungements_this_case)
-
-        if any_expungements is False:
-            modified_record.cases.append(copy.deepcopy(case))
-
-    if (not all(conditions.values())) or num_expungeable_charges == 0:
-        conclusion = "No expungements possible"
-    elif all(conditions.values()) and num_charges == num_expungeable_charges:
-        conclusion = "Expunge all cases"
-    else:
-        conclusion = (
-            f"Expunge {num_expungeable_charges} charges in {len(crecord.cases)} cases"
-        )
-
-    analysis.update(
-        {
-            "summary_conviction_expungements": {
-                "conditions": conditions,
-                "conclusion": conclusion,
-                "expungements": expungements if all(conditions.values()) else [],
-            }
-        }
+    # Initialize the decision explaining this rule's outcome. It starts with reasoning that includes the 
+    # decisions that are conditions of any case being expungeable.
+    conclusion = Decision(
+        name="Expungements for summary convictions.",
+        value=[],
+        reasoning=[Decision(
+            name=f"Has {crecord.person.first_name} been arrest free and prosecution free for five years?",
+            value=crecord.years_since_last_arrested_or_prosecuted() > 5,
+            reasoning=f"It has been {crecord.years_since_last_arrested_or_prosecuted()} since the last arrest or prosecection."
+        )]
     )
 
-    return modified_record, analysis
+    # initialize a blank crecord to hold the cases and charges that can't be expunged under this rule.
+    modified_record = CRecord(person=crecord.person)
+    if all(conclusion.reasoning):
+        for case in crecord.cases:
+            # Find expungeable charges in a case. Save a Decision explaining what's expungeable to 
+            # the reasoning of the Decision about the whole record.
+            case_d = Decision(name=f"Is {case.docket_number} expungeable?", reasoning=[])
+            expungeable_case = case.partialcopy() # The charges in this case that are expungeable.
+            not_expungeable_case = case.partialcopy() # Charges in this case that are not expungeable.
+            for charge in case.charges:
+                charge_d = Decision(
+                    name=f"Is this charge for {charge.offense} a summary conviction?",
+                    reasoning=[
+                        Decision(
+                            name=f"Is this charge for {charge.offense} a summary?", 
+                            value=charge.grade.strip() == "S",
+                            reasoning=f"The charge's grade is {charge.grade.strip()}"),
+                        Decision(
+                            name=f"Is this charge for {charge.offense} a conviction?",
+                            value=charge.is_conviction(),
+                            reasoning=f"The charge's disposition {charge.disposition} indicates a conviction" if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates its not a conviction.")
+                    ])
+                if all(charge_d.reasoning):
+                    expungeable_case.charges.append(charge)
+                    charge_d.value = True
+                else:
+                    charge_d.value = False
+                    not_expungeable_case.charges.append(charge)
+                case_d.reasoning.append(charge_d)
+    
+            # If there are any expungeable charges, add an Expungepent to the Value of the decision about
+            # this whole record.
+            if len(expungeable_case.charges) > 0:
+                case_d.value = True
+                exp = Expungement(person=crecord.person, cases=[expungeable_case])
+                if len(expungeable_case.charges) == len(case.charges):
+                    exp.type = Expungement.FULL_EXPUNGEMENT
+                else:
+                    exp.type = Expungement.PARTIAL_EXPUNGEMENT
+                conclusion.value.append(exp)
+            if len(not_expungeable_case.charges) > 0:
+                case_d.value = False
+        
+        modified_record.cases.append(not_expungeable_case)
+        conclusion.reasoning.append(case_d)
+
+    else:
+        # The global requirements for expunging anything on this record weren't met, so nothing can be 
+        # expunged.
+        modified_record.cases = crecord.cases
+    return modified_record, conclusion 
 
 
-def expunge_nonconvictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
+def expunge_nonconvictions(crecord: CRecord) -> Tuple[CRecord, dict]:
     """
     18 Pa.C.S. 9122(a) provides that non-convictions (cases are closed with no disposition recorded) "shall be expunged."
+    
+    Returns:
+        a Decision with:
+            name: str,
+            value: [Petition],
+            reasoning: [Decision]
     """
-    conditions = {"Nonconvictions can always be expunged.": True}
-    expungements = []
-    num_charges = 0
-    num_expungeable_charges = 0
-    modified_record = CRecord(person=crecord.person)
-    if all(conditions.values()):
-        for case in crecord.cases:
-            unexpunged_case = copy.deepcopy(case)
-            unexpunged_case.charges = []
-            expungements_this_case = {
-                "docket_number": case.docket_number,
-                "charges": list()}
-            for charge in case.charges:
-                num_charges += 1
-                if charge.disposition.strip() == "" or any(
-                    [
-                        re.match(disp, charge.disposition, re.IGNORECASE)
-                        for disp in [
-                            "Nolle Prossed",
-                            "Withdrawn",
-                            "Not Guilty",
-                            "Dismissed",
-                        ]
-                    ]
-                ):
-                    num_expungeable_charges += 1
-                    expungements_this_case["charges"].append(charge)
-                else:
-                    unexpunged_case.charges.append(charge)
-            if len(expungements_this_case["charges"]) > 0:
-                expungements.append(expungements_this_case)
-            if len(expungements_this_case["charges"]) < len(case.charges):
-                modified_record.cases.append(unexpunged_case)
-
-    if num_expungeable_charges == 0:
-        conclusion = "No expungements possible"
-    elif num_charges == num_expungeable_charges:
-        conclusion = "Expunge all cases"
-    else:
-        conclusion = "Expunge some cases"
-
-    analysis.update(
-        {
-            "expunge_nonconvictions": {
-                "conditions": conditions,
-                "conclusion": conclusion,
-                "expungements": expungements,
-            }
-        }
+    conclusion = Decision(
+        name="Expungements of nonconvictions.",
+        value=[],
+        reasoning=[]
     )
 
-    return modified_record, analysis
+    modified_record = CRecord(person=crecord.person)
+    for case in crecord.cases:
+        case_d = Decision(
+            name=f"Does {case.docket_number} have expungeable nonconvictions?",
+            reasoning=[]
+        )
+        unexpungeable_case = case.partialcopy()
+        expungeable_case = case.partialcopy()
+        for charge in case.charges:
+            charge_d = Decision(
+                name=f"Is the charge for f{charge.offense} a nonconviction?",
+                value=not charge.is_conviction(),
+                reasoning=f"The charge's disposition {charge.disposition} indicates a conviction" if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates its not a conviction."
+            )
+
+            if bool(charge_d) is True:
+                expungeable_case.charges.append(charge)
+            else:
+                unexpungeable_case.charges.append(charge)
+            case_d.reasoning.append(charge_d)
+
+        # If there are any expungeable charges, add an Expungepent to the Value of the decision about
+        # this whole record.
+        if len(expungeable_case.charges) > 0:
+            case_d.value = True
+            exp = Expungement(person=crecord.person, cases=[expungeable_case])
+            if len(expungeable_case.charges) == len(case.charges):
+                exp.type = Expungement.FULL_EXPUNGEMENT
+            else:
+                exp.type = Expungement.PARTIAL_EXPUNGEMENT
+            conclusion.value.append(exp)
+        else:
+            case_d.value = False
+
+        if len(unexpungeable_case.charges) > 0:
+            modified_record.cases.append(unexpungeable_case)
+        conclusion.reasoning.append(case_d)
+
+
+    return modified_record, conclusion 

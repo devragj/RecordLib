@@ -1,6 +1,6 @@
 import click
 import logging
-from RecordLib.serializers import to_serializable # DataClassJSONEncoder
+from RecordLib.serializers import to_serializable
 from RecordLib.crecord import CRecord
 from RecordLib.summary import Summary
 from RecordLib.analysis import Analysis
@@ -45,4 +45,4 @@ def analyze(pdf_summary: str, tempdir: str, redis_collect: str) -> None:
     )
 
 
-    print(json.dumps(analysis.analysis, indent=4, default=to_serializable)) #cls=DataClassJSONEncoder))
+    print(json.dumps(analysis, indent=4, default=to_serializable)) #cls=DataClassJSONEncoder))

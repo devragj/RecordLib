@@ -6,6 +6,7 @@ import copy
 import json
 import re
 from RecordLib.decision import Decision
+from RecordLib.petitions import Sealing
 
 
 def no_danger_to_person_offense(
@@ -560,7 +561,7 @@ def no_paramilitary_training(
     decision.value = True if len(decision.reasoning) < conviction_limit else False
     return decision
 
-def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
+def seal_convictions(crecord: CRecord) -> Tuple[CRecord, Decision]:
     """
     Pa.C.S. 9122.1 provides for petition-based sealing of records when certain
     conditions are met.
@@ -578,11 +579,13 @@ def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
 
     TODO Paragraph (b)(1) provides conditions that exclude convictions from sealing.
     """
-    decision = Decision(name="Sealable Convictions")
+    conclusion = Decision(
+        name="Convictions can be sealed under the Clean Slate reforms.",
+        value=[])
     mod_rec = CRecord(person=crecord.person, cases=[])
 
     # Requirements for sealing any part of a record
-    decision.reasoning = [
+    conclusion.reasoning = [
         ten_years_since_last_conviction(crecord),  # 18 Pa.C.S. 9122.1(a)
         fines_and_costs_paid(crecord),  # 18 Pa.C.S. 9122.1(a)
         no_f1_convictions(crecord),  # 18 Pa.C.S. 9122.1(b)(2)(i)
@@ -611,8 +614,7 @@ def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
         no_abuse_of_corpse(crecord, conviction_limit=1, within_years=15),
         no_paramilitary_training(crecord, conviction_limit=1, within_years=15),
     ]
-    decision.value = {"sealings": []}
-    if all(decision.reasoning):
+    if all(conclusion.reasoning):
         for case in crecord.cases:
             # The sealability of each case is its own decision
             case_decision = Decision(
@@ -668,22 +670,22 @@ def seal_convictions(crecord: CRecord, analysis: dict) -> Tuple[CRecord, dict]:
                     # the overhead is neccessary. But that could turn out to be wrong someday.
                 else:
                     charge_decision.value = "Not sealable"
-                    unsealable_parts.charges.append(charge)
+                    unsealable_parts_of_case.charges.append(charge)
                 case_decision.reasoning.append(charge_decision)
             if all([reason.value == "Sealable" for reason in case_decision.reasoning]):
                 # All the charges in the current case are sealable.
                 case_decision.value = "All charges sealable"
-                decision.value["sealings"].append(sealable_parts_of_case)
+                conclusion.value.append(Sealing(crecord.person, [sealable_parts_of_case]))
             elif any(
                 [reason.value == "Sealable" for reason in case_decision.reasoning]
             ):
                 # At least one charge in the current case is sealable.
                 case_decision.value = "Some charges sealable"
-                mod_rec.cases.append(unsealable_parts)
-                decision.value["sealings"].append(sealable_parts_of_case)
+                mod_rec.cases.append(unsealable_parts_of_case)
+                conclusion.value.append(Sealing(crecord.person, [sealable_parts_of_case]))
             else:
                 case_decision.value = "No charges sealable"
-                mod_rec.cases.append(unsealable_parts)
-            decision.reasoning.append(case_decision)
+                mod_rec.cases.append(unsealable_parts_of_case)
+            conclusion.reasoning.append(case_decision)
 
-    return mod_rec, {"Seal Convictions": decision}
+    return mod_rec, conclusion

@@ -1,9 +1,10 @@
 import functools
 from RecordLib.common import Charge, Person, Sentence, SentenceLength
 from RecordLib.case import Case
-from RecordLib.crecord import CRecord
-from RecordLib.decision import Decision
 from RecordLib.analysis import Analysis
+from RecordLib.petitions import Expungement, Sealing
+from RecordLib.decision import Decision
+from RecordLib.crecord import CRecord
 from datetime import date, datetime, timedelta
 
 
@@ -24,6 +25,12 @@ def td_none(n):
 @to_serializable.register(list)
 def ts_list(a_list):
     return [to_serializable(i) for i in a_list]
+
+@to_serializable.register(list)
+def ts_list(l):
+    if len(l) == 0:
+        return []
+    return [to_serializable(el) for el in l]
 
 @to_serializable.register(Case)
 @to_serializable.register(Charge)
@@ -59,6 +66,33 @@ def td_decision(dec):
         "reasoning": to_serializable(dec.reasoning)
     }
 
+@to_serializable.register(Analysis)
+def td_analysis(an):
+    return {
+        "analysis": an.decisions,
+        "remaining_record": an.modified_rec,
+        "original_record": an.rec
+    }
+
+
+@to_serializable.register(Sealing)
+def td_sealing(s):
+    return {
+        "petition": "Sealing",
+        "person": s.person,
+        "cases": s.cases
+    }
+
+@to_serializable.register(Expungement)
+def td_sealing(e):
+    return {
+        "petition": "Expungement",
+        "type": e.type,
+        "person": e.person,
+        "cases": e.cases
+    }
+
+
 @to_serializable.register(CRecord)
 def td_crecord(crec):
     return {
@@ -76,10 +110,3 @@ def ts_sentencelength(sentence_length):
          "max_unit": "days"
      }
 
-@to_serializable.register(Analysis)
-def ts_analysis(analysis):
-    return {
-        "rec": to_serializable(analysis.rec),
-        "modified_rec": to_serializable(analysis.modified_rec),
-        "analysis": to_serializable(analysis.analysis)
-    }
