@@ -46,7 +46,18 @@ class FileUploadView(APIView):
                 tempdir=tempdir)
             rec.add_summary(summary)
 
-            json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
+            analysis = (
+                Analysis(rec)
+                .rule(expunge_deceased)
+                .rule(expunge_over_70)
+                .rule(expunge_nonconvictions)
+                .rule(expunge_summary_convictions)
+                .rule(seal_convictions)
+            )
+
+            object_to_send = {"defendant": rec.person, "cases": rec.cases, "analysis": analysis}
+
+            json_to_send = json.dumps(object_to_send, default=to_serializable)
             # Uncomment for human-readable JSON.  Also comment out the above line.
             # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)
             return Response(json_to_send, status=status.HTTP_200_OK)
@@ -60,7 +71,7 @@ class AnalyzeView(APIView):
     def post(self, request, *args, **kwargs):
         """ Analyze a Criminal Record for expungeable and sealable cases and charges.
         
-        POST body should be json-endoded CRecord object. 
+        POST body should be json-encoded CRecord object.
 
         Return, if not an error, will be a json-encoded Decision that explains the expungements
         and sealings that can be generated for this record.
@@ -78,7 +89,7 @@ class AnalyzeView(APIView):
                     .rule(expunge_nonconvictions)
                     .rule(expunge_summary_convictions)
                     .rule(seal_convictions)
-        )
+                )
                 return Response(to_serializable(analysis))
             else: 
                 return

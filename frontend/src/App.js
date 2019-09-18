@@ -21,10 +21,12 @@ function App() {
     const onClickHandler = () => {
         const data = new FormData()
         data.append('file', selectedFile)
-        axios.post("http://localhost:8000/upload/", data, {})
+        axios.post("http://localhost:8000/record/upload/", data, {})
         .then(response => {
     //        TODO: handle not-OK responses
     //        console.log(response.statusText)
+            const analysis = JSON.parse(response.data).analysis.analysis
+            console.log(analysis)
             setCRecord(JSON.parse(response.data))
         });
     };
