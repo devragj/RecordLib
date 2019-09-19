@@ -14,9 +14,34 @@ const cRecord = JSON.parse(data);
 const normalizedData = normalizeCRecord(cRecord);
 */
 
+function getNonconvictionData(raw) {
+    const { value, reasoning } = raw;
+    const valueData = {};
+    value.forEach( info => {
+        const id = info.cases[0].docket_number;
+        valueData[id] = info.type;
+    });
+
+    const data = {};
+    reasoning.forEach( reason => {
+        const id = reason.name.slice(5, 26);
+        const hasExpungements = reason.value === 'True';
+        const reasoning = reason.reasoning;
+        const item = { hasExpungements, reasoning };
+        if (valueData.hasOwnProperty(id)) {
+            item["type"] = valueData[id];
+        };
+
+        data[id] = item;
+    });
+
+    return data;
+};
+
+
 /**
  * Redux reducer
- * @param  {Object} [state={}] holds normailzed data from a CRecord
+ * @param  {Object} [state={}] holds normalized data from a CRecord
  * @param  {Object} action
  * @param  {string} action.type
  * @param  {Object} action.payload - We're following the convention that
@@ -27,7 +52,11 @@ const normalizedData = normalizeCRecord(cRecord);
 export default function cRecordReducer(state = {}, action) {
         switch (action.type) {
                 case 'FETCH_CRECORD_SUCCEEDED': {
-                        return action.payload;
+                    const analysis = getNonconvictionData(action.payload.analysis[2]);
+                    console.log(analysis);
+                    action.payload.analysis = analysis;
+                    console.log(action.payload);
+                    return action.payload;
                 }
 
                 // generic action to edit a field of any of the
@@ -35,6 +64,7 @@ export default function cRecordReducer(state = {}, action) {
                 // Currently, this makes shallow copies so as to edit
                 // the field while keeping state immutable.
                 // TODO: replace this with a library such as immutable.js
+                // TODO fix to preserve the analysis
                 case'EDIT': {
                         const { entityName, entityId, field, value } = action.payload;
                         const newState = {...state};

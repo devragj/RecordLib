@@ -83,5 +83,5 @@ const defendantSchema = new schema.Entity('defendant', {}, options);
 const cRecordSchema = new schema.Entity('cRecord', { defendant: defendantSchema, cases: [caseSchema]}, options);
 
 export function normalizeCRecord(data) {
-        return normalize(data,  cRecordSchema);
+        return normalize(data, cRecordSchema);
 }

@@ -13,8 +13,8 @@ function Sentence(props) {
             <div>Type: {sentence_type}</div>
             <div></div>
             <div>Period: {sentence_period}</div>
-            <div>Min Time: {sentence_length.min_time}</div>
-            <div>Max Time: {sentence_length.max_time}</div>
+            <div>Min Time: {sentence_length.min_time + ' days'}</div>
+            <div>Max Time: {sentence_length.max_time + ' days'}</div>
         </div>
     );
 }
@@ -25,8 +25,8 @@ Sentence.propTypes = {
     sentence_type: PropTypes.string,
     sentence_period: PropTypes.string,
     sentence_length: PropTypes.shape({
-        min_time: PropTypes.string,
-        max_time: PropTypes.string
+        min_time: PropTypes.number,
+        max_time: PropTypes.number
     })
 }
 

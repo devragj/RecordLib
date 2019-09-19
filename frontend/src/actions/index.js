@@ -11,10 +11,13 @@ import { normalizeCRecord } from '../normalize';
  */
 function fetchCRecordSucceeded(data) {
         const cRecord = JSON.parse(data);
-        const normalizedData = normalizeCRecord(cRecord);
+        console.log(cRecord);
+        const state = normalizeCRecord(cRecord);
+        state['analysis'] = cRecord.analysis.analysis;
+        console.log(state);
         return {
                 type: 'FETCH_CRECORD_SUCCEEDED',
-                payload: normalizedData
+                payload: state
         }
 }
 

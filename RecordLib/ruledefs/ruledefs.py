@@ -167,7 +167,7 @@ def expunge_summary_convictions(
                         Decision(
                             name=f"Is this charge for {charge.offense} a conviction?",
                             value=charge.is_conviction(),
-                            reasoning=f"The charge's disposition {charge.disposition} indicates a conviction" if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates its not a conviction.")
+                            reasoning=f"The charge's disposition {charge.disposition} indicates a conviction." if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates it's not a conviction.")
                     ])
                 if all(charge_d.reasoning):
                     expungeable_case.charges.append(charge)
@@ -177,7 +177,7 @@ def expunge_summary_convictions(
                     not_expungeable_case.charges.append(charge)
                 case_d.reasoning.append(charge_d)
     
-            # If there are any expungeable charges, add an Expungepent to the Value of the decision about
+            # If there are any expungeable charges, add an Expungement to the Value of the decision about
             # this whole record.
             if len(expungeable_case.charges) > 0:
                 case_d.value = True
@@ -228,7 +228,7 @@ def expunge_nonconvictions(crecord: CRecord) -> Tuple[CRecord, dict]:
             charge_d = Decision(
                 name=f"Is the charge for f{charge.offense} a nonconviction?",
                 value=not charge.is_conviction(),
-                reasoning=f"The charge's disposition {charge.disposition} indicates a conviction" if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates its not a conviction."
+                reasoning=f"The charge's disposition {charge.disposition} indicates a conviction." if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates it's not a conviction."
             )
 
             if bool(charge_d) is True:
@@ -237,7 +237,7 @@ def expunge_nonconvictions(crecord: CRecord) -> Tuple[CRecord, dict]:
                 unexpungeable_case.charges.append(charge)
             case_d.reasoning.append(charge_d)
 
-        # If there are any expungeable charges, add an Expungepent to the Value of the decision about
+        # If there are any expungeable charges, add an Expungement to the Value of the decision about
         # this whole record.
         if len(expungeable_case.charges) > 0:
             case_d.value = True
