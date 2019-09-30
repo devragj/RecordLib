@@ -1,0 +1,63 @@
+* TODO list for the Create-Petitions branch
+** STARTED [11/11] Fields to add (add to core class, test cases, serializer and deserializer)
+   - State "STARTED"    from "TODO"       [2019-09-19 Thu 10:21]
+
+Add to test of model,
+Add to conftest example model
+Add to model
+add to RecordLib/serializer
+add to backend/serializer
+change in petition to have it get populated there.
+parsers need to return the new field.
+   for summaries analyze -ps tests/data/summaries/CP-xxxx_summary.pdf --tempdir=tests/data/tmp
+   for dockets 
+
+*** DONE Person#Aliases
+    - State "DONE"       from "STUCK"      [2019-09-26 Thu 16:11]
+    - State "STARTED"    from "TODO"       [2019-09-19 Thu 10:21]
+*** DONE Person#SSN
+    - State "DONE"       from "TODO"       [2019-09-26 Thu 16:31]
+*** DONE Case#affiant
+    - State "DONE"       from "STARTED"    [2019-09-27 Fri 16:14]
+    - State "STARTED"    from "TODO"       [2019-09-26 Thu 16:45]
+*** DONE Case#arresting_agency
+    - State "DONE"       from "STARTED"    [2019-09-27 Fri 16:14] \\
+      f
+    - State "STARTED"    from "TODO"       [2019-09-26 Thu 16:45]
+*** DONE Case#judge_address
+    - State "DONE"       from "REJECTED"   [2019-09-28 Sat 13:02]
+    - State "REJECTED"   from "STARTED"    [2019-09-28 Sat 13:02]
+    - State "STARTED"    from "TODO"       [2019-09-27 Fri 16:16]
+*** DONE Case#arresting_agency_address
+    - State "DONE"       from "REJECTED"   [2019-09-28 Sat 13:02]
+    - State "REJECTED"   from "STARTED"    [2019-09-28 Sat 13:02]
+*** DONE Case#Complaint_date
+    - State "DONE"       from "STARTED"    [2019-09-28 Sat 13:02]
+    - State "STARTED"    from "TODO"       [2019-09-27 Fri 16:16]
+*** DONE Case#total_fines
+    - State "DONE"       from "STARTED"    [2019-09-28 Sat 13:35]
+    - State "STARTED"    from "STARTED"    [2019-09-28 Sat 13:35]
+    - State "STARTED"    from "TODO"       [2019-09-28 Sat 13:02]
+*** DONE Case#fines_paid
+    - State "DONE"       from "STARTED"    [2019-09-28 Sat 13:36]
+    - State "STARTED"    from "TODO"       [2019-09-28 Sat 13:03]
+*** DONE Person#Address
+    - State "DONE"       from "STARTED"    [2019-09-30 Mon 10:43]
+    - State "STARTED"    from "TODO"       [2019-09-28 Sat 13:40]
+*** DONE disposition_date should be on a charge, not a case
+    - State "DONE"       from "STARTED"    [2019-09-30 Mon 12:39]
+    - State "STARTED"    from "TODO"       [2019-09-30 Mon 12:12] \\
+      disposition_date is on BOTH case and charge.
+** DONE Service Agencies.  
+   - State "DONE"       from "TODO"       [2019-09-30 Mon 15:22]
+   - Note taken on [2019-09-28 Sat 13:36] \\
+     I think it should be a property of a Petition. a [str].
+   - Note taken on [2019-09-19 Thu 10:14] \\
+     Service Agencies is a list of where service should go. I think its
+     based on counties, so we need a database entity to tell us what the
+     agencies are for each county.  Like a table called ServiceAgencies,
+     with two columns, County and Agency
+** DONE IFP messages
+   - State "DONE"       from "TODO"       [2019-09-30 Mon 15:22]
+   - Note taken on [2019-09-19 Thu 10:16] \\
+     Different counties (or is it Orgs?) require different IFP messages.

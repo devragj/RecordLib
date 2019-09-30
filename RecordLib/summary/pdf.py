@@ -9,7 +9,8 @@ from typing import Dict, Tuple, List, Union, BinaryIO
 from lxml import etree
 from parsimonious.nodes import Node  # type: ignore
 from RecordLib.case import Case
-from RecordLib.common import Person, Charge, Sentence, SentenceLength
+from RecordLib.common import Charge, Sentence, SentenceLength
+from RecordLib.person import Person
 from RecordLib.CustomNodeVisitorFactory import CustomVisitorFactory
 from RecordLib.grammars.summary import (
     summary_page_terminals,
@@ -266,11 +267,12 @@ def get_defendant(summary_xml: etree.Element) -> Person:
     full_name = summary_xml.find("caption/defendant_name").text
     last_first = [n.strip() for n in full_name.split(",")]
     def_dob = summary_xml.find("caption/def_dob").text.strip()
+    aliases = [el.text.strip() for el in summary_xml.xpath("//alias")]
     try:
         def_dob = datetime.strptime(def_dob, "%m/%d/%Y").date()
     except ValueError:
         def_dob = None
-    return Person(last_first[1], last_first[0], def_dob)
+    return Person(last_first[1], last_first[0], def_dob, aliases=[])
 
 def either(a,b):
     if a is not None:
@@ -292,6 +294,7 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                 statute=text_or_blank(seq.find("statute")),
                 grade=text_or_blank(seq.find("grade")),
                 disposition=text_or_blank(seq.find("sequence_disposition")),
+                disposition_date=None,
                 sentences=[],
             )
             for sentence in seq.xpath(".//sentencing_info"):
@@ -332,6 +335,7 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                 statute=text_or_blank(seq.find("statute")),
                 grade=text_or_blank(seq.find("grade")),
                 disposition=text_or_blank(seq.find("sequence_disposition")),
+                disposition_date=None,
                 sentences=[],
             )
             for sentence in seq.xpath(".//sentencing_info"):
@@ -363,15 +367,15 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                     )
                 )
             open_charges.append(charge)
-        cases.append(
-            Case(
+        new_case = Case(
                 status=text_or_blank(case.getparent().getparent()),
                 county=text_or_blank(case.getparent().find("county")),
                 docket_number=text_or_blank(case.find("case_basics/docket_num")),
                 otn=text_or_blank(case.find("case_basics/otn_num")),
                 dc=text_or_blank(case.find("case_basics/dc_num")),
                 charges=closed_charges + open_charges,
-                fines_and_costs=None,  # a summary docket never has info about this.
+                total_fines=None,  # a summary docket never has info about this.
+                fines_paid=None,
                 arrest_date=date_or_none(
                     either(case.find("arrest_disp_actions/arrest_disp/arrest_date"),
                            case.find("arrest_disp_actions/arrest_trial/arrest_date"))
@@ -381,7 +385,13 @@ def get_cp_cases(summary_xml: etree.Element) -> List:
                 ),
                 judge=text_or_blank(case.find("arrest_disp_actions/arrest_disp/disp_judge")),
             )
-        )
+        # In Summaries, the Disposition Date is set on a Case, but it is set on a Charge in Dockets. 
+        # So when processing a Summary sheet, if there is a date on the Case, the Charges should
+        # inherit the date on the case.
+        for charge in new_case.charges:
+            if new_case.disposition_date is not None:
+                charge.disposition_date = new_case.disposition_date
+        cases.append(new_case)
     return cases
 
 
@@ -414,7 +424,8 @@ def get_md_cases(summary_xml: etree.Element) -> List:
                 otn=text_or_blank(case.find("case_basics/otn_num")),
                 dc=text_or_blank(case.find("case_basics/dc_num")),
                 charges=md_charges,
-                fines_and_costs=None,  # a summary docket never has info about this.
+                total_fines=None,  # a summary docket never has info about this.
+                fines_paid=None,
                 arrest_date=date_or_none(
                     case.find("arrest_disp_actions/arrest_disp/arrest_date")
                 ),

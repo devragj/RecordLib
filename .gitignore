@@ -10,3 +10,9 @@ data/
 .vscode
 .env
 *.sqlite3
+*/templates/*
+*.docx#
+*~
+tmp
+\#*
+.\#*

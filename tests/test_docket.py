@@ -1,5 +1,5 @@
 from RecordLib.docket import Docket
-from RecordLib.common import Person
+from RecordLib.person import Person
 from RecordLib.case import Case
 import pytest
 import os
@@ -13,6 +13,10 @@ def test_pdf_factory_one():
         pytest.fail("Cannot create Docket object")
     assert isinstance(dk._case, Case)
     assert isinstance(dk._defendant, Person)
+    assert dk._case.affiant is not None
+    assert dk._defendant.aliases is not None
+    assert dk._case.arresting_agency is not None
+
 
 
 def test_pdf_factory_bulk(caplog):

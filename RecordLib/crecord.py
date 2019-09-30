@@ -10,7 +10,8 @@ import cerberus as cb  # type: ignore
 import yaml
 from typing import List
 from RecordLib.summary import Summary
-from RecordLib.common import Charge, Person
+from RecordLib.common import Charge
+from RecordLib.person import Person
 from RecordLib.case import Case
 from dataclasses import asdict
 from datetime import date

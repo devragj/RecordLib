@@ -2,6 +2,7 @@ setup.py
 RecordLib/CustomNodeVisitorFactory.py
 RecordLib/__init__.py
 RecordLib/analysis.py
+RecordLib/attorney.py
 RecordLib/case.py
 RecordLib/common.py
 RecordLib/crecord.py
@@ -10,6 +11,8 @@ RecordLib/guess_grade.py
 RecordLib/number_generator.py
 RecordLib/overflow.py
 RecordLib/parsingutilities.py
+RecordLib/person.py
+RecordLib/petitions.py
 RecordLib/redis_helper.py
 RecordLib/references.py
 RecordLib/serializers.py
@@ -36,4 +39,5 @@ RecordLib/summary/utilities.py
 scripts/__init__.py
 scripts/analyze.py
 scripts/download_dockets.py
+scripts/expunge.py
 scripts/parse.py

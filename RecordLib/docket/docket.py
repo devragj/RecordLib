@@ -1,5 +1,5 @@
 from __future__ import annotations
-from RecordLib.common import Person
+from RecordLib.person import Person
 from RecordLib.case import Case
 from .parse_pdf import parse_pdf
 from typing import Union, BinaryIO

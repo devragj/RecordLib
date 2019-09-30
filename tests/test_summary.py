@@ -1,6 +1,6 @@
 from RecordLib.summary.pdf import parse_pdf
 from RecordLib.crecord import CRecord
-from RecordLib.common import Person
+from RecordLib.person import Person
 from RecordLib.case import Case
 import pytest
 import os
