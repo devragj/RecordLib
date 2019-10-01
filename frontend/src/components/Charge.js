@@ -8,7 +8,7 @@ import EditBox from "./EditBox"
 import { editField } from "../actions"
 
 function Charge(props) {
-    const { id, offense, grade, statute, disposition, dispositon_date, sentences, modifier } = props;
+    const { id, offense, grade, statute, disposition, disposition_date, sentences, modifier } = props;
     const chargeStyle = { display: 'grid', gridTemplateColumns: '450px 350px', margin: '15px', border: '1px solid black', borderRadius: '10px', padding: '10px', width: '820px' };
 
     const sentencesRendered = sentences.map(sentenceId => {
@@ -22,7 +22,7 @@ function Charge(props) {
             <EditBox title="Grade: " item={grade} modifier={modifier} />
             <div>Statute: {statute}</div>
             <div>Disposition: {disposition}</div>
-            <div>Disposition Date: {dispositon_date}</div>
+            <div>Disposition Date: {disposition_date}</div>
             {sentences.length > 0 &&
 
                 <div style={{gridColumn: "1 / 3"}}>

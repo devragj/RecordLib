@@ -17,8 +17,8 @@ function Defendant(props) {
             <div>Address: {address}</div>
             <div>Aliases:
                 <ul>
-                    {aliases.map(alias => 
-                        <li> {alias} </li>
+                    {aliases.map((alias, index) =>
+                        <li key={index}> {alias} </li>
                     )}
                 </ul>
             </div>
