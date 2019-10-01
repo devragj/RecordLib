@@ -3,7 +3,7 @@ from RecordLib.petitions import Petition
 import json
 
 def test_analyze(dclient, example_crecord):
-    resp = dclient.post("/record/analyze", 
+    resp = dclient.post("/record/analyze/", 
         to_serializable(example_crecord), 
         format="json")
     assert resp.status_code == 200

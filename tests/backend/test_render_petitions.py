@@ -11,7 +11,7 @@ def test_render_petitions(dclient, example_crecord, example_attorney):
         petitions.append(*decision.value)
     for p in petitions:
         p.attorney = example_attorney
-    resp = dclient.post("/record/petitions", {"petitions": to_serializable(petitions)}, 
+    resp = dclient.post("/record/petitions/", {"petitions": to_serializable(petitions)}, 
         format="json")
     assert resp.status_code == 200
     assert "Expunge" in resp.json()["download"]

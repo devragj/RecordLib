@@ -17,5 +17,5 @@ const client = axios.create({
 export function fetchCRecord(file) {
         const data = new FormData();
         data.append('file', file);
-        return client.post("/upload/", data, {});
+        return client.post("/record/upload/", data, {});
 }
