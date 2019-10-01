@@ -1,11 +1,14 @@
 import React from "react";
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 function Sentence(props) {
-    const sentenceStyle = {display: 'grid', gridTemplateColumns: '200px 270px 270px', margin: '15px', border: '1px solid black', borderRadius: '5px', padding: '10px', width: '760px'};
-    const { sentence_id, sentence_date, sentence_type, sentence_period, sentence_length } = props
+    const { id, sentence_date, sentence_type, sentence_period, sentence_length } = props;
+    const sentenceStyle = { display: 'grid', gridTemplateColumns: '200px 270px 270px', margin: '15px',
+        border: '1px solid black', borderRadius: '5px', padding: '10px', width: '760px'};
+
     return (
-        <div className="sentence" id={sentence_id} style={sentenceStyle}>
+        <div className="sentence" id={id} style={sentenceStyle}>
             <div>Date: {sentence_date}</div>
             <div>Type: {sentence_type}</div>
             <div></div>
@@ -27,4 +30,9 @@ Sentence.propTypes = {
     })
 }
 
-export default Sentence;
+function mapStateToProps(state, ownProps) {
+        return state.entities.sentences[ownProps.sentenceId];
+};
+
+const SentenceWrapper = connect(mapStateToProps)(Sentence);
+export default SentenceWrapper;
