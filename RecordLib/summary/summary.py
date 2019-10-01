@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List
-from RecordLib.common import Person
+from RecordLib.person import Person
 
 class Summary:
     """

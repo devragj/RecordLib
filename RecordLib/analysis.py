@@ -7,8 +7,8 @@ from collections import OrderedDict
 class Analysis:
 
     def __init__(self, rec: CRecord) -> None:
-        self.rec = rec
-        self.modified_rec = copy.deepcopy(rec)
+        self.record = rec
+        self.remaining_record = copy.deepcopy(rec)
         self.decisions = []
 
     def rule(self, ruledef: Callable) -> Analysis:
@@ -26,7 +26,7 @@ class Analysis:
         Returns:
             This Analyis, after applying the ruledef and updating the analysis with the results of the ruledef.
         """
-        modified_rec, decision = ruledef(self.modified_rec)
-        self.modified_rec = modified_rec
+        remaining_record, decision = ruledef(self.remaining_record)
+        self.remaining_record = remaining_record
         self.decisions.append(decision)
         return self

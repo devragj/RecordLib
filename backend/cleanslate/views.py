@@ -16,14 +16,18 @@ from RecordLib.ruledefs import (
     expunge_over_70,
     seal_convictions,
 )
-from .serializers import (
-    CRecordSerializer
+from RecordLib.petitions import (
+    Expungement, Sealing
 )
+from .serializers import (
+    CRecordSerializer, DocumentRenderSerializer
+)
+from RecordLib.compressor import Compressor
 import json
 import os
 import os.path
 from datetime import *
-
+import zipfile
 
 class FileUploadView(APIView):
     # noinspection PyMethodMayBeStatic
@@ -45,7 +49,6 @@ class FileUploadView(APIView):
                 pdf=pdf_file,
                 tempdir=tempdir)
             rec.add_summary(summary)
-
             json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
             # Uncomment for human-readable JSON.  Also comment out the above line.
             # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)
@@ -85,3 +88,36 @@ class AnalyzeView(APIView):
         except Exception as e:
             logging.error(e)
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
+
+
+class RenderDocumentsView(APIView):
+    """ Create pettions and an Overview document from an Analysis. 
+    
+    POST should be a json-encoded object with an 'petitions' property that is a list of petitions to generate
+    """
+    def post(self, request, *args, **kwargs):
+        try:
+            data = JSONParser().parse(request)
+            serializer = DocumentRenderSerializer(data=data)
+            if serializer.is_valid():
+                petitions = []
+                for petition in serializer.validated_data["petitions"]:
+                    if petition["petition_type"] == "Sealing":
+                        petitions.append(Sealing.from_dict(petition))
+                    else:
+                        petitions.append(Expungement.from_dict(petition))
+                client_last = petitions[0].client.last_name
+
+                with open("tests/templates/790ExpungementTemplate_usingpythonvars.docx", "rb") as doc:
+                    for petition in petitions:
+                        petition.set_template(doc)
+                petitions = [(p.file_name(), p.render()) for p in petitions]
+                package = Compressor(f"ExpungementsFor{client_last}.zip", petitions)
+                package.save()
+                return Response({"download":package.archive_path})
+            else:
+                raise ValueError
+        except:
+            return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
+
+

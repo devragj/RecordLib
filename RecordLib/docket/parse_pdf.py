@@ -1,5 +1,6 @@
 from typing import Union, BinaryIO, Tuple, Callable, List, Optional
-from RecordLib.common import Person, Charge, Sentence, SentenceLength
+from RecordLib.common import Charge, Sentence, SentenceLength
+from RecordLib.person import Person
 from RecordLib.case import Case
 from RecordLib.grammars.docket import (
     docket_sections, docket_sections_nonterminals, common_terminals, 
@@ -179,13 +180,16 @@ def xpath_date_or_blank(tree: etree, xpath: str) -> Optional[datetime]:
     except (IndexError, ValueError) as e:
         return None
 
+def xpath_or_empty_list(tree: etree, xpath: str) -> List[str]:
+    """ Given an etree, find a list of strings, or return an empty list."""
+    return [el.text.strip() for el in tree.xpath(xpath)]
 
 def str_to_money(money: str) -> float:
     """ 
     Turn a money string into a float.
     """
     if money.strip() == "": return 0
-    return float(money.replace("$", "").replace(",",""))
+    return float(money.replace("$", "").replace(",","").replace("(","").replace(")",""))
 
 def get_person(stree: etree) -> Person:
     """
@@ -206,8 +210,11 @@ def get_person(stree: etree) -> Person:
         first_name = ""
         last_name = ""    
 
+    aliases = xpath_or_empty_list(stree, "//alias")
     date_of_birth = xpath_date_or_blank(stree, "//birth_date")
-    return Person(first_name = first_name, last_name = last_name, date_of_birth = date_of_birth)
+    return Person(first_name = first_name, last_name = last_name, 
+                  date_of_birth = date_of_birth,
+                  aliases = aliases)
     
 def get_sentences(stree: etree) -> List[Sentence]:
     """Find the sentences in a sequence (as an xml tree) from a disposition section of a docket.
@@ -249,11 +256,24 @@ def get_charges(stree: etree) -> List[Charge]:
                 grade = xpath_or_blank(charge, "./grade"),
                 statute = xpath_or_blank(charge, "./statute"),
                 disposition = "Unknown",
+                disposition_date = None,
                 sentences = [],
             )
         )
         for charge in charges
     ]
+    # figure out the disposition dates by looking for a final disposition date that matches a charge.
+    final_disposition_events = stree.xpath("//section[@name='section_disposition_sentencing']//case_event[case_event_desc_and_date/is_final[contains(text(),'Final Disposition')]]")
+    for final_disp_event in final_disposition_events:
+        final_disp_date = xpath_date_or_blank(final_disp_event, ".//case_event_date")
+        applies_to_sequences = xpath_or_empty_list(final_disp_event, ".//sequence_number")
+        for seq_num in applies_to_sequences:    
+            # set the final_disp date for the charge with sequence number seq_num
+            for sn, charge in charges:
+                if sn == seq_num:
+                    charge.disposition_date = final_disp_date
+
+
     # Figure out the disposition of each charge from the disposition section.
     #   Do this by finding the last sequence in the disposition section for 
     #   the sequence with seq_num. The disposition of the charge is that 
@@ -286,23 +306,16 @@ def get_case(stree: etree) -> Case:
     Returns:
         a Cases object. 
     
-    TODO the values i must figure out:
-        charges,
-        fines_and_costs,
-        disposition_date,
-    
     """
     county = xpath_or_blank(stree, "/docket/header/court_name/county")
     docket_number = xpath_or_blank(stree, "/docket/header/docket_number")
     otn = xpath_or_blank(stree, "//section[@name='section_case_info']//otn")
     dc = xpath_or_blank(stree, "//section[@name='section_case_info']//dc")
     judge = xpath_or_blank(stree, "//section[@name='section_case_info']//judge_assigned")
-    try: 
-        arrest_date = xpath_or_blank(stree, "//section[@name='section_status_info']//arrest_date")
-        arrest_date = datetime.strptime(arrest_date, r"%m/%d/%Y")
-    except ValueError:
-        #logging.error(f"arrest date {arrest_date} did not parse.")
-        arrest_date = None
+    affiant = xpath_or_blank(stree, "//arresting_officer")
+    arresting_agency = xpath_or_blank(stree, "//arresting_agency")
+    complaint_date = xpath_date_or_blank(stree, "//section[@name='section_status_info']//complaint_date")
+    arrest_date = xpath_date_or_blank(stree, "//section[@name='section_status_info']//arrest_date")
     status = xpath_or_blank(stree, "//section[@name='section_status_info']//case_status")
 
     # If the case's status is Closed, find the disposition date by finding the last status event date.
@@ -320,15 +333,17 @@ def get_case(stree: etree) -> Case:
     
     
     # fines and costs
-    fines_and_costs = str_to_money(xpath_or_blank(stree, "//section[@name='section_case_financal_info']/case_financial_info/grand_toals/total"))
+    total_fines = str_to_money(xpath_or_blank(stree, "//section[@name='section_case_financal_info']/case_financial_info/grand_toals/assessed"))
+    fines_paid = str_to_money(xpath_or_blank(stree, "//section[@name='section_case_financial_info']/case_financial_info/grant_totals/payments"))
     # charges
     charges = get_charges(stree) 
 
     return Case(
         status=status, county=county, docket_number=docket_number, otn=otn, 
-        dc=dc, charges=charges,fines_and_costs=fines_and_costs,
+        dc=dc, charges=charges,total_fines=total_fines, fines_paid=fines_paid,
         arrest_date=arrest_date, disposition_date=disposition_date, 
-        judge=judge)
+        judge=judge, affiant=affiant, arresting_agency=arresting_agency, 
+        complaint_date=complaint_date)
 
 def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, Case]:
     """

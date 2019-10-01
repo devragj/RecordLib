@@ -51,7 +51,7 @@ class RedisHelper:
         """
         Store components of a Case in the redis store.
         """
-        for attr in ["status", "county", "fines_and_costs", "judge"]:
+        for attr in ["status", "county", "total_fines", "fines_paid", "judge"]:
             self.sadd(self.env + ":case:" + attr, getattr(case, attr))
         for charge in case.charges:
             self.sadd_charge(charge)

@@ -97,12 +97,13 @@ def fines_and_costs_paid(crecord) -> Decision:
     decision = Decision(
         name="Fines and costs are all paid on the whole record?",
         reasoning=[
-            {"case": case.docket_number, "fines and costs": case.fines_and_costs}
+            {"case": case.docket_number, "total fines": case.total_fines, "fines paid": case.fines_paid}
             for case in crecord.cases
         ],
     )
     try:
-        decision.value = sum([case.fines_and_costs for case in crecord.cases]) == 0
+        # if the fines remaining for the record are less than 0, then this test passes.
+        decision.value = sum([(case.fines_remaining()) for case in crecord.cases]) <= 0
     except TypeError:
         # If fines_and_costs is unknown for a case, the test above will fail,
         # and  we'll conservatively assume the worst, that there are unpaid fines and costs.
@@ -675,14 +676,14 @@ def seal_convictions(crecord: CRecord) -> Tuple[CRecord, Decision]:
             if all([reason.value == "Sealable" for reason in case_decision.reasoning]):
                 # All the charges in the current case are sealable.
                 case_decision.value = "All charges sealable"
-                conclusion.value.append(Sealing(crecord.person, [sealable_parts_of_case]))
+                conclusion.value.append(Sealing(client=crecord.person, cases=[sealable_parts_of_case]))
             elif any(
                 [reason.value == "Sealable" for reason in case_decision.reasoning]
             ):
                 # At least one charge in the current case is sealable.
                 case_decision.value = "Some charges sealable"
                 mod_rec.cases.append(unsealable_parts_of_case)
-                conclusion.value.append(Sealing(crecord.person, [sealable_parts_of_case]))
+                conclusion.value.append(Sealing(client=crecord.person, cases=[sealable_parts_of_case]))
             else:
                 case_decision.value = "No charges sealable"
                 mod_rec.cases.append(unsealable_parts_of_case)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import asdict
-from RecordLib.common import Charge, Person, Sentence
+from RecordLib.common import Charge, Sentence
+from RecordLib.person import Person
 from typing import List, Optional
 from datetime import date
 import pytest
@@ -19,10 +20,16 @@ class Case:
     otn: str
     dc: str
     charges: List[Charge]
-    fines_and_costs: int
+    total_fines: int
+    fines_paid: int
+    complaint_date: date
     arrest_date: date
     disposition_date: date
     judge: str
+    judge_address: str
+    affiant: str
+    arresting_agency: str
+    arresting_agency_address: str
 
     @staticmethod
     def from_dict(dct: str) -> Optional[Case]:
@@ -35,10 +42,16 @@ class Case:
                 otn = dct.get("otn"),
                 dc = dct.get("dc"),
                 charges = [Charge.from_dict(c) for c in (dct.get("charges") or [])],
-                fines_and_costs = dct.get("fines_and_costs"),
+                total_fines = dct.get("total_fines"),
+                fines_paid = dct.get("fines_paid"),
+                complaint_date = dct.get("complaint_date"),
                 arrest_date = dct.get("arrest_date"),
                 disposition_date = dct.get("disposition_date"),
-                judge = dct.get("judge")
+                judge = dct.get("judge"),
+                judge_address = dct.get("judge_address"),
+                affiant = dct.get("affiant"),
+                arresting_agency = dct.get("arresting_agency"),
+                arresting_agency_address = dct.get("arresting_agency_address"),
             )
         except:
             return None
@@ -51,21 +64,36 @@ class Case:
         otn,
         dc,
         charges,
-        fines_and_costs,
-        arrest_date,
-        disposition_date,
-        judge,
+        total_fines = None,
+        fines_paid = None,
+        arrest_date = None,
+        disposition_date = None,
+        judge = None,
+        judge_address = None,
+        affiant = None,
+        arresting_agency = None,
+        arresting_agency_address = None,
+        complaint_date = None,
     ) -> None:
         self.docket_number = docket_number
         self.otn = otn
+        self.dc = dc
         self.charges = charges
-        self.fines_and_costs = fines_and_costs
+        self.total_fines = total_fines
+        self.fines_paid = fines_paid
         self.status = status
         self.county = county
+        
         self.arrest_date = arrest_date
+        self.complaint_date = complaint_date
         self.disposition_date = disposition_date
+
         self.judge = judge
-        self.dc = dc
+        self.judge_address = judge_address
+        self.affiant = affiant
+        self.arresting_agency = arresting_agency
+        self.arresting_agency_address = arresting_agency_address
+        
 
     def years_passed_disposition(self) -> int:
         """ The number of years that have passed since the disposition date of this case."""
@@ -113,20 +141,6 @@ class Case:
         sentences = [s for c in self.charges for s in c.sentences]
         return max([s.sentence_date + s.sentence_length.max_time for s in sentences])
 
-    def to_dict(self) -> dict:
-        return {
-            "docket_number": self.docket_number,
-            "otn": self.otn,
-            "charges": [asdict(c) for c in self.charges],
-            "fines_and_costs": self.fines_and_costs,
-            "status": self.status,
-            "county": self.county,
-            "arrest_date": self.arrest_date,
-            "disposition_date": self.disposition_date,
-            "judge": self.judge,
-            "dc": self.dc
-        }
-
     def partialcopy(self) -> Case:
         """
         Return a new Case that contains all the static info of this case, but no Charges.
@@ -137,14 +151,30 @@ class Case:
             docket_number = self.docket_number,
             otn = self.otn,
             charges = [],
-            fines_and_costs = self.fines_and_costs,
+            total_fines = self.total_fines,
+            fines_paid = self.fines_paid,
             status = self.status,
             county = self.county,
+            complaint_date = self.complaint_date,
             arrest_date = self.arrest_date,
             disposition_date = self.disposition_date,
             judge = self.judge,
-            dc = self.dc
+            judge_address = self.judge_address,
+            dc = self.dc,
+            affiant = self.affiant,
+            arresting_agency = self.arresting_agency,
+            arresting_agency_address = self.arresting_agency_address,
         )
+
+    def fines_remaining(self) -> Optional[int]:
+        """ Return the value of the fines remaining on the case.
+
+        Return None if the fines on the case aren't defined.
+        """
+        try:
+            return self.total_fines - self.fines_paid
+        except:
+            return 0 if self.total_fines == 0 else None
 
     @staticmethod
     def order_cases_by_last_action(case):

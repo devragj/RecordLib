@@ -13,6 +13,7 @@ hypothesis = "*"
 mysql-connector-python = "*"
 pytest-django = "*"
 pytest-pythonpath = "*"
+"e1839a8" = {editable = true, path = "."}
 
 [packages]
 cerberus = "*"
@@ -28,6 +29,7 @@ django = "*"
 djangorestframework = "*"
 django-cors-headers = "*"
 parsimonious = "*"
+docxtpl = "*"
 
 [requires]
 python_version = "3.7"

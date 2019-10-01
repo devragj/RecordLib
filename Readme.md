@@ -69,6 +69,50 @@ Options:
   --help                     Show this message and exit.
 ```
 
+### expunge
+
+`expunge` is a cli for generating petitions. It has subcommands. 
+
+```
+me: expunge --help
+Usage: expunge [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  dir
+```
+
+`expunge dir` will generate petitions for all the summary and docket pdf files in finds in the target directory. This command only makes sense to run when all the files
+in the target directory relate to one person. 
+
+```
+me: expunge dir --help
+Usage: expunge dir [OPTIONS]
+
+Options:
+  -d, --directory PATH            [required]
+  -a, --archive PATH              [required]
+  -et, --expungement-template PATH
+                                  [required]
+  -st, --sealing-template PATH    [required]
+  --atty-name TEXT
+  --atty-org TEXT
+  --atty-org-addr TEXT
+  --atty-org-phone TEXT
+  --atty-bar-id TEXT
+  -td, --tempdir PATH
+  --help                          Show this message and exit.
+
+```
+
+For example, this command creates an archive of petions generated from processing all the files in the `tests/data/summaries` directory. 
+
+```
+expunge dir --directory tests/data/summaries/ --archive expungements.zip -et tests/templates/790ExpungementTemplate_usingpythonvars.docx -st tests/templates/791SealingTemplate.docx 
+```
+
 ## Developing
 
 The whole project lives in a single repository, but it has three pieces:
@@ -176,7 +220,7 @@ generated from the Summary.
 	.rule(seal_convictions)
     )
 
-    remaining_charges = analysis_container.modified_record
+    remaining_charges = analysis_container.remaining_recordord
     analysis = analysis_container.analysis
 
 	analysis ==

@@ -1,5 +1,5 @@
 from RecordLib.crecord import CRecord
-from RecordLib.common import Person
+from RecordLib.person import Person
 import pytest
 from datetime import date
 from dateutil.relativedelta import relativedelta

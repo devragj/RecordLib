@@ -21,10 +21,10 @@ def test_rule_expunge_over_70(example_crecord):
         sentence_period="90 days",
         sentence_length=SentenceLength.from_tuples(("90","day"), ("90","day"))
     )]
-    modified_record, analysis = ruledefs.expunge_over_70(example_crecord)
+    remaining_recordord, analysis = ruledefs.expunge_over_70(example_crecord)
     assert analysis.value == []
     assert [bool(d) for d in analysis.reasoning] == [True, True, False]
-    assert len(modified_record.cases) == len(example_crecord.cases)
+    assert len(remaining_recordord.cases) == len(example_crecord.cases)
 
     example_crecord.cases[0].charges[0].sentences[0] = Sentence(
         sentence_date=date(1980, 1, 1),
@@ -32,10 +32,10 @@ def test_rule_expunge_over_70(example_crecord):
         sentence_period="90 days",
         sentence_length=SentenceLength.from_tuples(("90", "day"), ("90", "day"))
     )
-    modified_record, analysis = ruledefs.expunge_over_70(example_crecord)
+    remaining_recordord, analysis = ruledefs.expunge_over_70(example_crecord)
     assert isinstance(analysis.value[0], Expungement)
     # The modified record has removed the cases this rule wants to expunge.
-    assert len(modified_record.cases) < len(example_crecord.cases)
+    assert len(remaining_recordord.cases) < len(example_crecord.cases)
 
 
 def test_expunge_deceased(example_crecord):

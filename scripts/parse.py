@@ -1,6 +1,7 @@
 import click
 from RecordLib.docket import Docket
-
+from RecordLib.serializers import to_serializable
+import json
 
 @click.command()
 @click.option("--doctype", required=True, type=click.Choice(["summary","docket"]))
@@ -14,7 +15,10 @@ def parse(path, doctype, tempdir):
         print("Not implemented yet")
     elif doctype == "docket":
         d, errs = Docket.from_pdf(path, tempdir)
-        print(d._defendant)
-        print(d._case)
+        print("---Errors---")
         print(errs)
+        print("---Person---")
+        print(json.dumps(d._defendant, default=to_serializable))
+        print("---Case---")
+        print(json.dumps(d._case, default=to_serializable))
     print("Done.") 

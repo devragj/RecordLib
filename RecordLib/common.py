@@ -13,48 +13,6 @@ from RecordLib.decision import Decision
 from RecordLib.guess_grade import guess_grade
 
 
-@dataclass
-class Person:
-    """
-    Track information about a person.
-    """
-
-    first_name: str
-    last_name: str
-    date_of_birth: date
-    date_of_death: Optional[date] = None
-
-    @staticmethod
-    def from_dict(dct: dict) -> Person:
-        """ Create a Person from a dict decribing one. """
-        if dct is not None:
-            return Person(
-                first_name = dct.get("first_name"),
-                last_name = dct.get("last_name"),
-                date_of_birth = dct.get("date_of_birth"), 
-                date_of_death = dct.get("date_of_death")
-            )
-
-    def age(self) -> int:
-        """ Age in years """
-        today = date.today()
-        return (
-            today.year
-            - self.date_of_birth.year
-            - (
-                (today.month, today.day)
-                < (self.date_of_birth.month, self.date_of_birth.day)
-            )
-        )
-
-    def years_dead(self) -> float:
-        """Return number of years dead a person is. Or -Infinity, if alive.
-        """
-        if self.date_of_death:
-            return relativedelta(date.today(), self.date_of_death).years
-        else:
-            return float("-Inf")
-
 
 @dataclass
 class SentenceLength:
@@ -76,7 +34,7 @@ class SentenceLength:
         * max_unit
         * max_time
         """
-        slength = SentenceLength(
+        slength = SentenceLength.from_tuples(
             (str(dct.get("min_time")), dct.get("min_unit")),
             (str(dct.get("max_time")), dct.get("max_unit")))
         return slength
@@ -161,7 +119,8 @@ class Charge:
     grade: str
     statute: str
     disposition: str
-    sentences: List[Sentence]
+    disposition_date: Optional[date] = None
+    sentences: Optional[List[Sentence]] = None
 
     @staticmethod
     def from_dict(dct: dict) -> Charge:

@@ -1,7 +1,9 @@
 import pytest
 from RecordLib.case import Case
-from RecordLib.common import Charge, Person, Sentence, SentenceLength
+from RecordLib.person import Person
+from RecordLib.common import Charge, Sentence, SentenceLength
 from RecordLib.crecord import CRecord
+from RecordLib.attorney import Attorney
 from RecordLib.summary.pdf import parse_pdf as parse_summary_pdf
 from RecordLib.docket import Docket
 from datetime import date
@@ -10,6 +12,16 @@ from RecordLib.redis_helper import RedisHelper
 import os
 #from django.test import Client 
 from rest_framework.test import APIClient
+
+@pytest.fixture
+def example_attorney():
+        return Attorney(
+                organization = "Community Legal",
+                name = "John Smith",
+                organization_address = r"1234 Main St.\nBig City, NY 10002",
+                organization_phone = "555-555-5555",
+                bar_id = "123456",
+              )
 
 @pytest.fixture
 def example_summary():
@@ -27,7 +39,10 @@ def example_person():
     return Person(
         first_name="Jane",
         last_name="Smorp",
-        date_of_birth=date(2010, 1, 1)
+        aliases=["JSmo", "SmorpyJJ"],
+        address="1234 Main St",
+        date_of_birth=date(2010, 1, 1),
+        ssn="999-99-9999",
     )
 
 @pytest.fixture
@@ -57,6 +72,7 @@ def example_charge(example_sentence):
         "M2",
         "14 section 23",
         "Guilty Plea",
+        disposition_date=date(2010,1,1),
         sentences=[example_sentence])
 
 @pytest.fixture
@@ -68,10 +84,16 @@ def example_case(example_charge):
         otn="112000111",
         dc="11222",
         charges=[example_charge],
-        fines_and_costs=200,
+        total_fines=200,
+        fines_paid=100,
         arrest_date=None,
+        complaint_date=None,
         disposition_date=None,
-        judge="Judge Jimmy Hendrix"
+        judge="Judge Jimmy Hendrix",
+        judge_address="1234 Judge St.,",
+        affiant="Officer Bland",
+        arresting_agency_address="1234 Grey St.",
+        arresting_agency="Monochrome County PD."
     )
 
 
