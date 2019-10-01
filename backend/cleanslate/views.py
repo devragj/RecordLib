@@ -49,7 +49,6 @@ class FileUploadView(APIView):
                 pdf=pdf_file,
                 tempdir=tempdir)
             rec.add_summary(summary)
-
             json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
             # Uncomment for human-readable JSON.  Also comment out the above line.
             # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)

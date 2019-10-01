@@ -29,6 +29,8 @@ export function fetchCRecord(file) {
                 .then(
                         response => {
                                 const data = response.data;
+                                console.log("fetched data successfully")
+                                console.log(data)
                                 const action = fetchCRecordSucceeded(data);
                                 dispatch(action);
                         }

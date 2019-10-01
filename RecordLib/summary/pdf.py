@@ -272,7 +272,7 @@ def get_defendant(summary_xml: etree.Element) -> Person:
         def_dob = datetime.strptime(def_dob, "%m/%d/%Y").date()
     except ValueError:
         def_dob = None
-    return Person(last_first[1], last_first[0], def_dob, aliases=[])
+    return Person(last_first[1], last_first[0], def_dob, aliases=aliases)
 
 def either(a,b):
     if a is not None:
