@@ -19,7 +19,7 @@ function AddCharge(props) {
 
     return (
         <div className="addCharge" style={{marginTop: "15px", marginBottom: "10px"}}>
-           <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>{adding? "Done": "Add Charge"}</button>
+           <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>{adding? "Done Adding Charge": "Add Charge"}</button>
            { adding && <EditChargeWrapper chargeId={chargeId}/> }
         </div>
     );

@@ -25,7 +25,7 @@ function AddCase(props) {
         <div className="addCase" >
            <span style={{marginLeft: "20px"}}>Docket Number: </span>
            <input type="text" value={docketNumber} onChange={handleChange} readOnly={adding}/>
-           <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>{adding? "Done": "Add Case"}</button>
+           <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>{adding? "Done Adding Case": "Add Case"}</button>
            { adding && <EditCase caseId={docketNumber}/> }
         </div>
     );

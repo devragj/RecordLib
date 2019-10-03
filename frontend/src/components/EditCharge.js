@@ -3,18 +3,12 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import EditField from "./EditField";
-import SentenceWrapper from "./Sentence";
-import ShowHideList from "./ShowHideList";
+import SentencesWrapper from "./Sentences";
 import { editField } from "../actions";
 
 function EditCharge(props) {
-    const { id, offense, grade, statute, disposition, disposition_date, sentences, modifier } = props;
+    const { id, offense, grade, statute, disposition, disposition_date, modifier } = props;
     const chargeStyle = { display: 'grid', gridTemplateColumns: '450px 350px', margin: '15px', border: '1px solid black', borderRadius: '10px', padding: '10px', width: '820px' };
-
-    const sentencesRendered = sentences.map(sentenceId => {
-            return <SentenceWrapper key={sentenceId} sentenceId={sentenceId}/>
-        }
-    );
 
     const getPropertyModifier = key => {
         return value => modifier(key, value);
@@ -27,24 +21,18 @@ function EditCharge(props) {
             <EditField item={statute} label="Statute: " modifier={getPropertyModifier('statute')} />
             <EditField item={disposition} label="Disposition: " modifier={getPropertyModifier('disposition')} />
             <EditField item={disposition_date} label="Disposition Date: " modifier={getPropertyModifier('disposition_date')} />
-            {sentences.length > 0 &&
-
-                <div style={{gridColumn: "1 / 3"}}>
-                        <ShowHideList hidden={true} title="Sentences" list={sentencesRendered} />
-                </div>
-            }
+            <SentencesWrapper chargeId={id} editing={true}/>
         </div>
     );
 }
 
 EditCharge.propTypes = {
-    charge_id: PropTypes.string,
+    id: PropTypes.string,
     offense: PropTypes.string,
     grade: PropTypes.string,
     statute: PropTypes.string,
     disposition: PropTypes.string,
     disposition_date: PropTypes.string,
-    sentences: PropTypes.array.isRequired,
     modifier: PropTypes.func
 }
 

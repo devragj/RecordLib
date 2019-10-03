@@ -2,27 +2,14 @@ import React from "react";
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import ChargeWrapper from "./Charge";
-import ShowHideList from "./ShowHideList";
+import ChargesWrapper from "./Charges";
 
 function Case(props) {
-    const { id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date, charges,
+    const { id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date,
             total_fines, fines_paid, complaint_date, judge_address, affiant, arresting_agency, 
             arresting_agency_address} = props;
     const caseStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
         border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px' };
-//    const chargesRendered = charges.map(chargeId => {
-//            return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
-//        }
-//    );
-
-    const getRenderedCharges = () => {
-        const chargesRendered = charges.map(chargeId => {
-            return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
-        });
-
-        return chargesRendered;
-    };
 
     return (
         <div className="case" id={id} style={caseStyle}>
@@ -41,12 +28,9 @@ function Case(props) {
             <div>Affiant: {affiant}</div>
             <div>Arresting Agency: {arresting_agency}</div>
             <div>Arresting Agency Address: {arresting_agency_address}</div>
-            {charges.length > 0 &&
-
-                <div style={{gridColumn: "1 / 4"}}>
-                        <ShowHideList hidden={true} title="Charges" list={getRenderedCharges()} />
-                </div>
-           }
+            <div></div>
+            <div></div>
+            <ChargesWrapper caseId={id} />
         </div>
     );
 };
@@ -61,7 +45,6 @@ Case.propTypes = {
     judge:  PropTypes.string,
     arrest_date:  PropTypes.string,
     disposition_date:  PropTypes.string,
-    charges: PropTypes.array.isRequired,
     total_fines: PropTypes.string,
     fines_paid:  PropTypes.string,
     complaint_date:  PropTypes.string,

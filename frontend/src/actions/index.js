@@ -114,3 +114,22 @@ export function addCharge(chargeId, caseId) {
         payload: { entityName: 'charges', entity: newCharge, parentId: caseId,  parentEntityName: 'cases', parentListKey: 'charges' }
     };
 };
+
+export function addSentence(sentenceId, chargeId) {
+    const SentenceLength = {
+        min_time: '',
+        max_time: ''
+    };
+    const newSentence = {
+        id: sentenceId,
+        sentence_date: '',
+        sentence_type: '',
+        sentence_period: '',
+        sentence_length: SentenceLength
+    };
+
+    return {
+        type: 'ADD_ENTITY',
+        payload: { entityName: 'sentences', entity: newSentence, parentId: chargeId,  parentEntityName: 'charges', parentListKey: 'sentences' }
+    };
+};

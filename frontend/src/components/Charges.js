@@ -9,7 +9,7 @@ import ShowHideList from "./ShowHideList";
 
 function Charges(props) {
     const chargesStyle = {gridColumn: "1 / 4"};
-    const { charges, caseId , editing } = props;
+    const { charges, caseId, editing } = props;
     const chargesRendered = charges.map(chargeId => {
             return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
         }
@@ -28,9 +28,20 @@ function Charges(props) {
 }
 
 Charges.propTypes = {
+    /**
+        The list of charge ids.
+    */
     charges: PropTypes.array.isRequired,
-    caseId: PropTypes.string,
-    editing:PropTypes.bool
+    /**
+        The id of the case containing the charges.
+    */
+    caseId: PropTypes.string.isRequired,
+    /**
+        This component wil be used either in the Case component,
+        in which case editing is false, or in the EditCase
+        component, in which case editing is true.
+    */
+    editing: PropTypes.bool
 }
 
 function mapStateToProps(state, ownProps) {
