@@ -11,10 +11,18 @@ function Case(props) {
             arresting_agency_address} = props;
     const caseStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
         border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px' };
-    const chargesRendered = charges.map(chargeId => {
+//    const chargesRendered = charges.map(chargeId => {
+//            return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
+//        }
+//    );
+
+    const getRenderedCharges = () => {
+        const chargesRendered = charges.map(chargeId => {
             return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
-        }
-    );
+        });
+
+        return chargesRendered;
+    };
 
     return (
         <div className="case" id={id} style={caseStyle}>
@@ -36,7 +44,7 @@ function Case(props) {
             {charges.length > 0 &&
 
                 <div style={{gridColumn: "1 / 4"}}>
-                        <ShowHideList hidden={true} title="Charges" list={chargesRendered} />
+                        <ShowHideList hidden={true} title="Charges" list={getRenderedCharges()} />
                 </div>
            }
         </div>

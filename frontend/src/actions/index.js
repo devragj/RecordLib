@@ -1,5 +1,5 @@
 import * as api from '../api';
-import { normalizeCRecord } from '../normalize';
+import { normalizeCRecord, CRECORD_ID } from '../normalize';
 
 /**
  * This action creator parses and then normalizes
@@ -69,4 +69,48 @@ export function editField(entityName, entityId, field, value) {
                 type: 'EDIT',
                 payload: { entityName, entityId, field, value }
         };
+};
+
+export function addCase(docket_number) {
+    const newCase = {
+        id: docket_number,
+        docket_number,
+        status: '',
+        county: '',
+        otn: '',
+        dc: '',
+        charges: [],
+        total_fines: '',
+        fines_paid: '',
+        complaint_date: '',
+        arrest_date: '',
+        disposition_date: '',
+        judge: '',
+        judge_address: '',
+        affiant: '',
+        arresting_agency: '',
+        arresting_agency_address: ''
+    };
+
+    return {
+        type: 'ADD_ENTITY',
+        payload: { entityName: 'cases', entity: newCase, parentId: CRECORD_ID,  parentEntityName: 'cRecord', parentListKey: 'cases' }
+    };
+};
+
+export function addCharge(chargeId, caseId) {
+    const newCharge = {
+        id: chargeId,
+        offense: '',
+        grade: '',
+        statute: '',
+        disposition: '',
+        disposition_date: '',
+        sentences: []
+    };
+
+    return {
+        type: 'ADD_ENTITY',
+        payload: { entityName: 'charges', entity: newCharge, parentId: caseId,  parentEntityName: 'cases', parentListKey: 'charges' }
+    };
 };

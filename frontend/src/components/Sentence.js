@@ -25,8 +25,8 @@ Sentence.propTypes = {
     sentence_type: PropTypes.string,
     sentence_period: PropTypes.string,
     sentence_length: PropTypes.shape({
-        min_time: PropTypes.string,
-        max_time: PropTypes.string
+        min_time: PropTypes.number,
+        max_time: PropTypes.number
     })
 }
 

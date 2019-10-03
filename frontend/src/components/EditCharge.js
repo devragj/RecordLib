@@ -1,13 +1,13 @@
 import React from "react";
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 
+import EditField from "./EditField";
 import SentenceWrapper from "./Sentence";
 import ShowHideList from "./ShowHideList";
-import EditBox from "./EditBox";
 import { editField } from "../actions";
 
-function Charge(props) {
+function EditCharge(props) {
     const { id, offense, grade, statute, disposition, disposition_date, sentences, modifier } = props;
     const chargeStyle = { display: 'grid', gridTemplateColumns: '450px 350px', margin: '15px', border: '1px solid black', borderRadius: '10px', padding: '10px', width: '820px' };
 
@@ -16,13 +16,17 @@ function Charge(props) {
         }
     );
 
+    const getPropertyModifier = key => {
+        return value => modifier(key, value);
+    }
+
     return (
-        <div className="charge" id={id} style={chargeStyle}>
-            <div>Offense: {offense}</div>
-            <EditBox title="Grade: " item={grade} modifier={modifier} />
-            <div>Statute: {statute}</div>
-            <div>Disposition: {disposition}</div>
-            <div>Disposition Date: {disposition_date}</div>
+        <div className="editCharge" id={id} style={chargeStyle}>
+            <EditField item={offense} label="Offense: " modifier={getPropertyModifier('offense')} />
+            <EditField item={grade} label="Grade: " modifier={getPropertyModifier('grade')} />
+            <EditField item={statute} label="Statute: " modifier={getPropertyModifier('statute')} />
+            <EditField item={disposition} label="Disposition: " modifier={getPropertyModifier('disposition')} />
+            <EditField item={disposition_date} label="Disposition Date: " modifier={getPropertyModifier('disposition_date')} />
             {sentences.length > 0 &&
 
                 <div style={{gridColumn: "1 / 3"}}>
@@ -33,14 +37,15 @@ function Charge(props) {
     );
 }
 
-Charge.propTypes = {
+EditCharge.propTypes = {
     charge_id: PropTypes.string,
     offense: PropTypes.string,
     grade: PropTypes.string,
     statute: PropTypes.string,
     disposition: PropTypes.string,
     disposition_date: PropTypes.string,
-    sentences: PropTypes.array.isRequired
+    sentences: PropTypes.array.isRequired,
+    modifier: PropTypes.func
 }
 
 function mapStateToProps(state, ownProps) {
@@ -48,11 +53,11 @@ function mapStateToProps(state, ownProps) {
 };
 
 function mapDispatchToProps(dispatch, ownProps) {
-    return { modifier: item => {
-            dispatch(editField('charges', ownProps.chargeId, 'grade', item))
+    return { modifier: (key, value) => {
+            dispatch(editField('charges', ownProps.chargeId, key, value))
         }
     };
 };
 
-const ChargeWrapper = connect(mapStateToProps, mapDispatchToProps)(Charge);
-export default ChargeWrapper;
+const EditChargeWrapper = connect(mapStateToProps, mapDispatchToProps)(EditCharge);
+export default EditChargeWrapper;

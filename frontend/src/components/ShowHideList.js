@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlusCircle, faMinusCircle } from '@fortawesome/free-solid-svg-icons'
@@ -46,4 +47,6 @@ ShowHideList.propTypes = {
 
 }
 
-export default ShowHideList;
+const ShowHideListWrapper = connect()(ShowHideList);
+export default ShowHideListWrapper;
+//export default ShowHideList;
