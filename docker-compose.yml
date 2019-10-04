@@ -1,0 +1,22 @@
+version: '3'
+services:
+  django_web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: natev/recordlib
+    ports: 
+      - "8000:8000"
+    networks:
+      recordlib-net: 
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile-frontend
+    image: natev/recordlibfront:latest
+    ports:
+      - "3000:80"
+    networks: 
+      recordlib-net: 
+networks:
+  recordlib-net: 

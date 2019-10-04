@@ -11,7 +11,6 @@ from RecordLib.parsingutilities import get_text_from_pdf
 from parsimonious import Grammar
 import parsimonious
 from lxml import etree
-import pytest
 import logging
 import re
 from datetime import datetime
@@ -379,7 +378,6 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, 
                 nodes = grammar.parse(section_text)
             except Exception as e:
                 slines = section_text.split("\n")
-                #pytest.set_trace()
                 errors.append(f"    Text for {section_name} failed to parse.")
                 logging.error(f"    Text for {section_name} failed to parse.")
                 continue

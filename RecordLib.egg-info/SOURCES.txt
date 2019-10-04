@@ -5,6 +5,7 @@ RecordLib/analysis.py
 RecordLib/attorney.py
 RecordLib/case.py
 RecordLib/common.py
+RecordLib/compressor.py
 RecordLib/crecord.py
 RecordLib/decision.py
 RecordLib/guess_grade.py

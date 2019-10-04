@@ -10,12 +10,12 @@ recordlib = {path = ".", editable = true}
 black = "*"
 click = "*"
 hypothesis = "*"
-mysql-connector-python = "*"
 pytest-django = "*"
 pytest-pythonpath = "*"
 "e1839a8" = {editable = true, path = "."}
 
 [packages]
+mysql-connector-python = "*"
 cerberus = "*"
 pyyaml = "*"
 lxml = "*"
@@ -30,6 +30,7 @@ djangorestframework = "*"
 django-cors-headers = "*"
 parsimonious = "*"
 docxtpl = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"

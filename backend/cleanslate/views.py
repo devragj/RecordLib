@@ -28,6 +28,8 @@ import os
 import os.path
 from datetime import *
 import zipfile
+import tempfile 
+
 
 class FileUploadView(APIView):
     # noinspection PyMethodMayBeStatic
@@ -44,7 +46,8 @@ class FileUploadView(APIView):
             pdf_file = request.data["file"]
             rec = CRecord()
             base = os.path.dirname(os.path.abspath(__file__))
-            tempdir = os.path.join(base, "tmp")
+            #tempdir = os.path.join(base, "tmp")
+            tempdir = tempfile.mkdtemp()
             summary = parse_pdf(
                 pdf=pdf_file,
                 tempdir=tempdir)

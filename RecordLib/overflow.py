@@ -6,7 +6,6 @@ Lines that repeat across page breaks in summaries and dockets are a big problem.
 """
 from typing import List, Tuple
 import re
-import pytest
 from RecordLib.references import pa_counties, statuses
 
 class OverflowFilter:

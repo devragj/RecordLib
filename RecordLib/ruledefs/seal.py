@@ -1,7 +1,6 @@
 from __future__ import annotations
 from RecordLib.crecord import CRecord, Charge
 from typing import Tuple, Union, List
-import pytest
 import copy
 import json
 import re
