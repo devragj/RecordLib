@@ -2,10 +2,10 @@ import React from "react";
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import ChargesWrapper from "./Charges";
+import Charges from "./Charges";
 
 function Case(props) {
-    const { id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date,
+    const { id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date, charges,
             total_fines, fines_paid, complaint_date, judge_address, affiant, arresting_agency, 
             arresting_agency_address} = props;
     const caseStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
@@ -30,7 +30,7 @@ function Case(props) {
             <div>Arresting Agency Address: {arresting_agency_address}</div>
             <div></div>
             <div></div>
-            <ChargesWrapper caseId={id} />
+            <Charges caseId={id} charges={charges} />
         </div>
     );
 };
@@ -45,6 +45,7 @@ Case.propTypes = {
     judge:  PropTypes.string,
     arrest_date:  PropTypes.string,
     disposition_date:  PropTypes.string,
+    charges: PropTypes.array.isRequired,
     total_fines: PropTypes.string,
     fines_paid:  PropTypes.string,
     complaint_date:  PropTypes.string,

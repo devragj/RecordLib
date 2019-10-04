@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import EditField from "./EditField";
-import ChargesWrapper from "./Charges";
+import Charges from "./Charges";
 import { editField } from "../actions";
 
 function EditCase(props) {
-    const { modifier, id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date,
+    const { modifier, id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date, charges,
             total_fines, fines_paid, complaint_date, judge_address, affiant, arresting_agency, 
             arresting_agency_address} = props;
     const caseStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
@@ -36,7 +36,7 @@ function EditCase(props) {
             <EditField item={arresting_agency_address} label="Arresting Agency Address: " modifier={getPropertyModifier('arresting_agency_address')} />
             <div></div>
             <div></div>
-            <ChargesWrapper caseId={id} editing={true}/>
+            <Charges caseId={id} charges={charges} editing={true}/>
         </div>
     );
 };

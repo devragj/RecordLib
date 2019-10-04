@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import SentenceWrapper from "./Sentence";
@@ -44,9 +43,4 @@ Sentences.propTypes = {
     editing: PropTypes.bool
 }
 
-function mapStateToProps(state, ownProps) {
-    return { sentences: state.entities.charges[ownProps.chargeId].sentences };
-};
-
-const SentencesWrapper = connect(mapStateToProps)(Sentences);
-export default SentencesWrapper;
+export default Sentences;

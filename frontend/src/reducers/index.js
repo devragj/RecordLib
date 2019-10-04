@@ -50,29 +50,37 @@ export default function cRecordReducer(state = normalizedData, action) {
 
         case 'EDIT_SENTENCE_LENGTH': {
             const { sentenceId, field, value } = action.payload;
-            const newState = {...state};
-            newState.entities = {...(newState.entities)};
-            newState.entities['sentences'] = {...(newState.entities['sentences'])};
-            const sentenceToChange = newState.entities['sentences'][sentenceId];
-            const newSentence = {...sentenceToChange};
-            const sentenceLengthToChange = newSentence.sentence_length;
-            const newSentenceLength = {...sentenceLengthToChange};
-            newSentence.sentence_length = newSentenceLength;
-            newSentenceLength[field] = value;
-            newState.entities['sentences'][sentenceId] = newSentence;
+
+            const newState = Object.assign({},state, {
+                entities: Object.assign({}, state.entities, {
+                    sentences: Object.assign({}, state.entities['sentences'], {
+                        [sentenceId]: Object.assign({}, state.entities['sentences'][sentenceId], {
+                            sentence_length: Object.assign({}, state.entities['sentences'][sentenceId]['sentence_length'], {
+                                [field]: value
+                            })
+                        })
+                    })
+                })
+            });
             return newState;
         }
 
         case 'ADD_ENTITY': {
             const { entityName, entity, parentId, parentEntityName, parentListKey } = action.payload;
-            const newState = {...state};
-            newState.entities = {...(newState.entities)};
-            newState.entities[entityName] = {...(newState.entities[entityName])};
-            newState.entities[parentEntityName] = {...(newState.entities[parentEntityName])};
-            newState.entities[entityName][entity.id] = entity;
-            const entityList = newState.entities[parentEntityName][parentId][parentListKey].concat();
-            entityList.push(entity.id);
-            newState.entities[parentEntityName][parentId][parentListKey] = entityList;
+
+            const newState = Object.assign({},state, {
+                entities: Object.assign({}, state.entities, {
+                    [entityName]: Object.assign({}, state.entities[entityName], {
+                        [entity.id]: entity
+                    }),
+                    [parentEntityName]: Object.assign({}, state.entities[parentEntityName], {
+                        [parentId]: Object.assign({}, state.entities[parentEntityName][parentId], {
+                            [parentListKey]: [...state.entities[parentEntityName][parentId][parentListKey], entity.id]
+                        })
+                    })
+                })
+            });
+
             return newState;
         }
 
