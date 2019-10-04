@@ -71,6 +71,13 @@ export function editField(entityName, entityId, field, value) {
         };
 };
 
+export function editSentenceLength(sentenceId, field, value) {
+        return {
+                type: 'EDIT_SENTENCE_LENGTH',
+                payload: { sentenceId, field, value }
+        };
+};
+
 export function addCase(docket_number) {
     const newCase = {
         id: docket_number,

@@ -36,7 +36,7 @@ export default function cRecordReducer(state = normalizedData, action) {
         // Currently, this makes shallow copies so as to edit
         // the field while keeping state immutable.
         // TODO: replace this with a library such as immutable.js
-        case'EDIT': {
+        case 'EDIT': {
             const { entityName, entityId, field, value } = action.payload;
             const newState = {...state};
             newState.entities = {...(newState.entities)};
@@ -45,6 +45,21 @@ export default function cRecordReducer(state = normalizedData, action) {
             const newEntity = {...entityToChange};
             newEntity[field] = value;
             newState.entities[entityName][entityId] = newEntity;
+            return newState;
+        }
+
+        case 'EDIT_SENTENCE_LENGTH': {
+            const { sentenceId, field, value } = action.payload;
+            const newState = {...state};
+            newState.entities = {...(newState.entities)};
+            newState.entities['sentences'] = {...(newState.entities['sentences'])};
+            const sentenceToChange = newState.entities['sentences'][sentenceId];
+            const newSentence = {...sentenceToChange};
+            const sentenceLengthToChange = newSentence.sentence_length;
+            const newSentenceLength = {...sentenceLengthToChange};
+            newSentence.sentence_length = newSentenceLength;
+            newSentenceLength[field] = value;
+            newState.entities['sentences'][sentenceId] = newSentence;
             return newState;
         }
 

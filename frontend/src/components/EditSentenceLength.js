@@ -1,37 +1,50 @@
 import React from "react";
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-/**
- * This component wraps a single field and allows
- * it to be edited.
- * The new value is sent to the redux store.
- * @constructor
- */
-function EditField(props) {
-        const { item, label, modifier } = props;
+import { editSentenceLength } from "../actions";
 
-        const handleChange = event => modifier(event.target.value);
+function EditSentenceLength(props) {
+    const { sentence_length, modifier } = props;
+    const sentenceLengthStyle = { gridColumn: "1 / 3",  margin: '15px',
+        border: '1px solid black', borderRadius: '5px', padding: '10px', width: '370px', textAlign: 'center' };
 
-        return (
-                <div className="editField">
-                     {label}  <input type="text" value={item} onChange={handleChange}/>
-                </div>
-        );
+    const getPropertyModifier = key => {
+        return event => modifier(key, event.target.value);
+    }
+
+    return (
+        <div className="editSentenceLength" style={sentenceLengthStyle}>
+             <div style={{ textAlign: 'center' }}> Sentence Length </div>
+             <div className="editLength">
+                 Min Time:  <input type="text" value={sentence_length.min_time} onChange={getPropertyModifier('min_time')}/> days
+             </div>
+             <div className="editLength">
+                 MaxTime:  <input type="text" value={sentence_length.max_time} onChange={getPropertyModifier('max_time')}/> days
+             </div>
+        </div>
+    );
 }
 
-EditField.propTypes = {
-    /**
-     * The label of the component, describing the contents.
-     */
-    label: PropTypes.string.isRequired,
-    /**
-     * The value which can be edited.
-     */
-    item: PropTypes.string.isRequired,
-    /**
-     * The callback which registers the change.
-     */
-    modifier: PropTypes.func.isRequired
+EditSentenceLength.propTypes = {
+    sentenceId: PropTypes.string,
+    sentence_length: PropTypes.shape({
+        min_time: PropTypes.string,
+        max_time: PropTypes.string
+    }),
+    modifier: PropTypes.func
 }
 
-export default EditField;
+function mapStateToProps(state, ownProps) {
+    return { sentence_length: state.entities.sentences[ownProps.sentenceId].sentence_length };
+};
+
+function mapDispatchToProps(dispatch, ownProps) {
+    return { modifier: (key, value) => {
+            dispatch(editSentenceLength(ownProps.sentenceId, key, value))
+        }
+    };
+};
+
+const EditSentenceLengthWrapper = connect(mapStateToProps, mapDispatchToProps)(EditSentenceLength);
+export default EditSentenceLengthWrapper;
