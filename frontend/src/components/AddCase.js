@@ -5,6 +5,14 @@ import PropTypes from 'prop-types';
 import { addCase } from "../actions";
 import EditCase from "./EditCase";
 
+/**
+ * Component for adding a Case to a CRecord.
+ * It starts with a textbox to enter the docket number of the case,
+ * and a button.  Once the button is clicked, a case with that docket number
+ * is added to the redux state.  The component then displays the EditCase
+ * component, to enter the case information.  Clicking the button (whose label
+ * has changed) again will hide the EditCase component.
+ */
 function AddCase(props) {
     const adder = props.adder;
     const [adding, setAdding] = useState(false);

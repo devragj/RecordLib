@@ -6,11 +6,18 @@ import EditField from "./EditField";
 import { editField } from "../actions";
 import EditSentenceLengthWrapper from "./EditSentenceLength";
 
+/**
+ * Component to supply values to a newly-created Sentence.
+ */
 function EditSentence(props) {
     const { id, sentence_date, sentence_type, sentence_period, modifier } = props;
     const sentenceStyle = { display: 'grid', gridTemplateColumns: '200px 270px 270px', margin: '15px',
         border: '1px solid black', borderRadius: '5px', padding: '10px', width: '760px'};
 
+    /**
+     * This function starts with the modifier function, which expects a key,value pair
+     * and returns a function which takes a key and returns a function which expects a value.
+     */
     const getPropertyModifier = key => {
         return value => modifier(key, value);
     }
@@ -37,6 +44,11 @@ function mapStateToProps(state, ownProps) {
     return state.entities.sentences[ownProps.sentenceId];
 };
 
+/**
+ * This function returns a function which take a key,value pair
+ * and associates the value with that key in the Sentence
+ * object being edited.
+ */
 function mapDispatchToProps(dispatch, ownProps) {
     return { modifier: (key, value) => {
             dispatch(editField('sentences', ownProps.sentenceId, key, value))
