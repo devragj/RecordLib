@@ -66,7 +66,7 @@ export function fetchCRecord(file) {
  */
 export function editField(entityName, entityId, field, value) {
         return {
-                type: 'EDIT',
+                type: 'EDIT_ENTITY_VALUE',
                 payload: { entityName, entityId, field, value }
         };
 };
