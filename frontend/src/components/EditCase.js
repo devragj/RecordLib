@@ -7,7 +7,7 @@ import Charges from "./Charges";
 //import { editField } from "../actions";
 
 /**
- * Component to supply values to a newly-created Case.
+ * Component to edit a case, including supplying values to a newly-created case.
  */
 function EditCase(props) {
     const { modifier, id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date, charges,
@@ -71,22 +71,4 @@ EditCase.propTypes = {
     modifier: PropTypes.func
 }
 
-//function mapStateToProps(state, ownProps) {
-//    return state.entities.cases[ownProps.caseId];
-//};
-//
-///**
-// * This function returns a function which take a key,value pair
-// * and associates the value with that key in the Case
-// * object being edited.
-// */
-//function mapDispatchToProps(dispatch, ownProps) {
-//    return { modifier: (key, value) => {
-//            dispatch(editField('cases', ownProps.caseId, key, value))
-//        }
-//    };
-//};
-//
-//const EditCaseWrapper = connect(mapStateToProps, mapDispatchToProps)(EditCase);
-//export default EditCaseWrapper;
 export default EditCase;

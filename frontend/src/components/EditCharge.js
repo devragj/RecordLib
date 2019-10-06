@@ -7,7 +7,7 @@ import Sentences from "./Sentences";
 import { editField } from "../actions";
 
 /**
- * Component to supply values to a newly-created Charge.
+ * Component to edit a charge, including supplying values to a newly-created charge.
  */
 function EditCharge(props) {
     const { id, offense, grade, statute, disposition, disposition_date, sentences, modifier } = props;

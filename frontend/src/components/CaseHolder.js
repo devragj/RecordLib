@@ -1,11 +1,18 @@
 import React from "react";
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import Case from "./Case";
 import EditCase from "./EditCase";
 import { editField, toggleEditing } from "../actions";
 
+/**
+ * Connected component for a Case, which can be in edit mode.
+ * The editing prop determines the mode.
+ * Props which are properties of the case are passed to a child
+ * presentational component, which is either Case or EditCase.
+ * Theses components also receive a dispatching function, which is used by the
+ * EditCase component to send changes to the redux store.
+ */
 function CaseHolder(props) {
     return (
         <div className="caseHolder" >

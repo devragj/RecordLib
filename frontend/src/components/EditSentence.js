@@ -7,7 +7,7 @@ import { editField } from "../actions";
 import EditSentenceLengthWrapper from "./EditSentenceLength";
 
 /**
- * Component to supply values to a newly-created Sentence.
+ * Component to edit a sentence, including supplying values to a newly-created sentence.
  */
 function EditSentence(props) {
     const { id, sentence_date, sentence_type, sentence_period, modifier } = props;

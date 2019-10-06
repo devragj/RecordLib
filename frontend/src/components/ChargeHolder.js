@@ -1,11 +1,18 @@
 import React from "react";
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import Charge from "./Charge";
 import EditCharge from "./EditCharge";
 import { editField } from "../actions";
 
+/**
+ * Connected component for a Charge, which can be in edit mode.
+ * The editing prop determines the mode, and is passed in from the parent case.
+ * Props which are properties of the charge are passed to a child
+ * presentational component, which is either Charge or EditCharge.
+ * These components also receive a dispatching function, which is used by the
+ * EditCharge component to send changes to the redux store.
+ */
 function ChargeHolder(props) {
     return (
         <div className="chargeHolder" >
