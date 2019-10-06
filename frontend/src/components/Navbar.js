@@ -6,6 +6,18 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 import MenuIcon from '@material-ui/icons/Menu';
+import { Link as RouterLink } from 'react-router-dom';
+import Link from '@material-ui/core/Link'
+
+// The use of React.forwardRef will no longer be required for react-router-dom v6.
+// See https://github.com/ReactTraining/react-router/issues/6056
+const LinkToAbout = React.forwardRef((props, ref) => (
+  <RouterLink innerRef={ref} {...props} />
+));
+
+const LinkToHome = React.forwardRef((props, ref) => (
+    <RouterLink innerRef={ref} to="/" {...props}/>
+))
 
 
 const useStyles = makeStyles(theme => ({
@@ -17,7 +29,11 @@ const useStyles = makeStyles(theme => ({
   },
   title: {
     flexGrow: 1,
+    color: "#dee2e6",
   },
+  buttonText: {
+      color: "#dee2e6",
+  }
 }));
 
 function Navbar () {
@@ -27,13 +43,17 @@ function Navbar () {
         <div className={classes.root}>
             <AppBar position="static">
                 <Toolbar>
-                <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" className={classes.title}>
-                    Clean Slate Buddy
-                </Typography>
-                <Button color="inherit">Login</Button>
+                    <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                        <MenuIcon />
+                    </IconButton>
+                    <Link className={classes.title} component={LinkToHome} to="/">
+                        <Typography variant="h6" className={classes.title}>
+                            Clean Slate Buddy
+                        </Typography>
+                    </Link>
+                    <Button color="primary" className={classes.buttonText} component={LinkToAbout} to="/about"> 
+                        About
+                    </Button>
                 </Toolbar>
             </AppBar>
         </div>
