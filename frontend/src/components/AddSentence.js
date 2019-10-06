@@ -25,10 +25,6 @@ function AddSentence(props) {
 }
 
 AddSentence.propTypes = {
-    sentenceId: PropTypes.string.isRequired,
-    /**
-     * The callback which adds the sentence to state.
-     */
     adder: PropTypes.func.isRequired
 }
 
