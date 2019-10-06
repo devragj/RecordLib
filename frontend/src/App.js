@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import CRecordWrapper from "./components/CRecord";
 import { fetchCRecord } from "./actions";
+import CSSBaseline from "@material-ui/core/CssBaseline";
+import Navbar from "./components/Navbar";
 
 /**
  * Parent component
@@ -34,13 +36,17 @@ function App(props) {
     };
 
     return (<main className="content" style={{ margin: '20px'}}>
-        <div className="fileUpload" style={uploadStyle}>
-            <input type="file" name="file" onChange={onChangeHandler}/>
-            <button type="button" onClick={onClickHandler} style={{
-                            marginLeft: '20px'
+        <React.Fragment>
+            <CSSBaseline/>
+            <Navbar></Navbar>
+            <div className="fileUpload" style={uploadStyle}>
+                <input type="file" name="file" onChange={onChangeHandler}/>
+                <button type="button" onClick={onClickHandler} style={{
+                    marginLeft: '20px'
                 }}>Upload</button>
-        </div>
-            {cRecordPresent && <CRecordWrapper />}
+            </div>
+                {cRecordPresent && <CRecordWrapper />}
+        </React.Fragment>
     </main>);
 };
 
