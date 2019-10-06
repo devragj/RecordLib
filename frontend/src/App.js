@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { fetchCRecord } from "./actions";
 import CSSBaseline from "@material-ui/core/CssBaseline";
+import Container from "@material-ui/core/Container"
 import Navbar from "./components/Navbar";
 import About from "./components/About";
 import NotFound from "./components/NotFound";
@@ -21,15 +22,6 @@ import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
  * After that, this component can render a child CRecord component.
  */
 function App(props) {
-    const { cRecordPresent, fetchCRecord } = props;
-    const uploadStyle = {
-        margin: '15px',
-        border: '1px solid black',
-        borderRadius: '5px',
-        padding: '10px',
-        width: '950px'
-    };
-
     return (<main className="content" style={{ margin: '0px'}}>
         <React.Fragment>
             <CSSBaseline/>
@@ -46,7 +38,6 @@ function App(props) {
                         <NotFound/>
                     </Route>
                 </Switch>
-
             </Router>
 
 
