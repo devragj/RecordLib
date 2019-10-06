@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import ChargeWrapper from "./Charge";
+import ChargeHolderWrapper from "./ChargeHolder";
 import AddChargeWrapper from "./AddCharge";
 import ShowHideList from "./ShowHideList";
 
@@ -10,17 +10,17 @@ function Charges(props) {
     const chargesStyle = {gridColumn: "1 / 4"};
     const { charges, caseId, editing } = props;
     const chargesRendered = charges.map(chargeId => {
-            return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
+            return <ChargeHolderWrapper key={chargeId} chargeId={chargeId} editing={editing}/>
         }
     );
 
     return (
         <div className="charges" style={chargesStyle}>
-        {editing &&
-            <AddChargeWrapper caseId={caseId} nextIndex={charges.length} />
-        }
         {charges.length > 0 &&
-           <ShowHideList hidden={true} title="Charges" list={chargesRendered} />
+           <ShowHideList hidden={!editing} title="Charges" list={chargesRendered} />
+        }
+        {editing &&
+            <AddChargeWrapper caseId={caseId} />
         }
         </div>
     );

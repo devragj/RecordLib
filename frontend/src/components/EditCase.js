@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+//import { connect } from 'react-redux';
 
 import EditField from "./EditField";
 import Charges from "./Charges";
-import { editField } from "../actions";
+//import { editField } from "../actions";
 
 /**
  * Component to supply values to a newly-created Case.
@@ -12,7 +12,7 @@ import { editField } from "../actions";
 function EditCase(props) {
     const { modifier, id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date, charges,
             total_fines, fines_paid, complaint_date, judge_address, affiant, arresting_agency, 
-            arresting_agency_address} = props;
+            arresting_agency_address, toggleEditing} = props;
     const caseStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
         border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px' };
 
@@ -27,6 +27,7 @@ function EditCase(props) {
     return (
         <div className="editCase" id={id} style={caseStyle}>
             <div style={{gridColumn: "1 / 3"}}>Docket Number: {docket_number}</div>
+            <button type="button" style={{marginLeft: "20px"}} onClick={toggleEditing}>Done Editing</button>
             <EditField item={otn} label="OTN: " modifier={getPropertyModifier('otn')} />
             <EditField item={dc} label="DC: " modifier={getPropertyModifier('dc')} />
             <EditField item={status} label="Status: " modifier={getPropertyModifier('status')} />
@@ -66,24 +67,26 @@ EditCase.propTypes = {
     affiant: PropTypes.string,
     arresting_agency: PropTypes.string,
     arresting_agency_address: PropTypes.string,
+    toggleEditing: PropTypes.func,
     modifier: PropTypes.func
 }
 
-function mapStateToProps(state, ownProps) {
-    return state.entities.cases[ownProps.caseId];
-};
-
-/**
- * This function returns a function which take a key,value pair
- * and associates the value with that key in the Case
- * object being edited.
- */
-function mapDispatchToProps(dispatch, ownProps) {
-    return { modifier: (key, value) => {
-            dispatch(editField('cases', ownProps.caseId, key, value))
-        }
-    };
-};
-
-const EditCaseWrapper = connect(mapStateToProps, mapDispatchToProps)(EditCase);
-export default EditCaseWrapper;
+//function mapStateToProps(state, ownProps) {
+//    return state.entities.cases[ownProps.caseId];
+//};
+//
+///**
+// * This function returns a function which take a key,value pair
+// * and associates the value with that key in the Case
+// * object being edited.
+// */
+//function mapDispatchToProps(dispatch, ownProps) {
+//    return { modifier: (key, value) => {
+//            dispatch(editField('cases', ownProps.caseId, key, value))
+//        }
+//    };
+//};
+//
+//const EditCaseWrapper = connect(mapStateToProps, mapDispatchToProps)(EditCase);
+//export default EditCaseWrapper;
+export default EditCase;

@@ -3,38 +3,29 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { addCase } from "../actions";
-import EditCase from "./EditCase";
 
 /**
  * Component for adding a Case to a CRecord.
  * It starts with a textbox to enter the docket number of the case,
  * and a button.  Once the button is clicked, a case with that docket number
- * is added to the redux state.  The component then displays the EditCase
- * component, to enter the case information.  Clicking the button (whose label
- * has changed) again will hide the EditCase component.
+ * is added to the redux state. The new case will then be at the bottom of the list of cases, in edit mode,
+ * so that the user can enter its data.
  */
 function AddCase(props) {
-    const adder = props.adder;
-    const [adding, setAdding] = useState(false);
+    const { adder } = props;
     const [docketNumber, setDocketNumber] = useState("");
 
     const handleChange = event => setDocketNumber(event.target.value);
     const handleClick = () => {
-        if (!adding) {
-            adder(docketNumber);
-        } else {
-            setDocketNumber("");
-        }
-
-        setAdding(!adding);
+        adder(docketNumber);
+        setDocketNumber("");
     }
 
     return (
         <div className="addCase" >
            <span style={{marginLeft: "20px"}}>Docket Number: </span>
-           <input type="text" value={docketNumber} onChange={handleChange} readOnly={adding}/>
-           <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>{adding? "Done Adding Case": "Add Case"}</button>
-           { adding && <EditCase caseId={docketNumber}/> }
+           <input type="text" value={docketNumber} onChange={handleChange} />
+           <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>Add Case</button>
         </div>
     );
 }

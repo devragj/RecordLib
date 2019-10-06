@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
 
-import SentenceWrapper from "./Sentence";
+import SentenceHolderWrapper from "./SentenceHolder";
 import AddSentenceWrapper from "./AddSentence";
 import ShowHideList from "./ShowHideList";
 
@@ -10,17 +10,17 @@ function Sentences(props) {
     const sentencesStyle = {gridColumn: "1 / 3"};
     const { sentences, chargeId, editing } = props;
     const sentencesRendered = sentences.map(sentenceId => {
-            return <SentenceWrapper key={sentenceId} sentenceId={sentenceId}/>
+            return <SentenceHolderWrapper key={sentenceId} sentenceId={sentenceId} editing={editing}/>
         }
     );
 
     return (
         <div className="sentences" style={sentencesStyle}>
-        {editing &&
-            <AddSentenceWrapper chargeId={chargeId} nextIndex={sentences.length} />
-        }
         {sentences.length > 0 &&
-           <ShowHideList hidden={true} title="Sentences" list={sentencesRendered} />
+           <ShowHideList hidden={!editing} title="Sentences" list={sentencesRendered} />
+        }
+        {editing &&
+            <AddSentenceWrapper chargeId={chargeId} />
         }
         </div>
     );

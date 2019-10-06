@@ -1,6 +1,18 @@
 import * as api from '../api';
 import { normalizeCRecord, CRECORD_ID } from '../normalize';
 
+function generateId() {
+        function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1)
+                ;
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4()
+        ;
+}
+
 /**
  * This action creator parses and then normalizes
  * the data returned by the backend.
@@ -71,6 +83,13 @@ export function editField(entityName, entityId, field, value) {
         };
 };
 
+export function toggleEditing(caseId) {
+        return {
+                type: 'TOGGLE_EDITING',
+                payload: { caseId }
+        };
+};
+
 export function editSentenceLength(sentenceId, field, value) {
         return {
                 type: 'EDIT_SENTENCE_LENGTH',
@@ -96,7 +115,8 @@ export function addCase(docket_number) {
         judge_address: '',
         affiant: '',
         arresting_agency: '',
-        arresting_agency_address: ''
+        arresting_agency_address: '',
+        editing: true
     };
 
     return {
@@ -105,9 +125,10 @@ export function addCase(docket_number) {
     };
 };
 
-export function addCharge(chargeId, caseId) {
+export function addCharge(caseId) {
+    const id = generateId();
     const newCharge = {
-        id: chargeId,
+        id,
         offense: '',
         grade: '',
         statute: '',
@@ -122,13 +143,14 @@ export function addCharge(chargeId, caseId) {
     };
 };
 
-export function addSentence(sentenceId, chargeId) {
+export function addSentence(chargeId) {
+    const id = generateId();
     const SentenceLength = {
         min_time: '',
         max_time: ''
     };
     const newSentence = {
-        id: sentenceId,
+        id,
         sentence_date: '',
         sentence_type: '',
         sentence_period: '',

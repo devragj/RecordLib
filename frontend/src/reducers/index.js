@@ -31,11 +31,10 @@ export default function cRecordReducer(state = normalizedData, action) {
                 return action.payload;
         }
 
-        // generic action to edit a field of any of the
-        // entities stored in state
-        // Currently, this makes shallow copies so as to edit
+        // Generic action to edit a field of any of the entities stored in state.
+        // This case make shallow copies so as to edit
         // the field while keeping state immutable.
-        // TODO: replace this with a library such as immutable.js
+        // TODO: consider using a library such as immutable.js for this and the next threecases.
         case 'EDIT_ENTITY_VALUE': {
             const { entityName, entityId, field, value } = action.payload;
 
@@ -44,6 +43,22 @@ export default function cRecordReducer(state = normalizedData, action) {
                    [entityName]: Object.assign({}, state.entities[entityName], {
                         [entityId]: Object.assign({}, state.entities[entityName][entityId], {
                             [field]: value
+                        })
+                    })
+                })
+            });
+
+            return newState;
+        }
+
+        case 'TOGGLE_EDITING': {
+            const { caseId } = action.payload;
+
+            const newState = Object.assign({},state, {
+                entities: Object.assign({}, state.entities, {
+                   cases: Object.assign({}, state.entities['cases'], {
+                        [caseId]: Object.assign({}, state.entities['cases'][caseId], {
+                            editing: !state.entities['cases'][caseId].editing
                         })
                     })
                 })

@@ -20,11 +20,11 @@
  * This allows each wrapped charge component to retrieve
  * its own props from the store.
  * The case component will not rerender if a field is edited
- * in a child charge, becaues the case's data,
+ * in a child charge, because the case's data,
  * the list of charge ids, has not changed.
  */
 
-import { normalize, schema } from 'normalizr';
+import { normalize, schema, denormalize } from 'normalizr';
 
 export const CRECORD_ID = "root";
 
@@ -66,9 +66,14 @@ const generateId = (value, parent, key) => {
 const options = {
     // copy an entity and add an id
     processStrategy: (value, parent, key) => {
-            return Object.assign({}, value, {
+            const newValue = Object.assign({}, value, {
                     id: generateId(value, parent, key)
             });
+            if (key === 'cases') {
+                newValue.editing = false;
+            }
+
+            return newValue;
     },
     idAttribute: (value, parent, key) => {
             return generateId(value, parent, key);
@@ -83,5 +88,10 @@ const defendantSchema = new schema.Entity('defendant', {}, options);
 const cRecordSchema = new schema.Entity('cRecord', { defendant: defendantSchema, cases: [caseSchema]}, options);
 
 export function normalizeCRecord(data) {
-        return normalize(data,  cRecordSchema);
+        return normalize(data, cRecordSchema);
 }
+
+export function denormalizeState(state) {
+    return denormalize(state.result, cRecordSchema, state.entities);
+};
+

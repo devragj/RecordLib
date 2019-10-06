@@ -16,9 +16,8 @@ function CRecord(props) {
     return (
         <div className="cRecord" style={cRecordStyle}>
             <DefendantWrapper defendantId={defendant}/>
+            <Cases cases={cases} />
             <AddCaseWrapper />
-            <Cases cases={cases}/>
-
         </div>
     );
 };
