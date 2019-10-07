@@ -24,7 +24,7 @@
  * the list of charge ids, has not changed.
  */
 
-import { normalize, schema } from 'normalizr';
+import { normalize, denormalize, schema } from 'normalizr';
 
 export const CRECORD_ID = "root";
 
@@ -84,4 +84,8 @@ const cRecordSchema = new schema.Entity('cRecord', { defendant: defendantSchema,
 
 export function normalizeCRecord(data) {
         return normalize(data,  cRecordSchema);
+}
+
+export function denormalizeCRecord(entities) {
+        return denormalize(entities.cRecord, cRecordSchema, {})
 }

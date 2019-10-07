@@ -23,3 +23,10 @@ export function uploadRecords(files) {
                 "/record/upload/", data, 
                 {headers: {'Content-Type': 'multipart/form-data'}});
 }
+
+/**
+ * POST a CRecord to the server and retrieve an analysis.
+ */
+export function analyzeCRecord(data) {
+        console.log("in api")
+}

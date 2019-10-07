@@ -3,6 +3,7 @@ import Box from "@material-ui/core/Box"
 import PetitionStepper from "./PetitionStepper"
 
 import RecordUploader from "./RecordUploader"
+import RecordEdit from "./RecordEdit"
 
 const steps = [
     {
@@ -13,7 +14,7 @@ const steps = [
     {
         "label": "Edit a record",
         "optional": true,
-        "component": <h1> The second step </h1>
+        "component": <RecordEdit /> 
     },
     {
         "label": "Analyze the record for sealable cases",

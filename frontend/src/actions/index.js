@@ -1,5 +1,5 @@
 import * as api from '../api';
-import { normalizeCRecord } from '../normalize';
+import { normalizeCRecord, denormalizeCRecord } from '../normalize';
 
 /**
  * This action creator parses and then normalizes
@@ -26,15 +26,15 @@ function uploadRecordsSucceeded(data) {
 export function uploadRecords(files) {
         return dispatch => {
                 api.uploadRecords(files)
-                .then(
-                        response => {
-                                const data = response.data;
-                                console.log("fetched data successfully")
-                                console.log(data)
-                                const action = uploadRecordsSucceeded(data);
-                                dispatch(action);
-                        }
-                )
+                        .then(
+                                response => {
+                                        const data = response.data;
+                                        console.log("fetched data successfully")
+                                        console.log(data)
+                                        const action = uploadRecordsSucceeded(data);
+                                        dispatch(action);
+                                }
+                        )
                 // TODO Find out what errors we may get from the server
                 // and dispatch an action so that the UI can notify the user.
                 // For now, while the app is under development, I have
@@ -70,3 +70,31 @@ export function editField(entityName, entityId, field, value) {
                 payload: { entityName, entityId, field, value }
         };
 };
+
+
+function analyzeRecordsSucceeded(data) {
+        // TODO - need to normalize the 'data', which is an Analysis from django.
+        return {
+                type: 'ANALYZE_CRECORD_SUCCEEDED',
+                payload: data
+        }
+}
+
+/**
+ * Create an action to start the call to analyze a crecord to get an analysis of expungements and petitions
+ */
+export function analyzeCRecord() {
+        return (dispatch, getState) => {
+                console.log("state:")
+                console.log(getState())
+                const denormalizedCRecord = denormalizeCRecord(getState().entities.cRecord)
+                api.analyzeCRecord(denormalizedCRecord).then(
+                        response => {
+                                const data = response.data;
+                                console.log("fetched data successfully")
+                                console.log(data)
+                                const action = analyzeRecordsSucceeded(data);
+                                dispatch(action);
+                        }).catch(err => { console.log("error analyzing record.")})
+        }
+}
