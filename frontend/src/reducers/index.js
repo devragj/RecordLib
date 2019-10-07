@@ -31,9 +31,9 @@ export default function cRecordReducer(state = {}, action) {
         }
 
         // Generic action to edit a field of any of the entities stored in state.
-        // This case make shallow copies so as to edit
+        // This case makes shallow copies so as to edit
         // the field while keeping state immutable.
-        // TODO: consider using a library such as immutable.js for this and the next threecases.
+        // TODO: consider using a library such as immutable.js for this and the next three cases.
         case 'EDIT_ENTITY_VALUE': {
             const { entityName, entityId, field, value } = action.payload;
 

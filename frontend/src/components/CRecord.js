@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Cases from "./Cases";
 import DefendantWrapper from "./Defendant";
-import AddCaseWrapper from "./AddCase";
 import { CRECORD_ID } from "../normalize";
 
 /**
@@ -17,7 +16,6 @@ function CRecord(props) {
         <div className="cRecord" style={cRecordStyle}>
             <DefendantWrapper defendantId={defendant}/>
             <Cases cases={cases} />
-            <AddCaseWrapper />
         </div>
     );
 };

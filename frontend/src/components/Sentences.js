@@ -14,13 +14,16 @@ function Sentences(props) {
         }
     );
 
+    if (editing) {
+        const addSentenceKey = chargeId + 'addSentence';
+        const addSentence = <AddSentenceWrapper chargeId={chargeId} key={addSentenceKey}/>
+        sentencesRendered.push(addSentence);
+    };
+
     return (
         <div className="sentences" style={sentencesStyle}>
-        {sentences.length > 0 &&
+        {sentencesRendered.length > 0 &&
            <ShowHideList hidden={!editing} title="Sentences" list={sentencesRendered} />
-        }
-        {editing &&
-            <AddSentenceWrapper chargeId={chargeId} />
         }
         </div>
     );

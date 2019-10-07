@@ -14,13 +14,16 @@ function Charges(props) {
         }
     );
 
+    if (editing) {
+        const addChargeKey = caseId + 'addCharge';
+        const addCharge = <AddChargeWrapper caseId={caseId} key={addChargeKey}/>
+        chargesRendered.push(addCharge);
+    };
+
     return (
         <div className="charges" style={chargesStyle}>
-        {charges.length > 0 &&
+        {chargesRendered.length > 0 &&
            <ShowHideList hidden={!editing} title="Charges" list={chargesRendered} />
-        }
-        {editing &&
-            <AddChargeWrapper caseId={caseId} />
         }
         </div>
     );
