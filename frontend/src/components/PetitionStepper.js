@@ -3,13 +3,16 @@ import { makeStyles } from "@material-ui/core/styles"
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-
-
+import StepButton from '@material-ui/core/StepButton';
 import { connect } from 'react-redux';
 import { fetchCRecord } from "../actions";
 import CRecordWrapper from "./CRecord"
+import { Typography } from "@material-ui/core";
 
-
+/*
+* A stepper navigation bar that is used to click among steps of a process.
+*
+*/
 
 
 
@@ -26,52 +29,28 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-
-function getSteps() {
-    return (["Upload criminal record files", "Edit a record", "Analyze the record for sealable cases", "Download Petitions"])
-}
-
-
-
-
 function PetitionStepper(props) {
 
+    const { steps, activeStepIndex, setActiveStepIndex} = props
     const classes = useStyles()
-    const [activeStep, setActiveStep] = useState(0)
-    const [skipped, setSkipped] = React.useState(new Set());
-    const steps = getSteps();
 
-    const [selectedFile, setSelectedFile] = useState(null);
-
-    const { cRecordPresent, fetchCRecord } = props;
-    const onChangeHandler = event => {
-        setSelectedFile(event.target.files[0]);
-    }
-
-    const onClickHandler = () => {
-        fetchCRecord(selectedFile);
-    };
-
-   return (
+    return (
         <div className={classes.root}>
-            <Stepper activeStep={activeStep}> 
-                {steps.map((label, index) => {
+            <Stepper nonLinear activeStep={activeStepIndex}> 
+                {steps.map((step, index) => {
+                    const label = step.label
+                    const buttonProps = {};
+                    if (step.optional) {
+                        buttonProps.optional = <Typography variant="caption"> Optional </Typography>
+                    }
+                    buttonProps.onClick = () => {setActiveStepIndex(index)}
                     return (
                         <Step key={label}> 
-                            <StepLabel>{label}</StepLabel>
+                            <StepButton {...buttonProps}>{label}</StepButton>
                         </Step>
                     )
                 })}
             </Stepper>
-
-            <h2> Upload Files </h2>
-            <div >
-                <input type="file" name="file" onChange={onChangeHandler}/>
-                <button type="button" onClick={onClickHandler} style={{
-                    marginLeft: '20px'
-                }}>Upload</button>
-            </div>
-            {cRecordPresent && <CRecordWrapper />}
         </div>
     )
 }
