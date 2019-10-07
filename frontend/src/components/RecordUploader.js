@@ -7,7 +7,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from "@material-ui/core/ListItemText";
 
-import { fetchCRecord } from "../actions";
+import { uploadRecords } from "../actions";
 /*
 *   Step in the Petition analysis and generation process for uploading files for processing.
 *
@@ -34,9 +34,9 @@ function FileList(props) {
     if (selectedFiles.length > 0) {
         return(
            <List>
-                {selectedFiles.map(f => {
+                {selectedFiles.map((f, index) => {
                     return(
-                        <ListItem>
+                        <ListItem key={index}>
                             <ListItemText primary={f.name}/>
                         </ListItem>
                     )
@@ -55,12 +55,16 @@ function FileList(props) {
 function RecordUploader(props) {
     const [selectedFiles, setSelectedFiles] = useState([]);
 
+    const { uploadRecords } = props;
+
     const onChangeHandler = event => {
         setSelectedFiles([...event.target.files]);
     }
 
-    const onClickHandler = () => {
-        fetchCRecord(selectedFiles);
+    const onClickHandler = (e) => {
+        e.preventDefault();
+        console.log("Uploading " + selectedFiles.length + " files")
+        uploadRecords(selectedFiles);
     };
 
 
@@ -69,10 +73,10 @@ function RecordUploader(props) {
             <h1> Upload files </h1>
             <p> Select the summary and docket files you wish to analyze.</p>
             <FileList selectedFiles={selectedFiles}/>
-            <div>
+            <form encType="multipart/form-data" onSubmit={onClickHandler}>
                 <input multiple type="file" name="file" onChange={onChangeHandler}/>
-                <Button onClick={onClickHandler}> Upload </Button>
-            </div>
+                <Button type="submit"> Upload </Button>
+            </form>
         </Container>
     )
 }
@@ -83,7 +87,7 @@ function mapStateToProps(state) {
 };
 
 function mapDispatchToProps(dispatch) {
-    return { fetchCRecord: file => dispatch(fetchCRecord(file)) };
+    return { uploadRecords: files => dispatch(uploadRecords(files)) };
 };
 
 

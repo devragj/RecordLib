@@ -1,12 +1,9 @@
-import React, {useState} from "react"
+import React from "react"
 import { makeStyles } from "@material-ui/core/styles"
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
-import StepLabel from '@material-ui/core/StepLabel';
 import StepButton from '@material-ui/core/StepButton';
 import { connect } from 'react-redux';
-import { fetchCRecord } from "../actions";
-import CRecordWrapper from "./CRecord"
 import { Typography } from "@material-ui/core";
 
 /*
@@ -55,12 +52,4 @@ function PetitionStepper(props) {
     )
 }
 
-function mapStateToProps(state) {
-    return { cRecordPresent: state.entities? true: false };
-};
-
-function mapDispatchToProps(dispatch) {
-    return { fetchCRecord: file => dispatch(fetchCRecord(file)) };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(PetitionStepper);
+export default PetitionStepper;

@@ -1,9 +1,7 @@
 import React, {useState} from "react";
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { fetchCRecord } from "./actions";
 import CSSBaseline from "@material-ui/core/CssBaseline";
-import Container from "@material-ui/core/Container"
 import Navbar from "./components/Navbar";
 import About from "./components/About";
 import NotFound from "./components/NotFound";
@@ -48,7 +46,6 @@ function App(props) {
 
 App.propTypes = {
     cRecordPresent: PropTypes.bool,
-    fetchCRecord: PropTypes.func.isRequired
 };
 
 function mapStateToProps(state) {
@@ -56,7 +53,7 @@ function mapStateToProps(state) {
 };
 
 function mapDispatchToProps(dispatch) {
-    return { fetchCRecord: file => dispatch(fetchCRecord(file)) };
+    return { };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

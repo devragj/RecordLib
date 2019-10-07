@@ -10,9 +10,13 @@ from RecordLib.common import (Charge, Sentence, SentenceLength)
 """
 These serializer classes are only for serializing and deserializing json/dict representations of these 
 classes. Use each class's `from_dict` static method to actually get the object. 
+
+
+Serializers also act like data validators for data in requests to the api.
 """
 
-
+class FileUploadSerializer(S.Serializer):
+    files = S.ListField(child=S.FileField(), allow_empty=True)
 
 class SentenceLengthSerializer(S.Serializer):
     min_time = S.IntegerField(required=False)

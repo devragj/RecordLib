@@ -9,7 +9,7 @@ import { normalizeCRecord } from '../normalize';
  * the normalized form of the CRecord, to be used as
  * redux state
  */
-function fetchCRecordSucceeded(data) {
+function uploadRecordsSucceeded(data) {
         const cRecord = JSON.parse(data);
         const normalizedData = normalizeCRecord(cRecord);
         return {
@@ -23,15 +23,15 @@ function fetchCRecordSucceeded(data) {
  * @param  {Object} file - uploaded Summary pdf file
  * @return {Object}
  */
-export function fetchCRecord(file) {
+export function uploadRecords(files) {
         return dispatch => {
-                api.fetchCRecord(file)
+                api.uploadRecords(files)
                 .then(
                         response => {
                                 const data = response.data;
                                 console.log("fetched data successfully")
                                 console.log(data)
-                                const action = fetchCRecordSucceeded(data);
+                                const action = uploadRecordsSucceeded(data);
                                 dispatch(action);
                         }
                 )
