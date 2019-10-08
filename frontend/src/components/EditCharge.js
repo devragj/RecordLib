@@ -45,7 +45,7 @@ EditCharge.propTypes = {
 }
 
 function mapStateToProps(state, ownProps) {
-    return state.entities.charges[ownProps.chargeId];
+    return state.crecord.entities.charges[ownProps.chargeId];
 };
 
 /**

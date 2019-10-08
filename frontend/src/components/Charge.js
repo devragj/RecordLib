@@ -33,7 +33,7 @@ Charge.propTypes = {
 }
 
 function mapStateToProps(state, ownProps) {
-    return state.entities.charges[ownProps.chargeId];
+    return state.crecord.entities.charges[ownProps.chargeId];
 };
 
 function mapDispatchToProps(dispatch, ownProps) {

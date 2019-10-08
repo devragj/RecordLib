@@ -36,7 +36,7 @@ EditSentenceLength.propTypes = {
 }
 
 function mapStateToProps(state, ownProps) {
-    return { sentence_length: state.entities.sentences[ownProps.sentenceId].sentence_length };
+    return { sentence_length: state.crecord.entities.sentences[ownProps.sentenceId].sentence_length };
 };
 
 function mapDispatchToProps(dispatch, ownProps) {

@@ -31,7 +31,7 @@ Sentence.propTypes = {
 }
 
 function mapStateToProps(state, ownProps) {
-        return state.entities.sentences[ownProps.sentenceId];
+        return state.crecord.entities.sentences[ownProps.sentenceId];
 };
 
 const SentenceWrapper = connect(mapStateToProps)(Sentence);

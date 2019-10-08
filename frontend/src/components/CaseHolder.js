@@ -25,7 +25,7 @@ function CaseHolder(props) {
 };
 
 function mapStateToProps(state, ownProps) {
-    return state.entities.cases[ownProps.caseId];
+    return state.crecord.entities.cases[ownProps.caseId];
 };
 
 /**
