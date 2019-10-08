@@ -73,10 +73,11 @@ export function editField(entityName, entityId, field, value) {
 
 
 function analyzeRecordsSucceeded(data) {
-        // TODO - need to normalize the 'data', which is an Analysis from django.
+        // TODO - do we need to normalize 'data' here? Its an analysis from the server, so its pretty deeply 
+        // nested. But we won't edit it, I think.
         return {
                 type: 'ANALYZE_CRECORD_SUCCEEDED',
-                payload: data
+                payload: data 
         }
 }
 
@@ -85,7 +86,7 @@ function analyzeRecordsSucceeded(data) {
  */
 export function analyzeCRecord() {
         return (dispatch, getState) => {
-                const denormalizedCRecord = denormalizeCRecord(getState())
+                const denormalizedCRecord = denormalizeCRecord(getState().crecord)
                 console.log("denormalized crecord")
                 console.log(denormalizedCRecord)
                 api.analyzeCRecord(denormalizedCRecord).then(

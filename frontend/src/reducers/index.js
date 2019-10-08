@@ -24,7 +24,10 @@ const normalizedData = normalizeCRecord(cRecord);
  * named payload.
  * @return {Object}  the new state
  */
-export default function cRecordReducer(state = {}, action) {
+
+ 
+
+function cRecordReducer(state = {}, action) {
         switch (action.type) {
                 case 'FETCH_CRECORD_SUCCEEDED': {
                         return action.payload;
@@ -52,3 +55,31 @@ export default function cRecordReducer(state = {}, action) {
                 }
         }
 }
+
+function analysisReducer(state={}, action) {
+        return action.payload
+}
+
+function rootReducer(state = {}, action) {
+        switch (action.type) {
+                case 'FETCH_CRECORD_SUCCEEDED':
+                case 'EDIT': {
+                        return Object.assign({}, state, {
+                                crecord: cRecordReducer(state, action) 
+                        }) 
+                }
+                case 'ANALYZE_CRECORD_SUCCEEDED': {
+                        return Object.assign({}, state, {
+                                analysis: analysisReducer(state, action)
+                        })
+                }
+                default: {
+                        return state;
+                }
+ 
+
+                
+        }
+}
+
+export default rootReducer 

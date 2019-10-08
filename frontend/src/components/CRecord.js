@@ -27,7 +27,7 @@ CRecord.propTypes = {
 };
 
 function mapStateToProps(state) {
-    return state.entities.cRecord[CRECORD_ID];
+    return state.crecord.entities.cRecord[CRECORD_ID];
 };
 
 const CRecordWrapper = connect(mapStateToProps)(CRecord);
