@@ -53,6 +53,8 @@ function FileList(props) {
 
 // Component to select files and dispatch api call to upload them.
 function RecordUploader(props) {
+    const classes=useStyles()
+
     const [selectedFiles, setSelectedFiles] = useState([]);
 
     const { uploadRecords } = props;
@@ -69,7 +71,7 @@ function RecordUploader(props) {
 
 
     return(
-        <Container> 
+        <Container className={classes.root}> 
             <h1> Upload files </h1>
             <p> Select the summary and docket files you wish to analyze.</p>
             <FileList selectedFiles={selectedFiles}/>

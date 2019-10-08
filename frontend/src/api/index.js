@@ -28,7 +28,6 @@ export function uploadRecords(files) {
  * POST a CRecord to the server and retrieve an analysis.
  */
 export function analyzeCRecord(data) {
-        console.log("in api")
         data.person = data.defendant
         delete data.defendant
         return client.post(
