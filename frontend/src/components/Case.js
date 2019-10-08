@@ -1,24 +1,19 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
-import ChargeWrapper from "./Charge";
-import ShowHideList from "./ShowHideList";
+import Charges from "./Charges";
 
 function Case(props) {
     const { id, docket_number, otn, dc, status, county, judge, arrest_date, disposition_date, charges,
             total_fines, fines_paid, complaint_date, judge_address, affiant, arresting_agency, 
-            arresting_agency_address} = props;
+            arresting_agency_address, toggleEditing} = props;
     const caseStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
         border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px' };
-    const chargesRendered = charges.map(chargeId => {
-            return <ChargeWrapper key={chargeId} chargeId={chargeId}/>
-        }
-    );
 
     return (
         <div className="case" id={id} style={caseStyle}>
             <div style={{gridColumn: "1 / 3"}}>Docket Number: {docket_number}</div>
+            <button type="button" style={{marginLeft: "20px"}} onClick={toggleEditing}>Edit</button>
             <div>OTN: {otn}</div>
             <div>DC: {dc}</div>
             <div>Status: {status}</div>
@@ -33,12 +28,9 @@ function Case(props) {
             <div>Affiant: {affiant}</div>
             <div>Arresting Agency: {arresting_agency}</div>
             <div>Arresting Agency Address: {arresting_agency_address}</div>
-            {charges.length > 0 &&
-
-                <div style={{gridColumn: "1 / 4"}}>
-                        <ShowHideList hidden={true} title="Charges" list={chargesRendered} />
-                </div>
-           }
+            <div></div>
+            <div></div>
+            <Charges caseId={id} charges={charges} editing={false}/>
         </div>
     );
 };
@@ -61,11 +53,7 @@ Case.propTypes = {
     affiant: PropTypes.string,
     arresting_agency: PropTypes.string,
     arresting_agency_address: PropTypes.string,
+    toggleEditing: PropTypes.func
 }
 
-function mapStateToProps(state, ownProps) {
-    return state.crecord.entities.cases[ownProps.caseId];
-};
-
-const CaseWrapper = connect(mapStateToProps)(Case);
-export default CaseWrapper;
+export default Case;

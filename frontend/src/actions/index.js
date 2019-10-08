@@ -1,5 +1,17 @@
 import * as api from '../api';
-import { normalizeCRecord, denormalizeCRecord } from '../normalize';
+import { normalizeCRecord, denormalizeCRecord, CRECORD_ID  } from '../normalize';
+
+function generateId() {
+        function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                        .toString(16)
+                        .substring(1)
+                ;
+        }
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4()
+        ;
+}
 
 /**
  * This action creator parses and then normalizes
@@ -66,10 +78,11 @@ export function uploadRecords(files) {
  */
 export function editField(entityName, entityId, field, value) {
         return {
-                type: 'EDIT',
+                type: 'EDIT_ENTITY_VALUE',
                 payload: { entityName, entityId, field, value }
         };
 };
+
 
 
 function analyzeRecordsSucceeded(data) {
@@ -122,3 +135,84 @@ export function getPetitions(petitions) {
                 }
         
 }
+
+export function toggleEditing(caseId) {
+        return {
+                type: 'TOGGLE_EDITING',
+                payload: { caseId }
+        };
+};
+
+export function editSentenceLength(sentenceId, field, value) {
+        return {
+                type: 'EDIT_SENTENCE_LENGTH',
+                payload: { sentenceId, field, value }
+        };
+};
+
+export function addCase(docket_number) {
+    const newCase = {
+        id: docket_number,
+        docket_number,
+        status: '',
+        county: '',
+        otn: '',
+        dc: '',
+        charges: [],
+        total_fines: '',
+        fines_paid: '',
+        complaint_date: '',
+        arrest_date: '',
+        disposition_date: '',
+        judge: '',
+        judge_address: '',
+        affiant: '',
+        arresting_agency: '',
+        arresting_agency_address: '',
+        editing: true
+    };
+
+    return {
+        type: 'ADD_ENTITY',
+        payload: { entityName: 'cases', entity: newCase, parentId: CRECORD_ID,  parentEntityName: 'cRecord', parentListKey: 'cases' }
+    };
+};
+
+export function addCharge(caseId) {
+    const id = generateId();
+    const newCharge = {
+        id,
+        offense: '',
+        grade: '',
+        statute: '',
+        disposition: '',
+        disposition_date: '',
+        sentences: []
+    };
+
+    return {
+        type: 'ADD_ENTITY',
+        payload: { entityName: 'charges', entity: newCharge, parentId: caseId,  parentEntityName: 'cases', parentListKey: 'charges' }
+    };
+};
+
+export function addSentence(chargeId) {
+    const id = generateId();
+    const SentenceLength = {
+        min_time: '',
+        max_time: ''
+    };
+    const newSentence = {
+        id,
+        sentence_date: '',
+        sentence_type: '',
+        sentence_period: '',
+        sentence_length: SentenceLength
+    };
+
+    return {
+        type: 'ADD_ENTITY',
+        payload: { entityName: 'sentences', entity: newSentence, parentId: chargeId,  parentEntityName: 'charges', parentListKey: 'sentences' }
+    };
+};
+
