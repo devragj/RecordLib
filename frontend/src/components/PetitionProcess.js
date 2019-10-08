@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import Box from "@material-ui/core/Box"
-import PetitionStepper from "./PetitionStepper"
 
+import PetitionStepper from "./PetitionStepper"
 import RecordUploader from "./RecordUploader"
 import RecordEdit from "./RecordEdit"
+import Analysis from "./Analysis"
 
 const steps = [
     {
@@ -19,7 +20,7 @@ const steps = [
     {
         "label": "Analyze the record for sealable cases",
         "optional": true,
-        "component": <h1> The third step </h1>
+        "component": <Analysis />
     },
     {
         "label": "Download petitions",

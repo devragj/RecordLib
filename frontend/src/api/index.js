@@ -35,3 +35,11 @@ export function analyzeCRecord(data) {
                 data
         )
 }
+
+
+export function fetchPetitions(petitions) {
+        return client.post(
+                "/record/petitions/",
+                {petitions: petitions}
+        )
+}

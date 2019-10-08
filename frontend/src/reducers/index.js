@@ -60,6 +60,10 @@ function analysisReducer(state={}, action) {
         return action.payload
 }
 
+function petitionsReducer(state={}, action) {
+        return action.payload.download
+}
+
 function rootReducer(state = {}, action) {
         switch (action.type) {
                 case 'FETCH_CRECORD_SUCCEEDED':
@@ -71,6 +75,11 @@ function rootReducer(state = {}, action) {
                 case 'ANALYZE_CRECORD_SUCCEEDED': {
                         return Object.assign({}, state, {
                                 analysis: analysisReducer(state, action)
+                        })
+                }
+                case 'FETCH_PETITIONS_SUCCEEDED': {
+                        return Object.assign({}, state, {
+                                petitionPackage: petitionsReducer(state, action)
                         })
                 }
                 default: {

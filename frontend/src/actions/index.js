@@ -99,3 +99,26 @@ export function analyzeCRecord() {
                         }).catch(err => { console.log("error analyzing record.")})
         }
 }
+
+function fetchPetitionsSucceeded(petitionPath) {
+        return {
+                type: 'FETCH_PETITIONS_SUCCEEDED',
+                payload: petitionPath
+        }
+}
+
+/**
+ * Create an action that sends a list of petitions to the server, and returns the files.
+ * @param {} petitions 
+ */
+export function getPetitions(petitions) {
+        return (dispatch, getState) => {
+                api.fetchPetitions(petitions).then(
+                        response => {
+                                const data = response.data;
+                                console.log("fetched petitions successfully")
+                                dispatch( fetchPetitionsSucceeded(data) )
+                        }).catch(err => console.log("error fetching petitions."))
+                }
+        
+}
