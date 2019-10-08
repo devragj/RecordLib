@@ -96,7 +96,7 @@ class AnalyzeView(APIView):
         )
                 return Response(to_serializable(analysis))
             else: 
-                return
+                return Response({"validation_errors": serializer.errors})
         except Exception as e:
             logging.error(e)
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)

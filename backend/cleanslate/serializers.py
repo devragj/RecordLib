@@ -33,30 +33,30 @@ class SentenceSerializer(S.Serializer):
 
 class ChargeSerializer(S.Serializer):
     offense = S.CharField()
-    grade = S.CharField(required=False)
-    statute = S.CharField(required=False)
-    disposition = S.CharField(required=False)
+    grade = S.CharField(required=False, allow_blank=True)
+    statute = S.CharField(required=False, allow_blank=True)
+    disposition = S.CharField(required=False, allow_blank=True)
     disposition_date = S.DateField(required=False)
     sentences = SentenceSerializer(many=True)
 
 
 class CaseSerializer(S.Serializer):
-    status = S.CharField(required=False)
-    county = S.CharField(required=False)
-    docket_number = S.CharField()
-    otn = S.CharField(required=False)
-    dc = S.CharField(required=False)
+    status = S.CharField(required=False, allow_blank=True)
+    county = S.CharField(required=False, allow_blank=True)
+    docket_number = S.CharField(required=True)
+    otn = S.CharField(required=False, allow_blank=True)
+    dc = S.CharField(required=False, allow_blank=True)
     charges = ChargeSerializer(many=True)
-    total_fines = S.IntegerField()
-    fines_paid = S.IntegerField()
+    total_fines = S.IntegerField(required=False)
+    fines_paid = S.IntegerField(required=False)
     complaint_date = S.DateField(required=False)
     arrest_date = S.DateField(required=False)
     disposition_date = S.DateField(required=False)
-    judge = S.CharField(required=False)
-    judge_address = S.CharField(required=False)
-    affiant = S.CharField(required=False)
-    arresting_agency = S.CharField(required=False)
-    arresting_agency_address = S.CharField(required=False)
+    judge = S.CharField(required=False, allow_blank=True)
+    judge_address = S.CharField(required=False, allow_blank=True)
+    affiant = S.CharField(required=False, allow_blank=True)
+    arresting_agency = S.CharField(required=False, allow_blank=True)
+    arresting_agency_address = S.CharField(required=False, allow_blank=True)
 
 class AttorneySerializer(S.Serializer):
     organization = S.CharField(required=False)
@@ -72,8 +72,8 @@ class PersonSerializer(S.Serializer):
     date_of_birth = S.DateField()
     date_of_death = S.DateField(required=False)
     aliases = S.ListField(child=S.CharField(), required=False) # CharField() doesn't seem to take many=True. 
-    ssn = S.CharField(max_length=15)
-    address = S.CharField(required=False)
+    ssn = S.CharField(max_length=15, required=False, allow_blank=True)
+    address = S.CharField(required=False, allow_blank=True)
 
 class CRecordSerializer(S.Serializer):
     person = PersonSerializer()

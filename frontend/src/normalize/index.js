@@ -86,6 +86,22 @@ export function normalizeCRecord(data) {
         return normalize(data,  cRecordSchema);
 }
 
-export function denormalizeCRecord(entities) {
-        return denormalize(entities.cRecord, cRecordSchema, {})
+export function denormalizeState(state) {
+        return denormalize(state.result, cRecordSchema, state.entities);
+};
+
+export function denormalizeCRecord(state) {
+        const cRecord = denormalizeState(state);
+        delete cRecord.id;
+        cRecord.cases.forEach(caseObject => {
+                delete caseObject.id;
+                delete caseObject.editing;
+                caseObject.charges.forEach(charge => {
+                delete charge.id;
+                charge.sentences.forEach(sentence => {
+                        delete sentence.id;
+                });
+                });
+        });
+        return (cRecord)
 }

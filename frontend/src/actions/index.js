@@ -85,9 +85,9 @@ function analyzeRecordsSucceeded(data) {
  */
 export function analyzeCRecord() {
         return (dispatch, getState) => {
-                console.log("state:")
-                console.log(getState())
-                const denormalizedCRecord = denormalizeCRecord(getState().entities.cRecord)
+                const denormalizedCRecord = denormalizeCRecord(getState())
+                console.log("denormalized crecord")
+                console.log(denormalizedCRecord)
                 api.analyzeCRecord(denormalizedCRecord).then(
                         response => {
                                 const data = response.data;

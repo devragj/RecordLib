@@ -29,4 +29,10 @@ export function uploadRecords(files) {
  */
 export function analyzeCRecord(data) {
         console.log("in api")
+        data.person = data.defendant
+        delete data.defendant
+        return client.post(
+                "/record/analyze/",
+                data
+        )
 }
