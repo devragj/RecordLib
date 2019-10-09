@@ -15,8 +15,7 @@ function CRecord(props) {
     return (
         <div className="cRecord" style={cRecordStyle}>
             <DefendantWrapper defendantId={defendant}/>
-            <Cases cases={cases}/>
-
+            <Cases cases={cases} />
         </div>
     );
 };
@@ -27,7 +26,7 @@ CRecord.propTypes = {
 };
 
 function mapStateToProps(state) {
-    return state.entities.cRecord[CRECORD_ID];
+    return state.crecord.entities.cRecord[CRECORD_ID];
 };
 
 const CRecordWrapper = connect(mapStateToProps)(CRecord);

@@ -7,6 +7,8 @@ import { faPlusCircle, faMinusCircle } from '@fortawesome/free-solid-svg-icons'
  * This component allows a potentially long list of rendered components to be hidden.
  * When the list is hidden, the header of the component has a plus sign icon on its left.
  * Clicking on the icon shows the list and changes the icon to minus.
+ * Note, this component could be used to show/hide anything.
+ * TODO: rename the component, removing the word "List".
  */
 function ShowHideList(props) {
     const { hidden, list} = props

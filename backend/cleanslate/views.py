@@ -1,5 +1,5 @@
 from rest_framework.response import Response 
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import status
 import logging
@@ -20,7 +20,7 @@ from RecordLib.petitions import (
     Expungement, Sealing
 )
 from .serializers import (
-    CRecordSerializer, DocumentRenderSerializer
+    CRecordSerializer, DocumentRenderSerializer, FileUploadSerializer
 )
 from RecordLib.compressor import Compressor
 import json
@@ -32,33 +32,42 @@ import tempfile
 
 
 class FileUploadView(APIView):
+    
+    parser_classes = [MultiPartParser, FormParser]
+    
     # noinspection PyMethodMayBeStatic
     def post(self, request, *args, **kwargs):
         """Process a Summary PDF file and return JSON to the user.
 
         This method expects a Summary PDF file to be posted by the frontend.
+
+        This POST needs to be a FORM post, not a json post. 
+
         Code from RecordLib is used to read the file, parse it,
         and store the extracted information in a CRecord object.
         Information in the CRecord is then serialized as JSON
         and returned to the frontend.
-        """
-        try:
-            pdf_file = request.data["file"]
+        """        
+        file_serializer = FileUploadSerializer(data=request.data)
+        if file_serializer.is_valid():
+            pdf_files = [f for f in file_serializer.validated_data.get("files")]
             rec = CRecord()
-            base = os.path.dirname(os.path.abspath(__file__))
-            #tempdir = os.path.join(base, "tmp")
             tempdir = tempfile.mkdtemp()
-            summary = parse_pdf(
-                pdf=pdf_file,
-                tempdir=tempdir)
-            rec.add_summary(summary)
-            json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
-            # Uncomment for human-readable JSON.  Also comment out the above line.
-            # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)
-            return Response(json_to_send, status=status.HTTP_200_OK)
-        except Exception as e:
-            logging.error(e)
-            return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
+            try:
+                for summary_file in pdf_files:
+                    summary = parse_pdf(
+                        pdf=summary_file,
+                        tempdir=tempdir)
+                    rec.add_summary(summary)
+                json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
+                # Uncomment for human-readable JSON.  Also comment out the above line.
+                # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)
+                return Response(json_to_send, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({"error_message": "Parsing failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"error_message": "Invalid Data.", "errors": file_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class AnalyzeView(APIView):
@@ -87,7 +96,7 @@ class AnalyzeView(APIView):
         )
                 return Response(to_serializable(analysis))
             else: 
-                return
+                return Response({"validation_errors": serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             logging.error(e)
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)

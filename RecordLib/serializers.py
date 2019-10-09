@@ -40,6 +40,7 @@ def ts_list(l):
 @to_serializable.register(Sentence)
 def ts_object(an_object):
     return {k:to_serializable(v) for k, v in an_object.__dict__.items() if v is not None}
+    # return {k: to_serializable(v) for k, v in an_object.__dict__.items()}
 
 
 @to_serializable.register(date)

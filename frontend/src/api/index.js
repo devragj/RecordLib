@@ -11,12 +11,35 @@ const client = axios.create({
 });
 
 /**
- * function to post a Summary pdf file to the server
- * @param  {Object} file - uploaded Summary pdf file
+ * function to post record files (currently only pdfs) to the server
+ * @param  {Object} files - uploaded Summary and docket pdf files
  * @return {Object} a promise
  */
-export function fetchCRecord(file) {
+export function uploadRecords(files) {
         const data = new FormData();
-        data.append('file', file);
-        return client.post("/record/upload/", data, {});
+        files.forEach((file) => data.append('files', file))
+
+        return client.post(
+                "/record/upload/", data, 
+                {headers: {'Content-Type': 'multipart/form-data'}});
+}
+
+/**
+ * POST a CRecord to the server and retrieve an analysis.
+ */
+export function analyzeCRecord(data) {
+        data.person = data.defendant
+        delete data.defendant
+        return client.post(
+                "/record/analyze/",
+                data
+        )
+}
+
+
+export function fetchPetitions(petitions) {
+        return client.post(
+                "/record/petitions/",
+                {petitions: petitions}
+        )
 }
