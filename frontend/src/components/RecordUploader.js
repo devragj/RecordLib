@@ -57,7 +57,7 @@ function RecordUploader(props) {
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
-    const { uploadRecords } = props;
+    const { crecordFetched, uploadRecords } = props;
 
     const onChangeHandler = event => {
         setSelectedFiles([...event.target.files]);
@@ -79,13 +79,17 @@ function RecordUploader(props) {
                 <input multiple type="file" name="file" onChange={onChangeHandler}/>
                 <Button type="submit"> Upload </Button>
             </form>
+            <div>Here is the information which you need to proceed.</div>
+            { crecordFetched &&
+                <div>Your upload was successful.  Please proceed to the next step.</div>
+            }
         </Container>
     )
 }
 
 
 function mapStateToProps(state) {
-    return {};
+    return {crecordFetched: state.crecord.entities? true: false};
 };
 
 function mapDispatchToProps(dispatch) {
