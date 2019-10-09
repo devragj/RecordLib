@@ -26,7 +26,6 @@ from RecordLib.grammars.summary import (
 from RecordLib.parsingutilities import get_text_from_pdf
 from RecordLib.overflow import (
     MDJFirstCoupleLinesOverflow, MDJOverflowInChargeList)
-import pytest
 import os
 import logging
 import re
@@ -143,7 +142,6 @@ def parse_md_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
     try:
         parsed_summary_body = md_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -248,7 +246,6 @@ def parse_cp_summary(parsed_pages: Node) -> Tuple[etree.Element, etree.Element]:
     try:
         parsed_summary_body = cp_summary_body_grammar.parse(summary_info_combined)
     except Exception as e:
-        #pytest.set_trace()
         raise e
 
     summary_info_visitor = CustomVisitorFactory(
@@ -462,7 +459,6 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     try:
         parsed_pages = summary_page_grammar.parse(text)
     except Exception as e:
-        # pytest.set_trace()
         raise ValueError("Grammar cannot parse summary.")
 
     parse_summary = inputs_dictionary["parse_summary"]

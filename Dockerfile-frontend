@@ -1,0 +1,6 @@
+from nginx:alpine
+
+COPY ./frontend/build /usr/share/nginx/html
+COPY ./nginx.conf /etc/nginx
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

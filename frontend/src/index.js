@@ -4,15 +4,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';       // add this
 import './index.css';
 import App from './App';
 import { createStore, applyMiddleware } from 'redux';
+import { composeWithDevTools } from "redux-devtools-extension";
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
-import cRecordReducer from './reducers';
+import rootReducer from './reducers';
 import * as serviceWorker from './serviceWorker';
 
 // Redux store
 const store = createStore(
-        cRecordReducer,
-        applyMiddleware(thunk)
+        rootReducer,
+        composeWithDevTools(applyMiddleware(thunk)),
 );
 
 ReactDOM.render(

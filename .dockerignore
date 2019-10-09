@@ -1,0 +1,10 @@
+tests
+scripts
+README.md
+.git
+.gitignore
+pytest.ini
+.env
+backend/tmp*
+frontend/node_modules
+frontend/src

@@ -4,7 +4,6 @@ from RecordLib.common import Charge, Sentence
 from RecordLib.person import Person
 from typing import List, Optional
 from datetime import date
-import pytest
 import logging
 from dateutil.relativedelta import relativedelta
 

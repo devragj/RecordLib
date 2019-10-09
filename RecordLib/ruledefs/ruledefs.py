@@ -27,7 +27,6 @@ from RecordLib.crecord import CRecord
 from RecordLib.person import Person
 from RecordLib.decision import Decision
 from RecordLib.petitions import Expungement, Sealing
-import pytest
 import copy
 from typing import Tuple
 from dateutil.relativedelta import relativedelta

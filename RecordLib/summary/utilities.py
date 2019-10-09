@@ -6,7 +6,6 @@ Simple functions used for reading summary sheets.
 import re
 from lxml import etree
 from datetime import datetime
-import pytest
 
 def visit_sentence_length(self, node, vc):
     """

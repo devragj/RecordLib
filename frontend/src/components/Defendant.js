@@ -37,7 +37,7 @@ Defendant.propTypes = {
 }
 
 function mapStateToProps(state, ownProps) {
-    return state.entities.defendant[ownProps.defendantId];
+    return state.crecord.entities.defendant[ownProps.defendantId];
 };
 
 const DefendantWrapper = connect(mapStateToProps)(Defendant);
