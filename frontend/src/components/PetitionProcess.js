@@ -5,6 +5,7 @@ import PetitionStepper from "./PetitionStepper"
 import RecordUploader from "./RecordUploader"
 import RecordEdit from "./RecordEdit"
 import Analysis from "./Analysis"
+import DownloadPetitions from "./DownloadPetitions"
 
 const steps = [
     {
@@ -25,7 +26,7 @@ const steps = [
     {
         "label": "Download petitions",
         "optional": false,
-        "component": <h1> The last step </h1>
+        "component": <DownloadPetitions />
     },
 ]
 

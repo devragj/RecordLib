@@ -1,10 +1,8 @@
 import React from "react";
 import PropTypes from 'prop-types';
-//import { connect } from 'react-redux';
 
 import EditField from "./EditField";
 import Charges from "./Charges";
-//import { editField } from "../actions";
 
 /**
  * Component to edit a case, including supplying values to a newly-created case.
@@ -26,7 +24,9 @@ function EditCase(props) {
 
     return (
         <div className="editCase" id={id} style={caseStyle}>
-            <div style={{gridColumn: "1 / 3"}}>Docket Number: {docket_number}</div>
+            <div style={{gridColumn: "1 / 3"}}>
+                <EditField item={docket_number} label="Docket Number: " modifier={getPropertyModifier('docket_number')} />
+            </div>
             <button type="button" style={{marginLeft: "20px"}} onClick={toggleEditing}>Done Editing</button>
             <EditField item={otn} label="OTN: " modifier={getPropertyModifier('otn')} />
             <EditField item={dc} label="DC: " modifier={getPropertyModifier('dc')} />

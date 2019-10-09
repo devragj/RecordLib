@@ -216,3 +216,33 @@ export function addSentence(chargeId) {
     };
 };
 
+export function addAttorney(full_name) {
+    const attorney = {
+        id: full_name,
+        full_name,
+        address: '',
+        bar_id: '',
+        organization: '',
+        editing: true
+    };
+
+    return {
+        type: 'ADD_ATTORNEY',
+        payload: { attorney }
+    };
+};
+
+export function toggleEditingAttorney(attorneyId) {
+        return {
+                type: 'TOGGLE_EDITING_ATTORNEY',
+                payload: { attorneyId }
+        };
+};
+
+export function editAttorney(attorneyId, field, value) {
+        return {
+                type: 'EDIT_ATTORNEY',
+                payload: { attorneyId, field, value }
+        };
+};
+

@@ -64,10 +64,51 @@ function analysisReducer(state={}, action) {
     }
 }
 
-function petitionsReducer(state={}, action) {
+const initialPetitionsState = { attorneysList: [], attorneys: {} };
+
+function petitionsReducer(state=initialPetitionsState, action) {
     switch (action.type) {
+        //TODO fix this to include attorneys
         case 'FETCH_PETITIONS_SUCCEEDED':
             return action.payload.download;
+        case 'ADD_ATTORNEY': {
+            const { attorney } = action.payload;
+
+            const newState = Object.assign({},state, {
+                attorneys: Object.assign({}, state.attorneys, {
+                        [attorney.full_name]: attorney
+                    }),
+                attorneysList: [...state.attorneysList, attorney.full_name]
+            });
+
+            return newState;
+        }
+        case 'EDIT_ATTORNEY': {
+            const { attorneyId, field, value } = action.payload;
+
+            const newState = Object.assign({},state, {
+                attorneys: Object.assign({}, state.attorneys, {
+                    [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
+                        [field]: value
+                    })
+                })
+            });
+
+            return newState;
+        }
+        case 'TOGGLE_EDITING_ATTORNEY': {
+            const { attorneyId } = action.payload;
+
+            const newState = Object.assign({},state, {
+                attorneys: Object.assign({}, state.attorneys, {
+                    [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
+                        editing: !state.attorneys[attorneyId].editing
+                    })
+                })
+            });
+
+            return newState;
+        }
         default:
             return state;
     }
