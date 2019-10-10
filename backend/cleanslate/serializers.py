@@ -27,7 +27,7 @@ class SentenceLengthSerializer(S.Serializer):
 class SentenceSerializer(S.Serializer):
     sentence_date = S.DateField()
     sentence_type = S.CharField()
-    sentence_period = S.CharField()
+    sentence_period = S.CharField(required=False, allow_blank=True)
     sentence_length = SentenceLengthSerializer()
 
 

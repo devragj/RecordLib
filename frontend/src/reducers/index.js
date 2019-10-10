@@ -24,37 +24,16 @@
  * named payload.
  * @return {Object}  the new state
  */
-//function cRecordReducer(state = {}, action) {
-//        switch (action.type) {
-//                case 'FETCH_CRECORD_SUCCEEDED': {
-//                        return action.payload;
-//                }
-//
-//                // generic action to edit a field of any of the
-//                // entities stored in state
-//                // Currently, this makes shallow copies so as to edit
-//                // the field while keeping state immutable.
-//                // TODO: replace this with a library such as immutable.js
-//                case'EDIT': {
-//                        const { entityName, entityId, field, value } = action.payload;
-//                        const newState = {...state};
-//                        newState.entities = {...(newState.entities)};
-//                        newState.entities[entityName] = {...(newState.entities[entityName])};
-//                        const entityToChange = newState.entities[entityName][entityId];
-//                        const newEntity = {...entityToChange};
-//                        newEntity[field] = value;
-//                        newState.entities[entityName][entityId] = newEntity;
-//                        return newState;
-//                }
-//
-//                default: {
-//                        return state;
-//                }
-//        }
-//}
+
 
 import { combineReducers } from 'redux';
 
+/**
+ * Add an Analysis returned from the server to the state.
+ * 
+ * @param {*} state 
+ * @param {*} action 
+ */
 function analysisReducer(state={}, action) {
     switch (action.type) {
         case 'ANALYZE_CRECORD_SUCCEEDED':
