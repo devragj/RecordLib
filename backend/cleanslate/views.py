@@ -109,6 +109,7 @@ class RenderDocumentsView(APIView):
     """
     def post(self, request, *args, **kwargs):
         try:
+            breakpoint()
             data = JSONParser().parse(request)
             serializer = DocumentRenderSerializer(data=data)
             if serializer.is_valid():

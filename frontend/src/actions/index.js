@@ -126,9 +126,9 @@ function fetchPetitionsSucceeded(petitionPath) {
  * Create an action that sends a list of petitions to the server, and returns the files.
  * @param {} petitions 
  */
-export function getPetitions(petitions) {
+export function getPetitions(petitions, attorney) {
         return (dispatch, getState) => {
-                api.fetchPetitions(petitions).then(
+                api.fetchPetitions(petitions, attorney).then(
                         response => {
                                 const data = response.data;
                                 console.log("fetched petitions successfully")

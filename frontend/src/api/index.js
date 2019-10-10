@@ -37,7 +37,8 @@ export function analyzeCRecord(data) {
 }
 
 
-export function fetchPetitions(petitions) {
+export function fetchPetitions(petitions, attorney) {
+        petitions.forEach(p => p.attorney = attorney)
         return client.post(
                 "/record/petitions/",
                 {petitions: petitions}

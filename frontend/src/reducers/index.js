@@ -50,29 +50,33 @@ function petitionsReducer(state=initialPetitionsState, action) {
         //TODO fix this to include attorneys
         case 'FETCH_PETITIONS_SUCCEEDED':
             return action.payload.download;
+       default:
+            return state;
+    }
+}
+
+/**
+ * manage changes to the state of the Attorney of this session.
+ */
+function attorneyReducer(state={}, action) {
+    switch(action.type) {
         case 'ADD_ATTORNEY': {
             const { attorney } = action.payload;
 
             const newState = Object.assign({},state, {
-                attorneys: Object.assign({}, state.attorneys, {
-                        [attorney.full_name]: attorney
-                    }),
-                attorneysList: [...state.attorneysList, attorney.full_name]
+                attorney: Object.assign({}, state.attorney, attorney),
             });
 
             return newState;
         }
         case 'EDIT_ATTORNEY': {
-            const { attorneyId, field, value } = action.payload;
+            const { field, value } = action.payload;
 
             const newState = Object.assign({},state, {
-                attorneys: Object.assign({}, state.attorneys, {
-                    [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
+                attorney: Object.assign({}, state.attorney, {
                         [field]: value
                     })
-                })
-            });
-
+                });
             return newState;
         }
         case 'TOGGLE_EDITING_ATTORNEY': {
@@ -88,11 +92,11 @@ function petitionsReducer(state=initialPetitionsState, action) {
 
             return newState;
         }
-        default:
-            return state;
+        default: {
+            return state
+        }
     }
 }
-
 
 function cRecordReducer(state = {}, action) {
     switch (action.type) {
@@ -180,36 +184,11 @@ function cRecordReducer(state = {}, action) {
 }
 
 
-//function rootReducer(state = {}, action) {
-//        switch (action.type) {
-//                case 'FETCH_CRECORD_SUCCEEDED':
-//                case 'EDIT': {
-//                        return Object.assign({}, state, {
-//                                crecord: cRecordReducer(state, action)
-//                        })
-//                }
-//                case 'ANALYZE_CRECORD_SUCCEEDED': {
-//                        return Object.assign({}, state, {
-//                                analysis: analysisReducer(state, action)
-//                        })
-//                }
-//                case 'FETCH_PETITIONS_SUCCEEDED': {
-//                        return Object.assign({}, state, {
-//                                petitionPackage: petitionsReducer(state, action)
-//                        })
-//                }
-//                default: {
-//                        return state;
-//                }
-//
-//
-//
-//        }
-//}
 
 const rootReducer = combineReducers({
     crecord: cRecordReducer,
     analysis: analysisReducer,
+    attorney: attorneyReducer,
     petitionPackage: petitionsReducer
 });
 
