@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 function Sentence(props) {
     const { id, sentence_date, sentence_type, sentence_period, sentence_length } = props;
@@ -25,14 +24,15 @@ Sentence.propTypes = {
     sentence_type: PropTypes.string,
     sentence_period: PropTypes.string,
     sentence_length: PropTypes.shape({
-        min_time: PropTypes.string,
-        max_time: PropTypes.string
+        min_time: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number
+        ]),
+        max_time: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number
+        ]),
     })
 }
 
-function mapStateToProps(state, ownProps) {
-        return state.crecord.entities.sentences[ownProps.sentenceId];
-};
-
-const SentenceWrapper = connect(mapStateToProps)(Sentence);
-export default SentenceWrapper;
+export default Sentence;
