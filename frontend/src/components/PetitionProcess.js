@@ -21,7 +21,7 @@ const steps = [
     {
         "label": "Analyze the record for sealable cases",
         "optional": true,
-        "component": <Analysis />
+        "component": <Analysis/>
     },
     {
         "label": "Download petitions",
@@ -37,12 +37,19 @@ function getActiveStep(index) {
 export default function (props) {
     
     const [activeStepIndex, setActiveStepIndex] = useState(0)
-    
+   
+
     return (
         <Box>
             <PetitionStepper steps={steps} activeStepIndex={activeStepIndex} setActiveStepIndex={setActiveStepIndex}>
             </PetitionStepper>
-            {getActiveStep(activeStepIndex).component}
+            {   // Insert the setActiveStepIndex into each step, so they can move the user around.
+                React.cloneElement(getActiveStep(activeStepIndex).component, 
+                {
+                    setActiveStepIndex: setActiveStepIndex,
+                    activeStepIndex: activeStepIndex
+                })
+            }
         </Box>
     )
 }

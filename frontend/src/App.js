@@ -4,7 +4,7 @@ import Navbar from "./components/Navbar";
 import About from "./components/About";
 import NotFound from "./components/NotFound";
 import PetitionProcess from "./components/PetitionProcess"
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 function App() {
     return (<main className="content" style={{ margin: '0px'}}>
