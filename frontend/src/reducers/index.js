@@ -172,13 +172,56 @@ function cRecordReducer(state = {}, action) {
     }
 }
 
+function serviceAgencyReducer(state={result: [], entities: {}}, action) {
+    switch (action.type) {
+
+        case 'NEW_SERVICE_AGENCY': 
+            return(
+                Object.assign(
+                    {}, 
+                    state, 
+                    {
+                        result: [...state.result, action.payload.id],
+                        entities: Object.assign({}, state.entities, 
+                            {
+                                [action.payload.id]: {
+                                    id: action.payload.id,
+                                    name: action.payload.name,
+                                }
+                            })
+                    })
+            )
+
+        case 'EDIT_SERVICE_AGENCY':
+            return(
+                Object.assign(
+                    {},
+                    state,
+                    {
+                        result: state.result,
+                        entities:  Object.assign({}, state.entities, 
+                            {
+                                [action.payload.id]: {
+                                    id: action.payload.id,
+                                    name: action.payload.name,
+                                }
+                            })
+
+                    }
+                )
+            )
+        default:
+            return(state)
+    }
+}
 
 
 const rootReducer = combineReducers({
     crecord: cRecordReducer,
     analysis: analysisReducer,
     attorney: attorneyReducer,
-    petitionPackage: petitionsReducer
+    petitionPackage: petitionsReducer,
+    serviceAgencies: serviceAgencyReducer,
 });
 
 export default rootReducer

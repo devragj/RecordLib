@@ -249,3 +249,19 @@ export function editAttorney(field, value) {
         };
 };
 
+
+export function createNewServiceAgency(serviceAgency) {
+        console.log("in createNewAgency action")
+        console.log(serviceAgency)
+        return {
+                type: "NEW_SERVICE_AGENCY",
+                payload: serviceAgency,
+        }
+}
+
+export function updateServiceAgency(serviceAgency) {
+        return {
+                type: "EDIT_SERVICE_AGENCY",
+                payload: serviceAgency,
+        }
+}
