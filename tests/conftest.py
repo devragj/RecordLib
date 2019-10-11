@@ -17,7 +17,7 @@ from rest_framework.test import APIClient
 def example_attorney():
         return Attorney(
                 organization = "Community Legal",
-                name = "John Smith",
+                full_name = "John Smith",
                 organization_address = r"1234 Main St.\nBig City, NY 10002",
                 organization_phone = "555-555-5555",
                 bar_id = "123456",

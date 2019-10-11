@@ -222,7 +222,8 @@ export function addAttorney(full_name) {
     const attorney = {
         id: full_name,
         full_name,
-        address: '',
+        organization_address: '',
+        organization_phone: '',
         bar_id: '',
         organization: '',
         editing: true
@@ -234,17 +235,17 @@ export function addAttorney(full_name) {
     };
 };
 
-export function toggleEditingAttorney(attorneyId) {
+export function toggleEditingAttorney() {
         return {
                 type: 'TOGGLE_EDITING_ATTORNEY',
-                payload: { attorneyId }
+                payload: { }
         };
 };
 
-export function editAttorney(attorneyId, field, value) {
+export function editAttorney(field, value) {
         return {
                 type: 'EDIT_ATTORNEY',
-                payload: { attorneyId, field, value }
+                payload: {field, value }
         };
 };
 

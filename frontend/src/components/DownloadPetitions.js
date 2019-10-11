@@ -5,7 +5,9 @@ import Button from "@material-ui/core/Button"
 import Container from "@material-ui/core/Container"
 import { getPetitions } from "../actions"
 import Petition from "./Petition"
-import Attorneys from "./Attorneys";
+import AttorneyHolder from "./AttorneyHolder";
+import AddAttorney from "./AddAttorney"
+
 /**
  * Final step in the PetitionStepper. 
  * 
@@ -14,25 +16,34 @@ import Attorneys from "./Attorneys";
  * @param {} props 
  */
 function DownloadPetitions(props) {
-    const { attorneys, petitions, getPetitions } = props;
+    const { attorney, petitions, getPetitions, petitionPackage } = props;
 
     const [selectedPetitions, setSelectedPetitions] = useState(petitions)
 
     const submitGetPetitions = (e) => {
         e.preventDefault()
         console.log("Attorney")
-        console.log(attorneys[0])
-        getPetitions(selectedPetitions, attorneys[0])
+        console.log(attorney)
+        getPetitions(selectedPetitions, attorney)
     }
 
     const downloadPetitionStyle = { margin: '15px', border: '1px solid black', borderRadius: '25px', padding: '10px', width: '950px' };
     return (
         <Container>
+            {
+                petitionPackage.hasOwnProperty("path") ? 
+                <a href={petitionPackage.path} download> Download the petition package </a> :
+                ""
+            }
             <form onSubmit={submitGetPetitions}>
                 <Button type="submit"> Process Petition Package </Button>
             </form>
             <div className="downloadPetition" style={downloadPetitionStyle}>
-                    <Attorneys attorneys={attorneys} />
+                    {
+                        attorney.hasOwnProperty("full_name") ? 
+                        <AttorneyHolder attorney={attorney} /> :
+                        <AddAttorney />
+                    }
             </div>
             <div>
                 {petitions.map((petition, idx) => {
@@ -44,13 +55,14 @@ function DownloadPetitions(props) {
 };
 
 DownloadPetitions.propTypes = {
-    attorneys: PropTypes.array.isRequired
+    attorney: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
     return { 
-        attorneys: state.petitionPackage.attorneysList,
-        petitions: state.analysis.petitions
+        attorney: state.attorney,
+        petitions: state.analysis.petitions,
+        petitionPackage: state.petitionPackage,
     };
 };
 

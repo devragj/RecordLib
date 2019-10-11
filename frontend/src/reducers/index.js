@@ -43,14 +43,12 @@ function analysisReducer(state={}, action) {
     }
 }
 
-const initialPetitionsState = { attorneysList: [], attorneys: {} };
 
-function petitionsReducer(state=initialPetitionsState, action) {
+function petitionsReducer(state={}, action) {
     switch (action.type) {
-        //TODO fix this to include attorneys
         case 'FETCH_PETITIONS_SUCCEEDED':
-            return action.payload.download;
-       default:
+            return Object.assign({}, state, {path: action.payload.download});
+        default:
             return state;
     }
 }
@@ -63,33 +61,24 @@ function attorneyReducer(state={}, action) {
         case 'ADD_ATTORNEY': {
             const { attorney } = action.payload;
 
-            const newState = Object.assign({},state, {
-                attorney: Object.assign({}, state.attorney, attorney),
-            });
-
+            const newState = Object.assign({},state, attorney)
             return newState;
         }
         case 'EDIT_ATTORNEY': {
             const { field, value } = action.payload;
 
             const newState = Object.assign({},state, {
-                attorney: Object.assign({}, state.attorney, {
-                        [field]: value
-                    })
+                    [field]: value
                 });
             return newState;
         }
         case 'TOGGLE_EDITING_ATTORNEY': {
-            const { attorneyId } = action.payload;
+
+            const { editing } = state
 
             const newState = Object.assign({},state, {
-                attorneys: Object.assign({}, state.attorneys, {
-                    [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
-                        editing: !state.attorneys[attorneyId].editing
-                    })
+                    editing: !editing
                 })
-            });
-
             return newState;
         }
         default: {
