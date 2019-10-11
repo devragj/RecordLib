@@ -55,6 +55,63 @@
 
 import { combineReducers } from 'redux';
 
+const initialApplicant = {
+    first_name: '',
+    last_name: '',
+    date_of_birth: '',
+    date_of_death: '',
+    ssn: '',
+    address: '',
+    aliases: [],
+    editing: true
+ };
+
+const initialApplicantState = { applicant: initialApplicant, aliases: {} };
+
+function applicantReducer(state=initialApplicantState, action) {
+    switch (action.type) {
+        case 'EDIT_APPLICANT': {
+            const { field, value } = action.payload;
+
+            const newState = Object.assign({}, state, {
+                applicant: Object.assign({}, state.applicant, {
+                    [field]: value
+                })
+            });
+
+            return newState;
+        }
+        case 'EDIT_ALIAS': {
+            const { id, value } = action.payload;
+
+            const newState = Object.assign({}, state, {
+                aliases: Object.assign({}, state.applicant, {
+                    [id]: value
+                })
+            });
+
+            return newState;
+        }
+        case 'ADD_ALIAS': {
+            const { id, value } = action.payload;
+
+            const newState = Object.assign({}, state, {
+                applicant: Object.assign({}, state.applicant, {
+                    aliases: state.applicant.aliases.concat([id])
+                }),
+                aliases: Object.assign({}, state, {
+                    [id]: value
+                })
+            });
+
+            return newState;
+        }
+        default:
+            return state;
+    }
+}
+
+
 function analysisReducer(state={}, action) {
     switch (action.type) {
         case 'ANALYZE_CRECORD_SUCCEEDED':
@@ -74,7 +131,7 @@ function petitionsReducer(state=initialPetitionsState, action) {
         case 'ADD_ATTORNEY': {
             const { attorney } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 attorneys: Object.assign({}, state.attorneys, {
                         [attorney.full_name]: attorney
                     }),
@@ -86,7 +143,7 @@ function petitionsReducer(state=initialPetitionsState, action) {
         case 'EDIT_ATTORNEY': {
             const { attorneyId, field, value } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 attorneys: Object.assign({}, state.attorneys, {
                     [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
                         [field]: value
@@ -99,7 +156,7 @@ function petitionsReducer(state=initialPetitionsState, action) {
         case 'TOGGLE_EDITING_ATTORNEY': {
             const { attorneyId } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 attorneys: Object.assign({}, state.attorneys, {
                     [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
                         editing: !state.attorneys[attorneyId].editing
@@ -128,7 +185,7 @@ function cRecordReducer(state = {}, action) {
         case 'EDIT_ENTITY_VALUE': {
             const { entityName, entityId, field, value } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 entities: Object.assign({}, state.entities, {
                    [entityName]: Object.assign({}, state.entities[entityName], {
                         [entityId]: Object.assign({}, state.entities[entityName][entityId], {
@@ -144,7 +201,7 @@ function cRecordReducer(state = {}, action) {
         case 'TOGGLE_EDITING': {
             const { caseId } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 entities: Object.assign({}, state.entities, {
                    cases: Object.assign({}, state.entities['cases'], {
                         [caseId]: Object.assign({}, state.entities['cases'][caseId], {
@@ -160,7 +217,7 @@ function cRecordReducer(state = {}, action) {
         case 'EDIT_SENTENCE_LENGTH': {
             const { sentenceId, field, value } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 entities: Object.assign({}, state.entities, {
                     sentences: Object.assign({}, state.entities['sentences'], {
                         [sentenceId]: Object.assign({}, state.entities['sentences'][sentenceId], {
@@ -178,7 +235,7 @@ function cRecordReducer(state = {}, action) {
         case 'ADD_ENTITY': {
             const { entityName, entity, parentId, parentEntityName, parentListKey } = action.payload;
 
-            const newState = Object.assign({},state, {
+            const newState = Object.assign({}, state, {
                 entities: Object.assign({}, state.entities, {
                     [entityName]: Object.assign({}, state.entities[entityName], {
                         [entity.id]: entity
@@ -200,35 +257,8 @@ function cRecordReducer(state = {}, action) {
     }
 }
 
-
-//function rootReducer(state = {}, action) {
-//        switch (action.type) {
-//                case 'FETCH_CRECORD_SUCCEEDED':
-//                case 'EDIT': {
-//                        return Object.assign({}, state, {
-//                                crecord: cRecordReducer(state, action)
-//                        })
-//                }
-//                case 'ANALYZE_CRECORD_SUCCEEDED': {
-//                        return Object.assign({}, state, {
-//                                analysis: analysisReducer(state, action)
-//                        })
-//                }
-//                case 'FETCH_PETITIONS_SUCCEEDED': {
-//                        return Object.assign({}, state, {
-//                                petitionPackage: petitionsReducer(state, action)
-//                        })
-//                }
-//                default: {
-//                        return state;
-//                }
-//
-//
-//
-//        }
-//}
-
 const rootReducer = combineReducers({
+    applicantInfo: applicantReducer,
     crecord: cRecordReducer,
     analysis: analysisReducer,
     petitionPackage: petitionsReducer

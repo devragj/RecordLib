@@ -6,8 +6,14 @@ import RecordUploader from "./RecordUploader"
 import RecordEdit from "./RecordEdit"
 import Analysis from "./Analysis"
 import DownloadPetitions from "./DownloadPetitions"
+import GettingStarted from "./GettingStarted"
 
 const steps = [
+    {
+        "label": "Enter applicant information",
+        "optional": false,
+        "component": <GettingStarted />
+    },
     {
         "label": "Upload criminal record files",
         "optional": false,

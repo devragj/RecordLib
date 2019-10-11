@@ -246,3 +246,25 @@ export function editAttorney(attorneyId, field, value) {
         };
 };
 
+export function editApplicant(field, value) {
+        return {
+                type: 'EDIT_APPLICANT',
+                payload: { field, value }
+        };
+};
+
+export function editAlias(id, value) {
+        return {
+                type: 'EDIT_ALIAS',
+                payload: { id, value }
+        };
+};
+
+export function addAlias(value) {
+    const id = generateId();
+    return {
+        type: 'ADD_ALIAS',
+        payload: { id, value }
+    };
+};
+
