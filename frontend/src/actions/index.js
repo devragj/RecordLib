@@ -1,5 +1,5 @@
 import * as api from '../api';
-import { normalizeCRecord, denormalizeCRecord, CRECORD_ID  } from '../normalize';
+import { normalizeCRecord, denormalizeCRecord, normalizeAnalysis, CRECORD_ID  } from '../normalize';
 
 function generateId() {
         function s4() {
@@ -106,9 +106,10 @@ export function editField(entityName, entityId, field, value) {
 function analyzeRecordsSucceeded(data) {
         // TODO - do we need to normalize 'data' here? Its an analysis from the server, so its pretty deeply 
         // nested. But we won't edit it, I think.
+        const normalizedAnalysis = normalizeAnalysis(data)
         return {
                 type: 'ANALYZE_CRECORD_SUCCEEDED',
-                payload: data 
+                payload: normalizedAnalysis 
         }
 }
 
@@ -118,8 +119,6 @@ function analyzeRecordsSucceeded(data) {
 export function analyzeCRecord() {
         return (dispatch, getState) => {
                 const denormalizedCRecord = denormalizeCRecord(getState().crecord)
-                console.log("denormalized crecord")
-                console.log(denormalizedCRecord)
                 api.analyzeCRecord(denormalizedCRecord).then(
                         response => {
                                 const data = response.data;
@@ -127,7 +126,10 @@ export function analyzeCRecord() {
                                 console.log(data)
                                 const action = analyzeRecordsSucceeded(data);
                                 dispatch(action);
-                        }).catch(err => { console.log("error analyzing record.")})
+                        }).catch(err => { 
+                                console.log("error analyzing record:"); 
+                                console.log(err)
+                        })
         }
 }
 

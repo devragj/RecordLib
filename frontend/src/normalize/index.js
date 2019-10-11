@@ -108,6 +108,33 @@ export function denormalizeCRecord(crecordNormalized) {
         return (cRecord)
 }
 
-//export function denormalizeState(state) {
-//    return denormalize(state.result, cRecordSchema, state.entities);
-//};
+
+
+/**
+ * Normalize a nested Analysis object.
+ * 
+ * Petitions will get separated out into their own key in state.
+ * 
+ * The analysis will also just get stored as-is in state. 
+ * 
+ * It starts with a structure like 
+ * {analysis: 
+ *      decisions: [
+ *              {name: str.
+ *               value: [Petition],
+ *               reasoning: [
+ *                      {
+ *                              name: str,
+ *                              value: bool or [Decision],
+ *                              reasoning: bool or [Decision]                     
+ *                      }                     
+ * ]}
+ *      ]}
+ * @param {} analysis The petitions that can be generated from a criminal record, and explanations of why.
+ */
+export function normalizeAnalysis(analysis) {
+        const petitions = analysis.decisions.map(decision => {
+                return(decision.value)
+        }).flat()
+        return {petitions: petitions, analysis: analysis}
+}
