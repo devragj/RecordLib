@@ -1,10 +1,8 @@
 import React from "react";
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import EditField from "./EditField";
 import Sentences from "./Sentences";
-import { editField } from "../actions";
 
 /**
  * Component to edit a charge, including supplying values to a newly-created charge.
@@ -44,21 +42,4 @@ EditCharge.propTypes = {
     modifier: PropTypes.func
 }
 
-function mapStateToProps(state, ownProps) {
-    return state.crecord.entities.charges[ownProps.chargeId];
-};
-
-/**
- * This function returns a function which take a key,value pair
- * and associates the value with that key in the Charge
- * object being edited.
- */
-function mapDispatchToProps(dispatch, ownProps) {
-    return { modifier: (key, value) => {
-            dispatch(editField('charges', ownProps.chargeId, key, value))
-        }
-    };
-};
-
-const EditChargeWrapper = connect(mapStateToProps, mapDispatchToProps)(EditCharge);
-export default EditChargeWrapper;
+export default EditCharge;

@@ -1,9 +1,7 @@
 import React from "react";
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import EditField from "./EditField";
-import { editField } from "../actions";
 import EditSentenceLengthWrapper from "./EditSentenceLength";
 
 /**
@@ -40,21 +38,4 @@ EditSentence.propTypes = {
     modifier: PropTypes.func
 }
 
-function mapStateToProps(state, ownProps) {
-    return state.crecord.entities.sentences[ownProps.sentenceId];
-};
-
-/**
- * This function returns a function which take a key,value pair
- * and associates the value with that key in the Sentence
- * object being edited.
- */
-function mapDispatchToProps(dispatch, ownProps) {
-    return { modifier: (key, value) => {
-            dispatch(editField('sentences', ownProps.sentenceId, key, value))
-        }
-    };
-};
-
-const EditSentenceWrapper = connect(mapStateToProps, mapDispatchToProps)(EditSentence);
-export default EditSentenceWrapper;
+export default EditSentence;
