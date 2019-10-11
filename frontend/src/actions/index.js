@@ -30,7 +30,8 @@ function uploadRecordsSucceeded(data) {
 
 function addAliases(aliases) {
     const aliasObject = {};
-    aliases.forEach( name => {
+    const uniqueAliases = [...new Set(aliases)];
+    uniqueAliases.forEach( name => {
         const id = generateId();
         aliasObject[id] = name;
     });
