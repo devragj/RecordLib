@@ -32,7 +32,7 @@ function EditApplicant(props) {
             <EditField item={date_of_death} label="Deceased Date: " modifier={getPropertyModifier('date_of_death')} />
             <EditField item={ssn} label="Social Security Number: " modifier={getPropertyModifier('ssn')} />
             <EditField item={address} label="Address: " modifier={getPropertyModifier('address')} />
-            <div>Aliases: <Aliases editing={true} aliases={aliases}/></div>
+            <div><Aliases editing={true} aliases={aliases}/></div>
         </div>
     );
 }

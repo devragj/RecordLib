@@ -22,12 +22,22 @@ function generateId() {
  * redux state
  */
 function uploadRecordsSucceeded(data) {
-        const cRecord = JSON.parse(data);
-        const normalizedData = normalizeCRecord(cRecord);
         return {
                 type: 'FETCH_CRECORD_SUCCEEDED',
-                payload: normalizedData
+                payload: data
         }
+}
+
+function addAliases(aliases) {
+    const aliasObject = {};
+    aliases.forEach( name => {
+        const id = generateId();
+        aliasObject[id] = name;
+    });
+    return {
+        type: 'ADD_ALIASES',
+        payload: aliasObject
+    };
 }
 
 /**
@@ -43,8 +53,15 @@ export function uploadRecords(files) {
                                         const data = response.data;
                                         console.log("fetched data successfully")
                                         console.log(data)
-                                        const action = uploadRecordsSucceeded(data);
+                                        const cRecord = JSON.parse(data);
+                                        const normalizedData = normalizeCRecord(cRecord);
+                                        console.log(normalizedData);
+                                        const action = uploadRecordsSucceeded(normalizedData);
                                         dispatch(action);
+                                        const defendantName = normalizedData.entities.cRecord[CRECORD_ID].defendant;
+                                        const aliases = normalizedData.entities.defendant[defendantName].aliases;
+                                        const action2 = addAliases(aliases);
+                                        dispatch(action2);
                                 }
                         )
                 // TODO Find out what errors we may get from the server

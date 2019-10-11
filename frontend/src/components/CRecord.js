@@ -2,7 +2,8 @@ import React from "react";
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Cases from "./Cases";
-import DefendantWrapper from "./Defendant";
+import ApplicantHolderWrapper from "./ApplicantHolder";
+
 import { CRECORD_ID } from "../normalize";
 
 /**
@@ -10,18 +11,17 @@ import { CRECORD_ID } from "../normalize";
  * It has information about the defendant and a list of cases.
  */
 function CRecord(props) {
-    const { defendant, cases } = props;
+    const { cases } = props;
     const cRecordStyle = {margin: '15px', border: '1px solid black', borderRadius: '25px', padding: '10px', width: '950px'};
     return (
         <div className="cRecord" style={cRecordStyle}>
-            <DefendantWrapper defendantId={defendant}/>
+            <ApplicantHolderWrapper />
             <Cases cases={cases} />
         </div>
     );
 };
 
 CRecord.propTypes = {
-    defendant: PropTypes.string.isRequired,
     cases: PropTypes.array.isRequired
 };
 

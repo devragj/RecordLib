@@ -85,7 +85,7 @@ function applicantReducer(state=initialApplicantState, action) {
             const { id, value } = action.payload;
 
             const newState = Object.assign({}, state, {
-                aliases: Object.assign({}, state.applicant, {
+                aliases: Object.assign({}, state.aliases, {
                     [id]: value
                 })
             });
@@ -99,9 +99,30 @@ function applicantReducer(state=initialApplicantState, action) {
                 applicant: Object.assign({}, state.applicant, {
                     aliases: state.applicant.aliases.concat([id])
                 }),
-                aliases: Object.assign({}, state, {
+                aliases: Object.assign({}, state.aliases, {
                     [id]: value
                 })
+            });
+
+            return newState;
+        }
+        case 'ADD_ALIASES': {
+            const aliasObject = action.payload;
+            const oldAliasNames = Object.values(state.aliases);
+            const newAliases = {};
+            const newKeys = [];
+            for (const [key, value] of Object.entries(aliasObject)) {
+                if (!oldAliasNames.includes(value)) {
+                    newKeys.push(key);
+                    newAliases[key] = value;
+                }
+            }
+
+            const newState = Object.assign({}, state, {
+                applicant: Object.assign({}, state.applicant, {
+                    aliases: state.applicant.aliases.concat(newKeys)
+                }),
+                aliases: Object.assign({}, state.aliases, newAliases)
             });
 
             return newState;

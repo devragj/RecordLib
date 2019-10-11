@@ -18,7 +18,7 @@ function Applicant(props) {
             <div>Deceased Date: {date_of_death}</div>
             <div>Social Security Number: {ssn}</div>
             <div>Address: {address}</div>
-            <div>Aliases: <Aliases editing={false} aliases={aliases}/></div>
+            <div><Aliases editing={false} aliases={aliases}/></div>
         </div>
     );
 }
