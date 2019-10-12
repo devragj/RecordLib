@@ -87,9 +87,9 @@ function RecordUploader(props) {
     )
 }
 
-
+// TODO change this.  Now, this is always true.
 function mapStateToProps(state) {
-    return {crecordFetched: state.crecord.entities? true: false};
+    return {crecordFetched: state.crecord? true: false};
 };
 
 function mapDispatchToProps(dispatch) {

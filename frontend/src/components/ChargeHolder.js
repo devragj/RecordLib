@@ -25,7 +25,7 @@ function ChargeHolder(props) {
 };
 
 function mapStateToProps(state, ownProps) {
-    return state.crecord.entities.charges[ownProps.chargeId];
+    return state.crecord.charges[ownProps.chargeId];
 };
 
 /**

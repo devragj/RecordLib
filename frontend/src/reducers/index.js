@@ -175,18 +175,29 @@ function petitionsReducer(state=initialPetitionsState, action) {
 }
 
 const initialCrecordState = {
-    entities : {
-        charges: {},
-        cases: {},
-        sentences: {},
-        cRecord: { [CRECORD_ID]: { cases:[] } }
-    }
+    charges: {},
+    cases: {},
+    sentences: {},
+    cRecord: { [CRECORD_ID]: { cases:[] } }
 };
 
 function cRecordReducer(state = initialCrecordState, action) {
     switch (action.type) {
         case 'FETCH_CRECORD_SUCCEEDED': {
-                return action.payload;
+            const newInfo = action.payload.entities;
+
+            const newState = {
+                cRecord: {
+                    [CRECORD_ID]: Object.assign({}, state.cRecord[CRECORD_ID], {
+                        cases: state.cRecord[CRECORD_ID].cases.concat(newInfo.cRecord[CRECORD_ID].cases)
+                    })
+                },
+                cases: Object.assign({}, state.cases, newInfo.cases),
+                charges: Object.assign({}, state.charges, newInfo.charges),
+                sentences: Object.assign({}, state.sentences, newInfo.sentences)
+            };
+
+            return newState;
         }
 
         // Generic action to edit a field of any of the entities stored in state.
@@ -197,11 +208,9 @@ function cRecordReducer(state = initialCrecordState, action) {
             const { entityName, entityId, field, value } = action.payload;
 
             const newState = Object.assign({}, state, {
-                entities: Object.assign({}, state.entities, {
-                   [entityName]: Object.assign({}, state.entities[entityName], {
-                        [entityId]: Object.assign({}, state.entities[entityName][entityId], {
-                            [field]: value
-                        })
+                [entityName]: Object.assign({}, state[entityName], {
+                    [entityId]: Object.assign({}, state[entityName][entityId], {
+                        [field]: value
                     })
                 })
             });
@@ -213,11 +222,9 @@ function cRecordReducer(state = initialCrecordState, action) {
             const { caseId } = action.payload;
 
             const newState = Object.assign({}, state, {
-                entities: Object.assign({}, state.entities, {
-                   cases: Object.assign({}, state.entities['cases'], {
-                        [caseId]: Object.assign({}, state.entities['cases'][caseId], {
-                            editing: !state.entities['cases'][caseId].editing
-                        })
+                cases: Object.assign({}, state['cases'], {
+                    [caseId]: Object.assign({}, state['cases'][caseId], {
+                        editing: !state['cases'][caseId].editing
                     })
                 })
             });
@@ -229,12 +236,10 @@ function cRecordReducer(state = initialCrecordState, action) {
             const { sentenceId, field, value } = action.payload;
 
             const newState = Object.assign({}, state, {
-                entities: Object.assign({}, state.entities, {
-                    sentences: Object.assign({}, state.entities['sentences'], {
-                        [sentenceId]: Object.assign({}, state.entities['sentences'][sentenceId], {
-                            sentence_length: Object.assign({}, state.entities['sentences'][sentenceId]['sentence_length'], {
-                                [field]: value
-                            })
+                sentences: Object.assign({}, state['sentences'], {
+                    [sentenceId]: Object.assign({}, state['sentences'][sentenceId], {
+                        sentence_length: Object.assign({}, state['sentences'][sentenceId]['sentence_length'], {
+                            [field]: value
                         })
                     })
                 })
@@ -247,14 +252,12 @@ function cRecordReducer(state = initialCrecordState, action) {
             const { entityName, entity, parentId, parentEntityName, parentListKey } = action.payload;
 
             const newState = Object.assign({}, state, {
-                entities: Object.assign({}, state.entities, {
-                    [entityName]: Object.assign({}, state.entities[entityName], {
-                        [entity.id]: entity
-                    }),
-                    [parentEntityName]: Object.assign({}, state.entities[parentEntityName], {
-                        [parentId]: Object.assign({}, state.entities[parentEntityName][parentId], {
-                            [parentListKey]: [...state.entities[parentEntityName][parentId][parentListKey], entity.id]
-                        })
+                [entityName]: Object.assign({}, state[entityName], {
+                    [entity.id]: entity
+                }),
+                [parentEntityName]: Object.assign({}, state[parentEntityName], {
+                    [parentId]: Object.assign({}, state[parentEntityName][parentId], {
+                        [parentListKey]: [...state[parentEntityName][parentId][parentListKey], entity.id]
                     })
                 })
             });
