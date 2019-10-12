@@ -121,13 +121,16 @@ export function analyzeCRecord() {
         return (dispatch, getState) => {
                 const crecord = getState().crecord;
                 const normalizedData = { entities: crecord, result: CRECORD_ID };
-                const cases = denormalizeCRecord(normalizedData);
+                const denormalizedCRecord = denormalizeCRecord(normalizedData);
                 const applicantInfo = getState().applicantInfo;
                 const person = Object.assign({}, applicantInfo.applicant, {
                     aliases: applicantInfo.applicant.aliases.map(aliasId => applicantInfo.aliases[aliasId])
                 });
                 delete person.editing;
-                const denormalizedCRecord = { cases, person };
+                if (person.date_of_death == '') {
+                    delete person.date_of_death;
+                }
+                denormalizedCRecord['person'] = person;
                 api.analyzeCRecord(denormalizedCRecord).then(
                         response => {
                                 const data = response.data;
