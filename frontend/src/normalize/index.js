@@ -84,8 +84,9 @@ const options = {
 const sentenceSchema = new schema.Entity('sentences', {} ,options);
 const chargeSchema = new schema.Entity('charges', {sentences: [sentenceSchema]}, options);
 const caseSchema = new schema.Entity('cases', {charges: [chargeSchema]},  options);
-const defendantSchema = new schema.Entity('defendant', {}, options);
-const cRecordSchema = new schema.Entity('cRecord', { defendant: defendantSchema, cases: [caseSchema]}, options);
+//const defendantSchema = new schema.Entity('defendant', {}, options);
+//const cRecordSchema = new schema.Entity('cRecord', { defendant: defendantSchema, cases: [caseSchema]}, options);
+const cRecordSchema = new schema.Entity('cRecord', { cases: [caseSchema]}, options);
 
 export function normalizeCRecord(data) {
         return normalize(data, cRecordSchema);
@@ -94,7 +95,6 @@ export function normalizeCRecord(data) {
 
 export function denormalizeCRecord(crecordNormalized) {
         const cRecord = denormalize(crecordNormalized.result, cRecordSchema, crecordNormalized.entities);
-        delete cRecord.id;
         cRecord.cases.forEach(caseObject => {
                 delete caseObject.id;
                 delete caseObject.editing;

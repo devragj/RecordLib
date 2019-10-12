@@ -22,10 +22,10 @@ function generateId() {
  * redux state
  */
 function uploadRecordsSucceeded(data) {
-        return {
-                type: 'FETCH_CRECORD_SUCCEEDED',
-                payload: data
-        }
+    return {
+        type: 'FETCH_CRECORD_SUCCEEDED',
+        payload: data
+    }
 }
 
 function addAliases(aliases) {
@@ -47,38 +47,39 @@ function addAliases(aliases) {
  * @return {Object}
  */
 export function uploadRecords(files) {
-        return dispatch => {
-                api.uploadRecords(files)
-                        .then(
-                                response => {
-                                        const data = response.data;
-                                        console.log("fetched data successfully")
-                                        console.log(data)
-                                        const cRecord = JSON.parse(data);
-                                        const normalizedData = normalizeCRecord(cRecord);
-                                        console.log(normalizedData);
-                                        const action = uploadRecordsSucceeded(normalizedData);
-                                        dispatch(action);
-                                        const defendantName = normalizedData.entities.cRecord[CRECORD_ID].defendant;
-                                        const aliases = normalizedData.entities.defendant[defendantName].aliases;
-                                        const action2 = addAliases(aliases);
-                                        dispatch(action2);
-                                }
-                        )
-                // TODO Find out what errors we may get from the server
-                // and dispatch an action so that the UI can notify the user.
-                // For now, while the app is under development, I have
-                // commented this block out,
-                // as axios will catch other errors as well.
-                // See https://github.com/facebook/react/issues/7617#issuecomment-247710003
-                // If you uncomment the catch block, make sure to check
-                // the console for errors.
-                // Alternatively, we could install axios middleware.
-                // .catch(
-                //         error => {
-                //                 console.log(error);
-                //         }
-                // );
+    return dispatch => {
+        api.uploadRecords(files)
+            .then(
+                response => {
+                    const data = response.data;
+                    console.log("fetched data successfully")
+                    console.log(data)
+                    const cRecord = JSON.parse(data);
+                    console.log(cRecord)
+                    const aliases = cRecord.defendant.aliases;
+                    delete cRecord.defendant;
+                    const normalizedData = normalizeCRecord(cRecord);
+                    console.log(normalizedData);
+                    const action = uploadRecordsSucceeded(normalizedData);
+                    dispatch(action);
+                    const action2 = addAliases(aliases);
+                    dispatch(action2);
+                }
+            )
+            // TODO Find out what errors we may get from the server
+            // and dispatch an action so that the UI can notify the user.
+            // For now, while the app is under development, I have
+            // commented this block out,
+            // as axios will catch other errors as well.
+            // See https://github.com/facebook/react/issues/7617#issuecomment-247710003
+            // If you uncomment the catch block, make sure to check
+            // the console for errors.
+            // Alternatively, we could install axios middleware.
+            // .catch(
+            //         error => {
+            //                 console.log(error);
+            //         }
+            // );
         };
 };
 
@@ -118,7 +119,15 @@ function analyzeRecordsSucceeded(data) {
  */
 export function analyzeCRecord() {
         return (dispatch, getState) => {
-                const denormalizedCRecord = denormalizeCRecord(getState().crecord)
+                const crecord = getState().crecord;
+                const normalizedData = { entities: crecord, result: CRECORD_ID };
+                const cases = denormalizeCRecord(normalizedData);
+                const applicantInfo = getState().applicantInfo;
+                const person = Object.assign({}, applicantInfo.applicant, {
+                    aliases: applicantInfo.applicant.aliases.map(aliasId => applicantInfo.aliases[aliasId])
+                });
+                delete person.editing;
+                const denormalizedCRecord = { cases, person };
                 api.analyzeCRecord(denormalizedCRecord).then(
                         response => {
                                 const data = response.data;
