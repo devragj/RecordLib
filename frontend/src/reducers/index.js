@@ -28,6 +28,7 @@
 
 import { combineReducers } from 'redux';
 
+import { CRECORD_ID } from "../normalize";
 
 const initialApplicant = {
     first_name: '',
@@ -173,8 +174,16 @@ function petitionsReducer(state=initialPetitionsState, action) {
     }
 }
 
+const initialCrecordState = {
+    entities : {
+        charges: {},
+        cases: {},
+        sentences: {},
+        cRecord: { [CRECORD_ID]: { cases:[] } }
+    }
+};
 
-function cRecordReducer(state = {}, action) {
+function cRecordReducer(state = initialCrecordState, action) {
     switch (action.type) {
         case 'FETCH_CRECORD_SUCCEEDED': {
                 return action.payload;
