@@ -198,7 +198,6 @@ function serviceAgencyReducer(state={result: [], entities: {}}, action) {
                     {},
                     state,
                     {
-                        result: state.result,
                         entities:  Object.assign({}, state.entities, 
                             {
                                 [action.payload.id]: {

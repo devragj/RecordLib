@@ -259,9 +259,9 @@ export function createNewServiceAgency(serviceAgency) {
         }
 }
 
-export function updateServiceAgency(serviceAgency) {
+export function updateServiceAgency(id, name) {
         return {
                 type: "EDIT_SERVICE_AGENCY",
-                payload: serviceAgency,
+                payload: { id, name },
         }
 }

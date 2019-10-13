@@ -30,30 +30,23 @@ function ServiceAgencyList(props) {
     const { serviceAgencies, updateServiceAgency, createNewServiceAgency } = props
    
     const [needAnother, setNeedAnother] = useState(true)
-    const [newServiceAgency, setNewServiceAgency] = useState(
-        {
-            id: "serviceAgency" + (serviceAgencies.length + 1).toString(), 
-            name: ""
-        })
+    const [newServiceAgencyName, setNewServiceAgencyName] = useState('');
 
-    const handleSAEdit = (serviceAgency) => {
-        return(
-            () => updateServiceAgency(serviceAgency)
-        )
+
+    const handleSAEdit = (e) => {
+        updateServiceAgency(e.target.id, e.target.value)
     }
 
-
     const handleNewServiceAgencyChange = (e) => {
-        setNewServiceAgency({
-            name: e.target.value
-        })
+        setNewServiceAgencyName(e.target.value);
     }
 
     const handleNewServiceAgencyComplete = (e) => {
         createNewServiceAgency({
-            id: e.target.id,
-            name: e.target.value
+            id: "serviceAgency" + (serviceAgencies.result.length + 1).toString(),
+            name: newServiceAgencyName
         })
+        setNewServiceAgencyName('');
     }
 
     return(
@@ -64,17 +57,16 @@ function ServiceAgencyList(props) {
                         id={serviceAgencies.entities[idx].id} 
                         label="Service Agency" 
                         value={serviceAgencies.entities[idx].name}
-                        onChange={handleSAEdit(serviceAgencies.entities[idx])}
+                        onChange={handleSAEdit}
                         margin="normal"
                         variant="filled"/>
                 )
             })}
             {
                 needAnother ? 
-                <TextField 
-                    id={newServiceAgency.id}
+                <TextField
                     label="Server Agency"
-                    value={newServiceAgency.name}
+                    value={newServiceAgencyName}
                     onChange={handleNewServiceAgencyChange}
                     onBlur={handleNewServiceAgencyComplete} 
                     margin="normal"
@@ -94,7 +86,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     return {
-        updateServiceAgency: (serviceAgency) => dispatch(updateServiceAgency(serviceAgency)),
+        updateServiceAgency: (id, value) => dispatch(updateServiceAgency(id, value)),
         createNewServiceAgency: (serviceAgency) => dispatch(createNewServiceAgency(serviceAgency)),
     }
 }
