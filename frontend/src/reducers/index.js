@@ -43,56 +43,49 @@ function analysisReducer(state={}, action) {
     }
 }
 
-const initialPetitionsState = { attorneysList: [], attorneys: {} };
 
-function petitionsReducer(state=initialPetitionsState, action) {
+function petitionsReducer(state={}, action) {
     switch (action.type) {
-        //TODO fix this to include attorneys
         case 'FETCH_PETITIONS_SUCCEEDED':
-            return action.payload.download;
-        case 'ADD_ATTORNEY': {
-            const { attorney } = action.payload;
-
-            const newState = Object.assign({},state, {
-                attorneys: Object.assign({}, state.attorneys, {
-                        [attorney.full_name]: attorney
-                    }),
-                attorneysList: [...state.attorneysList, attorney.full_name]
-            });
-
-            return newState;
-        }
-        case 'EDIT_ATTORNEY': {
-            const { attorneyId, field, value } = action.payload;
-
-            const newState = Object.assign({},state, {
-                attorneys: Object.assign({}, state.attorneys, {
-                    [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
-                        [field]: value
-                    })
-                })
-            });
-
-            return newState;
-        }
-        case 'TOGGLE_EDITING_ATTORNEY': {
-            const { attorneyId } = action.payload;
-
-            const newState = Object.assign({},state, {
-                attorneys: Object.assign({}, state.attorneys, {
-                    [attorneyId]: Object.assign({}, state.attorneys[attorneyId], {
-                        editing: !state.attorneys[attorneyId].editing
-                    })
-                })
-            });
-
-            return newState;
-        }
+            return Object.assign({}, state, {path: action.payload.download});
         default:
             return state;
     }
 }
 
+/**
+ * manage changes to the state of the Attorney of this session.
+ */
+function attorneyReducer(state={}, action) {
+    switch(action.type) {
+        case 'ADD_ATTORNEY': {
+            const { attorney } = action.payload;
+
+            const newState = Object.assign({},state, attorney)
+            return newState;
+        }
+        case 'EDIT_ATTORNEY': {
+            const { field, value } = action.payload;
+
+            const newState = Object.assign({},state, {
+                    [field]: value
+                });
+            return newState;
+        }
+        case 'TOGGLE_EDITING_ATTORNEY': {
+
+            const { editing } = state
+
+            const newState = Object.assign({},state, {
+                    editing: !editing
+                })
+            return newState;
+        }
+        default: {
+            return state
+        }
+    }
+}
 
 function cRecordReducer(state = {}, action) {
     switch (action.type) {
@@ -169,7 +162,6 @@ function cRecordReducer(state = {}, action) {
                     })
                 })
             });
-
             return newState;
         }
 
@@ -179,38 +171,71 @@ function cRecordReducer(state = {}, action) {
     }
 }
 
+function serviceAgencyReducer(state={result: [], entities: {}}, action) {
+    switch (action.type) {
+        case 'NEW_SERVICE_AGENCY': 
+            return(
+                Object.assign(
+                    {}, 
+                    state, 
+                    {
+                        result: [...state.result, action.payload.id],
+                        entities: Object.assign({}, state.entities, 
+                            {
+                                [action.payload.id]: {
+                                    id: action.payload.id,
+                                    name: action.payload.name,
+                                }
+                            })
+                    })
+            )
 
-//function rootReducer(state = {}, action) {
-//        switch (action.type) {
-//                case 'FETCH_CRECORD_SUCCEEDED':
-//                case 'EDIT': {
-//                        return Object.assign({}, state, {
-//                                crecord: cRecordReducer(state, action)
-//                        })
-//                }
-//                case 'ANALYZE_CRECORD_SUCCEEDED': {
-//                        return Object.assign({}, state, {
-//                                analysis: analysisReducer(state, action)
-//                        })
-//                }
-//                case 'FETCH_PETITIONS_SUCCEEDED': {
-//                        return Object.assign({}, state, {
-//                                petitionPackage: petitionsReducer(state, action)
-//                        })
-//                }
-//                default: {
-//                        return state;
-//                }
-//
-//
-//
-//        }
-//}
+        case 'EDIT_SERVICE_AGENCY':
+            return(
+                Object.assign(
+                    {},
+                    state,
+                    {
+                        entities:  Object.assign({}, state.entities, 
+                            {
+                                [action.payload.id]: {
+                                    id: action.payload.id,
+                                    name: action.payload.name,
+                                }
+                            })
+
+                    }
+                )
+            )
+
+        case "DELETE_SERVICE_AGENCY":
+            const callback = (acc, [k, v]) => Object.assign(acc, {[k]:v})
+            const newEntities = Object.entries(state.entities)
+                                .filter(([key]) => key !== action.payload.id)
+                                .reduce(callback, {})
+            
+            return(
+                Object.assign(
+                    {},
+                    state,
+                    {
+                        result: state.result.filter(s => s !== action.payload.id),
+                        entities: newEntities,
+                    }
+                )
+            )
+        default:
+            return(state)
+    }
+}
+
 
 const rootReducer = combineReducers({
     crecord: cRecordReducer,
     analysis: analysisReducer,
-    petitionPackage: petitionsReducer
+    attorney: attorneyReducer,
+    petitionPackage: petitionsReducer,
+    serviceAgencies: serviceAgencyReducer,
 });
 
 export default rootReducer

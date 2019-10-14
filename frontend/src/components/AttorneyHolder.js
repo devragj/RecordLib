@@ -24,8 +24,8 @@ function AttorneyHolder(props) {
     );
 };
 
-function mapStateToProps(state, ownProps) {
-    return state.petitionPackage.attorneys[ownProps.attorneyId];
+function mapStateToProps(state) {
+    return state.attorney
 };
 
 /**
@@ -36,9 +36,9 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch, ownProps) {
     return {
         modifier: (key, value) => {
-            dispatch(editAttorney(ownProps.attorneyId, key, value))
+            dispatch(editAttorney(key, value))
         },
-        toggleEditing: () => dispatch(toggleEditingAttorney(ownProps.attorneyId))
+        toggleEditing: () => dispatch(toggleEditingAttorney())
     };
 };
 
