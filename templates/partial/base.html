@@ -25,5 +25,8 @@
 
         {% block content %}{% endblock %}
 
+
+        <div style="display: none;">{% csrf_token %}</div>
+        <!--csrf token included here to make sure its provided to forms-->
     </body>
 </html>
