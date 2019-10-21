@@ -27,6 +27,7 @@ docxtpl = "*"
 gunicorn = "*"
 psycopg2 = "*"
 recordlib = {path = ".",editable = true}
+django-webpack-loader = "*"
 
 [requires]
 python_version = "3.7"
