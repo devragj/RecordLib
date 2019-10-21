@@ -3,11 +3,15 @@ import axios from 'axios';
 // Without declaring a BASE_URL, axios just calls to its own domain.
 //const API_BASE_URL = 'http://localhost';
 
+axios.defaults.xsrfCookieName = 'csrftoken'
+axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+
 const client = axios.create({
         //baseURL: API_BASE_URL,
         headers: {
                 'Content-Type': 'application/json',
         },
+        maxRedirects: 5,
 });
 
 /**
@@ -43,4 +47,18 @@ export function fetchPetitions(petitions, attorney) {
                 "/record/petitions/",
                 {petitions: petitions}
         )
+}
+
+export function login(username, password) {
+        const data = new FormData()
+        data.append('username', username)
+        data.append('password', password)
+        client.post(
+                "/accounts/login/",
+                data,
+                {headers: {'Content-Type': 'multipart/form-data'}},
+        ).then(response => {
+                window.location = "/"
+                console.log(response)
+        })
 }

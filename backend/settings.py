@@ -37,6 +37,7 @@ WEBPACK_LOADER = {
     }
 }
 
+LOGIN_REDIRECT_URL = "/"
 
 # Application definition
 

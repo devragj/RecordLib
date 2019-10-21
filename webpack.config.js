@@ -6,7 +6,8 @@ const BundleTracker = require('webpack-bundle-tracker')
 const config = {
     context: __dirname,
     entry: {
-        home: './frontend/src/index.js',
+        home: './frontend/src/entrypoints/index.js',
+        login: './frontend/src/entrypoints/login.js',
     },
     output: {
         path: path.resolve('./frontend/bundles/'),

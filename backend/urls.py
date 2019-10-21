@@ -20,5 +20,6 @@ from .views import FrontendView
 urlpatterns = [
     path("", FrontendView.as_view(), name="home"),
     path('admin/', admin.site.urls), 
+    path('accounts/', include('django.contrib.auth.urls')),
     path('record/', include('cleanslate.urls'))
 ]
