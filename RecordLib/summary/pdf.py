@@ -450,16 +450,16 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Summary:
     Parser method that can take a source and return a Person and Cases,
     used to build a CRecord.
     """
-
     text = get_text_from_pdf(pdf, tempdir)
-
     inputs_dictionary = get_processors(text)
     summary_page_grammar = inputs_dictionary["summary_page_grammar"]
 
     try:
         parsed_pages = summary_page_grammar.parse(text)
     except Exception as e:
-        raise ValueError("Grammar cannot parse summary.")
+        #slines = text.split("\n")
+        #breakpoint()
+        raise ValueError(f"Grammar cannot parse summary: {str(e)}")
 
     parse_summary = inputs_dictionary["parse_summary"]
     pages_xml_tree, summary_body_xml_tree = parse_summary(parsed_pages)

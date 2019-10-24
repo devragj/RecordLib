@@ -83,3 +83,10 @@ def test_charge_get_grade(example_charge):
     assert example_charge.grade == "M1"
 
 
+def test_charge_gte(example_charge):
+    example_charge.grade = "M1"
+    assert Charge.grade_GTE(example_charge.grade, "M3") == True
+    assert Charge.grade_GTE(example_charge.grade, "") == True 
+    assert Charge.grade_GTE(example_charge.grade, "F2") == False 
+    example_charge.grade = "F2"
+    assert Charge.grade_GTE(example_charge.grade, "M3") == True

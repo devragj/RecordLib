@@ -135,7 +135,11 @@ cp_summary_page_grammar = Grammar(
     header = ws* court_name ws* new_line ws* "Court Summary" ws* new_line+
     court_name = single_content_char+
 
-    caption = defendant_name ws+ def_dob ws* def_sex ws* new_line ws* def_addr ws+ def_eyecolor ws* new_line "Aliases:" ws+ def_hair ws* new_line alias? ws+ def_race ws* new_line (alias new_line)* empty_line
+    caption = defendant_name ws+ def_dob ws* def_sex ws* new_line 
+              ws* def_addr ws+ def_eyecolor ws* new_line 
+              "Aliases:" ws+ def_hair ws* new_line 
+              alias? ws+ def_race ws* new_line 
+              (alias new_line)* empty_line
 
     summary_info = ((line / empty_line) !start_of_footer)+ line
 
