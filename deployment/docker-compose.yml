@@ -1,0 +1,42 @@
+version: '3'
+services:
+  django_web:
+    build:
+      context: ../
+      dockerfile: deployment/Dockerfile
+    image: natev/recordlib
+    expose:
+      - 8000
+    ports: 
+      - "8000:8000"
+    networks:
+      recordlib-net: 
+    env_file:
+      - .production.env
+    depends_on:
+      - migration
+      - pg_db
+  migration: 
+    build:
+      context: ../
+      dockerfile: deployment/Dockerfile
+    image: natev/recordlib
+    env_file: 
+      - .production.env
+    networks:
+      recordlib-net:
+    command: python manage.py migrate --noinput
+    depends_on:
+      - pg_db
+  pg_db:
+    build:
+      context: .
+      dockerfile: PG_Dockerfile
+    #image: postgres:11
+    restart: always
+    environment: 
+      POSTGRES_PASSWORD: "${POSTGRES_ROOT_PW}"
+    networks:
+      recordlib-net:
+networks:
+  recordlib-net: 

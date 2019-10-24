@@ -6,11 +6,11 @@ from multiprocessing import Process
 import subprocess
 
 def yarn():
-    subprocess.run("cd frontend && yarn start", shell=True)
+    subprocess.run("yarn run watch", shell=True)
 
 def django():
     #subprocess.run("pipenv run flask run", shell=True)
-    subprocess.run("cd backend && pipenv run python manage.py runserver", shell=True)
+    subprocess.run("pipenv run python manage.py runserver", shell=True)
 
 if __name__ == '__main__':
     yarn_p = Process(target=yarn)
