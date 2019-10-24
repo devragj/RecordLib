@@ -81,7 +81,7 @@ def ten_years_since_last_conviction(crecord: CRecord) -> Decision:
     return decision
 
 
-def fines_and_costs_paid(crecord) -> Decision:
+def fines_and_costs_paid(crecord: CRecord) -> Decision:
     """
     In individual is not eligible for sealing unless all fines and costs have been paid.
 
@@ -184,6 +184,46 @@ def no_f1_convictions(crecord: CRecord) -> Decision:
     decision.value = all(decision.reasoning)
     return decision
 
+def is_felony_conviction(charge: Charge) -> Decision:
+    """
+    Was `charge` a felony conviction
+
+    Args:
+        charge: A Charge.
+
+    Return:
+        A Decision that is True if the charge is a felony conviction.
+    """
+    decision = Decision(name=f"Was the charge [{charge.offense}, {charge.grade}, {charge.disposition}] a felony conviction?")
+    decision.reasoning = [
+        re.match("F", charge.grade, re.IGNORECASE),
+        charge.is_conviction(),
+    ]
+    decision.value = all(decision.reasoning)
+    return decision
+
+def any_felony_convictions_n_years(crecord: CRecord, years: int) -> Decision:
+    """
+    Were there any felony convictions in the last `years` years?
+
+    Implemented for triaging.
+
+    Args:
+        crecord: a Criminal Record.
+        years: The threshold number of years to consider
+
+    Return:
+        A Decision that is True if there were felony convictions within `years` years.
+
+    """
+    decision = Decision(name=f"Were there any felony convictions within {years}")
+    decision.reasoning = [
+        is_felony_conviction(charge) and case.years_passed_disposition() > years
+        for case in crecord.cases
+        for charge in case.charges
+    ]
+    decision.value = all(decision.reasoning)
+    return decision
 
 def is_misdemeanor_or_ungraded(charge: Charge) -> Decision:
     """
@@ -396,6 +436,36 @@ def no_corruption_of_minors_offense(
                                 this_offense == "6301a1"]
         decision.value = not all(decision.reasoning)
     return decision
+
+
+def more_than_x_convictions_y_grade_z_years(crecord: CRecord, offense_limit: int, grade_limit: str, years: int) -> Decision:
+    """
+    Does `crecord` contain equal or more than `offense_limit` convictions for `grade_limit` (or more serious) offenses in the last `years` years?
+
+    The limits are inclusive.
+
+    For example, `more_than_x_convictions_y_grade_z_years(rec, 2, M1, 15)` would return a Decision that explains whether `rec` contains 
+    2 or more M1-or-greater convictions in the last 15 years.
+
+    Args:
+        crecord: A criminal record.
+        offense_limit: Are there more convictions than this number in this record?
+        grade_limit: The grade (i.e. M1) that triggers this rule
+        years: Years since a conviction that will be counted.
+    
+    Returns:
+        A decision that is True if `crecord` contains more than the `offense_limit` of `grade_limit` convictions in the last `years` years.
+    """
+    decision = Decision(name=f"Does {crecord.person.full_name()}'s record contain {offense_limit} or more convictions, graded {grade_limit} or higher, within the last {years} years?")
+    qualifying_charges = []
+    for case in crecord.cases:
+        for charge in case.charges:
+            if case.years_passed_disposition() >= years and charge.is_conviction() and Charge.grade_GTE(charge.grade, grade_limit):
+                qualifying_charges.append(charge)
+    decision.reasoning = qualifying_charges
+    decision.value = len(qualifying_charges) >= offense_limit
+    return decision
+
 
 
 def offenses_punishable_by_two_or_more_years(

@@ -15,8 +15,8 @@ import logging
 import re
 from datetime import datetime
 
-def text_to_pages(txt: str) -> etree:
-    """ Convert raw text of a docket to an etree, where the nodes are the pages and sections of the docket.
+def text_to_pages(txt: str) -> str:
+    """ Convert raw text of a docket to an xml-string, where the nodes are the pages and sections of the docket.
     
     i.e. 
     <docket>
@@ -37,9 +37,8 @@ def text_to_pages(txt: str) -> etree:
         return visitor.visit(nodes)
     except Exception as e:
         slines = txt.split("\n")
-        #breakpoint()
         logging.error("text_to_pages failed.")
-    return None
+        return "<docket></docket>"
 
 
 def create_section_header_remover(section_name: str) -> Callable:
@@ -361,7 +360,6 @@ def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, 
     errors = []
     # pdf to raw text
     txt = get_text_from_pdf(pdf, tempdir=tempdir)
-
     # text to xml sections (see DocketParse.sectionize). This handles page breaks.
     pages_tree = etree.fromstring(text_to_pages(txt))
     sections_tree = sections_from_pages(pages_tree)
