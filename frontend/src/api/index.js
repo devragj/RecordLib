@@ -62,3 +62,8 @@ export function login(username, password) {
                 console.log(response)
         })
 }
+
+export function logout() {
+        client.get( "/accounts/logout/");
+        window.location = '/accounts/login';
+}
