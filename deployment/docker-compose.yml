@@ -1,14 +1,32 @@
-version: '3'
+version: '3.7'
 services:
+  frontend: 
+    build: 
+      context: .
+      dockerfile: FrontendDockerfile
+    restart: always
+    ports: 
+      - "3000:80"
+    depends_on:
+      - django_web
+    volumes: 
+      - type: volume
+        source: staticfiles
+        target: /srv/static
+        read_only: true
+    networks:
+      recordlib-net:
   django_web:
     build:
       context: ../
-      dockerfile: deployment/Dockerfile
+      dockerfile: deployment/DjangoDockerfile
     image: natev/recordlib
     expose:
       - 8000
-    ports: 
-      - "8000:8000"
+    volumes:
+      - "staticfiles:/srv/static"
+    #ports: 
+    #  - "8000:8000"
     networks:
       recordlib-net: 
     env_file:
@@ -16,11 +34,12 @@ services:
     depends_on:
       - migration
       - pg_db
-    command: bash -c "python manage.py collectstatic && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+    command: bash -c "python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+    #command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4
   migration: 
     build:
       context: ../
-      dockerfile: deployment/Dockerfile
+      dockerfile: deployment/DjangoDockerfile
     image: natev/recordlib
     env_file: 
       - .production.env
@@ -41,8 +60,9 @@ services:
     expose:
       - "5432"
     volumes:
-      - "dbdata:/var/lib/postgresql/data"
+      - dbdata:/var/lib/postgresql/data"
 networks:
   recordlib-net: 
 volumes:
   dbdata:
+  staticfiles:

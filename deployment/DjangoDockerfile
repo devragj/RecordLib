@@ -16,9 +16,10 @@ COPY ./manage.py /srv
 
 RUN pip install pipenv && pipenv install --system && apt update && \
     apt install -y poppler-utils && \
-    useradd -ms /bin/bash gunicorn && \
-    #chmod o+x /entrypoint.sh && \
-    mkdir -p /srv/static && \
+    useradd -ms /bin/bash gunicorn
+    #chmod o+x /entrypoint.sh
+
+RUN mkdir -p /srv/static && \
     chown gunicorn:gunicorn /srv/static
 
 USER gunicorn
