@@ -25,7 +25,7 @@ function SentenceHolder(props) {
 };
 
 function mapStateToProps(state, ownProps) {
-    return state.crecord.entities.sentences[ownProps.sentenceId];
+    return state.crecord.sentences[ownProps.sentenceId];
 };
 
 /**
