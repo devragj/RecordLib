@@ -109,6 +109,7 @@ class RenderDocumentsView(APIView):
     """
     def post(self, request, *args, **kwargs):
         try:
+            breakpoint()
             data = JSONParser().parse(request)
             serializer = DocumentRenderSerializer(data=data)
             if serializer.is_valid():
@@ -120,7 +121,7 @@ class RenderDocumentsView(APIView):
                         petitions.append(Expungement.from_dict(petition))
                 client_last = petitions[0].client.last_name
 
-                with open("tests/templates/790ExpungementTemplate_usingpythonvars.docx", "rb") as doc:
+                with open("../tests/templates/790ExpungementTemplate_usingpythonvars.docx", "rb") as doc:
                     for petition in petitions:
                         petition.set_template(doc)
                 petitions = [(p.file_name(), p.render()) for p in petitions]

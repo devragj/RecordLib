@@ -108,7 +108,7 @@ def td_expungement(e):
 def td_attorney(atty):
     return {
         "organization": to_serializable(atty.organization),
-        "name": to_serializable(atty.name),
+        "full_name": to_serializable(atty.full_name),
         "organization_address": to_serializable(atty.organization_address),
         "organization_phone": to_serializable(atty.organization_phone),
         "bar_id": to_serializable(atty.bar_id) 

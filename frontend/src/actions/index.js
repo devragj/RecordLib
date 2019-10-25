@@ -126,9 +126,9 @@ function fetchPetitionsSucceeded(petitionPath) {
  * Create an action that sends a list of petitions to the server, and returns the files.
  * @param {} petitions 
  */
-export function getPetitions(petitions) {
+export function getPetitions(petitions, attorney) {
         return (dispatch, getState) => {
-                api.fetchPetitions(petitions).then(
+                api.fetchPetitions(petitions, attorney).then(
                         response => {
                                 const data = response.data;
                                 console.log("fetched petitions successfully")
@@ -222,7 +222,8 @@ export function addAttorney(full_name) {
     const attorney = {
         id: full_name,
         full_name,
-        address: '',
+        organization_address: '',
+        organization_phone: '',
         bar_id: '',
         organization: '',
         editing: true
@@ -234,17 +235,38 @@ export function addAttorney(full_name) {
     };
 };
 
-export function toggleEditingAttorney(attorneyId) {
+export function toggleEditingAttorney() {
         return {
                 type: 'TOGGLE_EDITING_ATTORNEY',
-                payload: { attorneyId }
+                payload: { }
         };
 };
 
-export function editAttorney(attorneyId, field, value) {
+export function editAttorney(field, value) {
         return {
                 type: 'EDIT_ATTORNEY',
-                payload: { attorneyId, field, value }
+                payload: {field, value }
         };
 };
 
+
+export function createNewServiceAgency(serviceAgency) {
+        return {
+                type: "NEW_SERVICE_AGENCY",
+                payload: serviceAgency,
+        }
+}
+
+export function updateServiceAgency(id, name) {
+        return {
+                type: "EDIT_SERVICE_AGENCY",
+                payload: { id, name },
+        }
+}
+
+export function deleteServiceAgency(id) {
+        return {
+                type: "DELETE_SERVICE_AGENCY",
+                payload: { id },
+        }
+}

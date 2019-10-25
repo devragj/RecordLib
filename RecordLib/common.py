@@ -123,6 +123,34 @@ class Charge:
     sentences: Optional[List[Sentence]] = None
 
     @staticmethod
+    def grade_GTE(grade_a: str, grade_b: str) -> bool:
+        """
+        Greater-than-or-equal-to ordering for charge grades.
+
+        Args:
+            grade_a: A grade like "M1", "F2", "S", etc.
+            grade_b: A grade like "M1", "F2", "S", etc.
+        
+        Returns: 
+            True if grade_a is the same grade as or more serious than grade_b 
+        """
+        grades = [
+            "", "S", "M", "IC", "M3", "M2", "M1", "F", "F3", "F2", "F1"
+        ]
+        try:
+            i_a = grades.index(grade_a) 
+        except ValueError:
+            logging.error(f"Couldn't understand the first grade, {grade_a}, so assuming it has low seriousness.")
+            i_a = 0
+        try:
+            i_b = grades.index(grade_b)
+        except:
+            logging.error(f"Couldn't understand the second grade, {grade_b}, so assuming it has low seriousness.")
+            i_b = 0
+        return i_a >= i_b
+
+
+    @staticmethod
     def from_dict(dct: dict) -> Charge:
         try:
             dct["sentences"] = [Sentence.from_dict(s) for s in dct.get("sentences")] or []

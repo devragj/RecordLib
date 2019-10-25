@@ -281,3 +281,20 @@ def test_is_misdemeanor_or_ungraded(example_charge):
     assert bool(is_misdemeanor_or_ungraded(example_charge)) is True
     example_charge.grade = "F2"
     assert bool(is_misdemeanor_or_ungraded(example_charge)) is False
+
+
+
+
+def test_is_felony_conviction(example_charge):
+    example_charge.grade = "M2"
+    example_charge.disposition = "Guilty"
+    assert bool(is_felony_conviction(example_charge)) is False
+    example_charge.grade = ""
+    assert bool(is_felony_conviction(example_charge)) is False
+    example_charge.grade = "F2"
+    assert bool(is_felony_conviction(example_charge)) is True 
+
+
+@pytest.mark.skip("Not unit-tested. Shame on me.")
+def test_more_than_x_convictions_y_grade_y_years(example_crecord):
+    pass
