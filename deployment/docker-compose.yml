@@ -4,6 +4,7 @@ services:
     build: 
       context: .
       dockerfile: FrontendDockerfile
+    image: natev/recordlibfrontend
     restart: always
     ports: 
       - "3000:80"
@@ -20,7 +21,7 @@ services:
     build:
       context: ../
       dockerfile: deployment/DjangoDockerfile
-    image: natev/recordlib
+    image: natev/recordlibdjango
     expose:
       - 8000
     volumes:
@@ -40,7 +41,7 @@ services:
     build:
       context: ../
       dockerfile: deployment/DjangoDockerfile
-    image: natev/recordlib
+    image: natev/recordlibdjango
     env_file: 
       - .production.env
     networks:
@@ -52,6 +53,7 @@ services:
     build:
       context: .
       dockerfile: PG_Dockerfile
+    image: natev/recordlibdb
     restart: always
     env_file: 
       - .production.env
