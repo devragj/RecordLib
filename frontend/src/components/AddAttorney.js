@@ -15,16 +15,27 @@ function AddAttorney(props) {
     const { adder } = props;
     const [fullName, setFullName] = useState("");
 
-    const handleChange = event => setFullName(event.target.value);
+    const handleChange = event => {
+        setFullName(event.target.value);
+    }
+
     const handleClick = () => {
         adder(fullName);
         setFullName("");
     }
 
+    const handleKeyDown = event => {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            event.stopPropagation();
+            handleClick();
+        }
+    }
+
     return (
         <div className="addAttorney" >
            <span style={{marginLeft: "20px"}}>Full Name: </span>
-           <input type="text" value={fullName} onChange={handleChange} />
+           <input type="text" value={fullName} onChange={handleChange} onKeyDown={handleKeyDown}/>
            <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>Add Attorney</button>
         </div>
     );
