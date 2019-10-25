@@ -15,13 +15,17 @@ COPY ./webpack-stats.json /srv
 COPY ./manage.py /srv
 
 RUN pip install pipenv && pipenv install --system && apt update && \
-    apt install -y poppler-utils  && \
+    apt install -y poppler-utils && \
     useradd -ms /bin/bash gunicorn && \
-    chmod o+x /entrypoint.sh  
+    #chmod o+x /entrypoint.sh && \
+    mkdir -p /srv/static && \
+    chown gunicorn:gunicorn /srv/static
 
 USER gunicorn
+
+ENV STATIC_ROOT /srv/static
 
 EXPOSE 8000
 
 
-CMD ["/entrypoint.sh"]
+#ENTRYPOINT ["/entrypoint.sh"]

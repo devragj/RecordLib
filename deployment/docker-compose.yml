@@ -16,6 +16,7 @@ services:
     depends_on:
       - migration
       - pg_db
+    command: bash -c "python manage.py collectstatic && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4"
   migration: 
     build:
       context: ../
