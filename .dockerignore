@@ -8,3 +8,4 @@ pytest.ini
 backend/tmp*
 node_modules
 frontend/src
+static

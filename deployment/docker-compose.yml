@@ -32,11 +32,16 @@ services:
     build:
       context: .
       dockerfile: PG_Dockerfile
-    #image: postgres:11
     restart: always
-    environment: 
-      POSTGRES_PASSWORD: "${POSTGRES_ROOT_PW}"
+    env_file: 
+      - .production.env
     networks:
       recordlib-net:
+    expose:
+      - "5432"
+    volumes:
+      - "dbdata:/var/lib/postgresql/data"
 networks:
   recordlib-net: 
+volumes:
+  dbdata:

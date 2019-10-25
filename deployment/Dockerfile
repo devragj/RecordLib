@@ -1,4 +1,4 @@
-FROM python:3.7-stretch
+FROM python:3.7-buster
 
 COPY setup.py Pipfile Pipfile.lock /srv/
 
@@ -24,4 +24,4 @@ USER gunicorn
 EXPOSE 8000
 
 
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/entrypoint.sh"]
