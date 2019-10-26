@@ -40,6 +40,10 @@ const useStyles = makeStyles(theme => ({
 }));
 
 function Navbar () {
+    const cookies = document.cookie;
+    const regex = /username=([^;]+)/
+    const match = cookies.match(regex)
+    const userMenuLabel = match? match[1]: 'User' ;
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -69,7 +73,7 @@ function Navbar () {
                         </Typography>
                     </Link>
                     <Button aria-controls="simple-menu" color="inherit" aria-haspopup="true" onClick={handleClick}>
-                        User
+                        {userMenuLabel}
                     </Button>
                     <Menu
                         id="user-menu"
