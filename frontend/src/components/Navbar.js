@@ -39,11 +39,16 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Navbar () {
+function getUserMenuLabel() {
     const cookies = document.cookie;
     const regex = /username=([^;]+)/
     const match = cookies.match(regex)
     const userMenuLabel = match? match[1]: 'User' ;
+    return userMenuLabel;
+}
+
+function Navbar () {
+    const userMenuLabel = getUserMenuLabel();
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState(null);
 
