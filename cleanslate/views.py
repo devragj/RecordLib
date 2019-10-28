@@ -82,8 +82,8 @@ class AnalyzeView(APIView):
 
         """
         try: 
-            data = JSONParser().parse(request)
-            serializer = CRecordSerializer(data=data)
+            #data = JSONParser().parse(request)
+            serializer = CRecordSerializer(data=request.data)
             if serializer.is_valid():
                 rec = CRecord.from_dict(serializer.validated_data) 
                 analysis = (
@@ -109,7 +109,6 @@ class RenderDocumentsView(APIView):
     """
     def post(self, request, *args, **kwargs):
         try:
-            breakpoint()
             data = JSONParser().parse(request)
             serializer = DocumentRenderSerializer(data=data)
             if serializer.is_valid():

@@ -15,8 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import FrontendView, LoginSuccessView
 
 urlpatterns = [
+    path("", FrontendView.as_view(), name="home"),
     path('admin/', admin.site.urls), 
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('loginSuccess', LoginSuccessView.as_view(), name="loginSuccess"),
     path('record/', include('cleanslate.urls'))
 ]

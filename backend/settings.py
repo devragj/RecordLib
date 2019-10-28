@@ -15,6 +15,7 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+STATIC_ROOT = os.environ["STATIC_ROOT"]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -27,6 +28,18 @@ DEBUG = os.environ.get("DEBUG") == "TRUE"
 
 ALLOWED_HOSTS = []
 
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'frontend'),
+)
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'bundles/',
+    }
+}
+
+
+LOGIN_REDIRECT_URL = "/loginSuccess"
 
 # Application definition
 
@@ -38,6 +51,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'webpack_loader',
     'rest_framework',
     'cleanslate'
 ]
@@ -58,7 +72,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

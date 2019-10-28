@@ -6,5 +6,6 @@ README.md
 pytest.ini
 .env
 backend/tmp*
-frontend/node_modules
+node_modules
 frontend/src
+static

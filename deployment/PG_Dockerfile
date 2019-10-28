@@ -1,0 +1,9 @@
+FROM postgres:11
+
+
+COPY init-user-db.sh /docker-entrypoint-initdb.d/
+
+# Expose the PostgreSQL port
+EXPOSE 5432
+
+#VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]

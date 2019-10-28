@@ -227,7 +227,7 @@ def expunge_nonconvictions(crecord: CRecord) -> Tuple[CRecord, dict]:
         expungeable_case = case.partialcopy()
         for charge in case.charges:
             charge_d = Decision(
-                name=f"Is the charge for f{charge.offense} a nonconviction?",
+                name=f"Is the charge for {charge.offense} a nonconviction?",
                 value=not charge.is_conviction(),
                 reasoning=f"The charge's disposition {charge.disposition} indicates a conviction" if charge.is_conviction() else f"The charge's disposition {charge.disposition} indicates its not a conviction."
             )

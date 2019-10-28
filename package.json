@@ -1,8 +1,7 @@
 {
-  "name": "frontend",
+  "name": "recordlib",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:8000",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.22",
     "@fortawesome/free-solid-svg-icons": "^5.10.2",
@@ -23,8 +22,8 @@
     "redux-thunk": "^2.3.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "watch": "webpack --progress -d --config webpack.config.js --watch",
+    "build": "webpack --progress -p --mode=production --config webpack.config.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -44,6 +43,14 @@
     ]
   },
   "devDependencies": {
-    "redux-devtools-extension": "^2.13.8"
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^3.2.0",
+    "redux-devtools-extension": "^2.13.8",
+    "style-loader": "^1.0.0",
+    "webpack": "^4.41.2",
+    "webpack-bundle-tracker": "^0.4.3",
+    "webpack-cli": "^3.3.9"
   }
 }
