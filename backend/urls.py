@@ -21,5 +21,6 @@ urlpatterns = [
     path("", FrontendView.as_view(), name="home"),
     path('admin/', admin.site.urls), 
     path('accounts/', include('django.contrib.auth.urls')),
-    path('loginSuccess', LoginSuccessView.as_view(), name="loginSuccess")
+    path('loginSuccess', LoginSuccessView.as_view(), name="loginSuccess"),
+    path('record/', include('cleanslate.urls'))
 ]
