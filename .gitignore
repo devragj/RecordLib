@@ -43,3 +43,5 @@ yarn-debug.log*
 yarn-error.log*
 static
 
+webpack-stats.json
+
