@@ -7,7 +7,7 @@ import EditField from "./EditField";
  * Component to edit a attorney, including supplying values to a newly-created attorney.
  */
 function EditAttorney(props) {
-    const { modifier, id, full_name, address, bar_id, organization, toggleEditing} = props;
+    const { modifier, id, full_name, organization_address, organization_phone, bar_id, organization, toggleEditing} = props;
     const attorneyStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
         border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px' };
 
@@ -27,7 +27,8 @@ function EditAttorney(props) {
             <button type="button" style={{marginLeft: "20px"}} onClick={toggleEditing}>Done Editing</button>
             <EditField item={organization} label="Organization: " modifier={getPropertyModifier('organization')} />
             <EditField item={bar_id} label="Bar ID: " modifier={getPropertyModifier('bar_id')} />
-            <EditField item={address} label="Address: " modifier={getPropertyModifier('address')} />
+            <EditField item={organization_address} label="Address: " modifier={getPropertyModifier('organization_address')} />
+            <EditField item={organization_phone} label="Phone: " modifier={getPropertyModifier('organization_phone')} />
         </div>
     );
 };

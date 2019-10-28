@@ -60,7 +60,7 @@ class CaseSerializer(S.Serializer):
 
 class AttorneySerializer(S.Serializer):
     organization = S.CharField(required=False)
-    name = S.CharField(required=False)
+    full_name = S.CharField(required=False)
     organization_address = S.CharField(required=False)
     organization_phone = S.CharField(required=False)
     bar_id = S.CharField(required=False)

@@ -80,3 +80,4 @@ def test_expunge_nonconvictions(example_crecord, example_charge, disp):
     assert len(analysis.value) == len(example_crecord.cases)
     assert len(mod_rec.cases) == 0
 
+

@@ -223,3 +223,37 @@ def random(
 
 
     logging.info("Complete.")
+
+@cli.command()
+@click.option("--url-file", "-u", type=click.Path())
+@click.option("--dest-dir", "-dd", type=click.Path())
+@click.option("--nest-dirs/--no-nest-dirs", default=True)
+def urls(url_file: str, dest_dir: str, nest_dirs: bool):
+    """
+    Download documents given a table that contains their urls. 
+    
+    Args:
+        url_file: path to csv file listing urls of documents to download.
+        dest_dir: path to directory where downloaded dockets should go.
+        nest_dirs: Should the downloaded documents each get put inside their own subdirectory? Default True.
+    """
+    logging.basicConfig(level=logging.INFO)
+    if not os.path.exists(dest_dir):
+        logging.warning(f"{dest_dir} does not already exist. Creating it")
+        os.mkdir(dest_dir)
+
+    with open(url_file, "r") as f:
+        reader = csv.DictReader(f)
+        assert reader.fieldnames == [
+            "name", "url", "type"
+        ]
+        for row in reader:
+            person_name = row["name"].replace(" ","_")
+            if nest_dirs:
+                file_dest = os.path.join(dest_dir, person_name)
+                if not os.path.exists(file_dest):
+                    os.mkdir(file_dest)
+            else:
+                file_dest = dest_dir
+            download(row["url"], file_dest, person_name, row["type"])
+   

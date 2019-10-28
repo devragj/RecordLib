@@ -6,22 +6,16 @@ name = "pypi"
 [dev-packages]
 pytest = "*"
 mypy = "*"
-recordlib = {path = ".", editable = true}
 black = "*"
 click = "*"
 hypothesis = "*"
 pytest-django = "*"
 pytest-pythonpath = "*"
-"e1839a8" = {editable = true, path = "."}
 
 [packages]
 mysql-connector-python = "*"
-cerberus = "*"
-pyyaml = "*"
 lxml = "*"
-recordlib = {path = ".", editable = true}
 requests = "*"
-e1839a8 = {path = ".", editable = true}
 black = "*"
 python-dateutil = "*"
 redis = "*"
@@ -31,6 +25,9 @@ django-cors-headers = "*"
 parsimonious = "*"
 docxtpl = "*"
 gunicorn = "*"
+psycopg2 = "*"
+recordlib = {path = ".",editable = true}
+django-webpack-loader = "*"
 
 [requires]
 python_version = "3.7"

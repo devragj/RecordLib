@@ -6,8 +6,6 @@ Note - it looks like i can't use dataclasses throughout because
        what's the point?
 """
 from __future__ import annotations
-import cerberus as cb  # type: ignore
-import yaml
 from typing import List
 from RecordLib.summary import Summary
 from RecordLib.common import Charge
@@ -100,15 +98,6 @@ class CRecord:
             "person": asdict(self.person),
             "cases": [c.to_dict() for c in self.cases],
         }
-
-    def validate(self, crecord_schema: str = "CRecord.yml") -> bool:
-        # TODO Delete
-        schema = yaml.load(open(crecord_schema, "r"), Loader=yaml.SafeLoader)
-        self.validator = cb.Validator(schema)
-        data = self.to_dict()
-        if not self.validator.validate(data):
-            return False
-        return True
 
     def add_summary(self, summary: Summary, case_merge_strategy: str = "ignore_new", override_person: bool = False) -> CRecord:
         """
