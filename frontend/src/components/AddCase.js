@@ -21,10 +21,18 @@ function AddCase(props) {
         setDocketNumber("");
     }
 
+    const handleKeyDown = event => {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            event.stopPropagation();
+            handleClick();
+        }
+    }
+
     return (
         <div className="addCase" >
            <span style={{marginLeft: "20px"}}>Docket Number: </span>
-           <input type="text" value={docketNumber} onChange={handleChange} />
+           <input type="text" value={docketNumber} onChange={handleChange} onKeyDown={handleKeyDown}/>
            <button type="button" style={{marginLeft: "20px"}} onClick={handleClick}>Add Case</button>
         </div>
     );

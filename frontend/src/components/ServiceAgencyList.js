@@ -48,6 +48,14 @@ function ServiceAgencyList(props) {
         })
     }
 
+    const handleKeyDown = event => {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            event.stopPropagation();
+            handleNewServiceAgencyComplete(event);
+        }
+    }
+
 
     return(
         <div>
@@ -77,7 +85,8 @@ function ServiceAgencyList(props) {
                             label="Service Agency"
                             value={newServiceAgencyName}
                             onChange={handleNewServiceAgencyChange}
-                            onBlur={handleNewServiceAgencyComplete} 
+                            onBlur={handleNewServiceAgencyComplete}
+                            onKeyDown={handleKeyDown}
                             margin="normal"
                             variant="filled" /> 
                     </ListItem> :
