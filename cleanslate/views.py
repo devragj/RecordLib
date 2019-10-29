@@ -1,6 +1,7 @@
 from rest_framework.response import Response 
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from rest_framework.views import APIView
+from rest_framework import permissions
 from rest_framework import status
 import logging
 from RecordLib.crecord import CRecord
@@ -22,6 +23,7 @@ from RecordLib.petitions import (
 from .serializers import (
     CRecordSerializer, DocumentRenderSerializer, FileUploadSerializer
 )
+from .models import PetitionTemplate
 from RecordLib.compressor import Compressor
 import json
 import os
@@ -82,7 +84,7 @@ class AnalyzeView(APIView):
 
         """
         try: 
-            #data = JSONParser().parse(request)
+            breakpoint()
             serializer = CRecordSerializer(data=request.data)
             if serializer.is_valid():
                 rec = CRecord.from_dict(serializer.validated_data) 
@@ -107,22 +109,36 @@ class RenderDocumentsView(APIView):
     
     POST should be a json-encoded object with an 'petitions' property that is a list of petitions to generate
     """
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         try:
-            data = JSONParser().parse(request)
-            serializer = DocumentRenderSerializer(data=data)
+            serializer = DocumentRenderSerializer(data=request.data)
             if serializer.is_valid():
                 petitions = []
-                for petition in serializer.validated_data["petitions"]:
-                    if petition["petition_type"] == "Sealing":
-                        petitions.append(Sealing.from_dict(petition))
+                for petition_data in serializer.validated_data["petitions"]:
+                    if petition_data["petition_type"] == "Sealing":
+                        new_petition = Sealing.from_dict(petition_data)
+                        # this could be done earlier, if needed, to avoid querying db over and over.
+                        # but we'd need to test what types of templates are actually needed.
+                        try:
+                            new_petition.set_template(
+                                request.user.userprofile.sealing_petition_template.data_as_bytesio()
+                            )
+                            petitions.append(new_petition)
+                        except:
+                            logging.error("User has not set a sealing petition template.")
+                            continue
                     else:
-                        petitions.append(Expungement.from_dict(petition))
+                        new_petition = Expungement.from_dict(petition_data)
+                        try: 
+                            new_petition.set_template(
+                                request.user.userprofile.expungement_petition_template.data_as_bytesio()
+                            )
+                            petitions.append(new_petition)
+                        except:
+                            logging.error("User has not set an expungement petition template.")
                 client_last = petitions[0].client.last_name
-
-                with open("../tests/templates/790ExpungementTemplate_usingpythonvars.docx", "rb") as doc:
-                    for petition in petitions:
-                        petition.set_template(doc)
                 petitions = [(p.file_name(), p.render()) for p in petitions]
                 package = Compressor(f"ExpungementsFor{client_last}.zip", petitions)
                 package.save()

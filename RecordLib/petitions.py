@@ -28,8 +28,10 @@ class Petition:
         self.service_agencies = service_agencies or []
         self.include_crim_hist_report = include_crim_hist_report
         self._template = None
-
+    
     def set_template(self, template_file: io.BytesIO) -> None:
+        """ Use set_template to pass a binary object to a Petitions that can then be stored as a docx template.
+        """
         self._template = DocxTemplate(template_file)
 
     def add_case(self, case: Case) -> None:

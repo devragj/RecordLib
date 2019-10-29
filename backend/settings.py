@@ -106,7 +106,7 @@ DATABASES = {
         'HOST': os.environ["PSQL_HOST"],
         'USER': os.environ["PSQL_USER"],
         "PASSWORD": os.environ["PSQL_PW"]
-    }
+    },
 }
 
 # Password validation

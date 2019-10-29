@@ -134,6 +134,10 @@ most Linux distributions.  For other operating systems, find it here:
 http://www.xpdfreader.com/download.html.  Download the command line tools and 
 place pdftotext somewhere in your PATH.
 
+
+
+**MYSQL**
+
 The library also recommends that you set up a database of mappings from statutes to offense grades.
 RecordLib needs to be able to guess the grade of an offense, when the grade is not recorded. The project
 currently uses the same implementation as the ExpungementGenerator. There is a mysql database (sql dump is here: https://github.com/NateV/Expungement-Generator/blob/master/Expungement-Generator/migrations/2%20-%20cpcms_aopc_summary.sql) 
@@ -146,6 +150,15 @@ Then set up a `.env` file in the root directory of the project with the variable
 mysql_host=localhost
 mysql_user=myuser
 mysql_pw=WhateverYourPasswordIs
+SECRET_KEY='super-duper-secret-Gs'
+DEBUG=TRUE
+
+PSQL_USER=myname
+PSQL_PW=mypass
+PSQL_HOST=127.0.0.1
+PSQL_NAME=recordlibdb
+STATIC_ROOT=static/
+
 ```
 
 Reload your virtual environment with `exit` and `pipenv shell`. You can confirm if the database is working with `pytest tests/test_getgrade.py`. If the database connection fails, you'll see a Error in the test's output and the tests will fail. 
@@ -169,6 +182,10 @@ The backend requires the command-line utility pdftotext.  This utility is includ
 most Linux distributions.  For other operating systems, find it here: 
 http://www.xpdfreader.com/download.html.  Download the command line tools and 
 place pdftotext somewhere in your PATH.
+
+**POSTGRES**. The django app uses a postgres backend. You can set up a local database and configure
+the variables listed below.
+
 
 Initial setup:
 For the backend, create a directory named `tmp` 

@@ -5,6 +5,7 @@ from RecordLib.common import Charge, Sentence, SentenceLength
 from RecordLib.crecord import CRecord
 from RecordLib.attorney import Attorney
 from RecordLib.summary.pdf import parse_pdf as parse_summary_pdf
+from RecordLib.petitions import Expungement
 from RecordLib.docket import Docket
 from datetime import date
 import redis
@@ -104,6 +105,18 @@ def example_crecord(example_person, example_case):
         cases = [example_case])
 
 @pytest.fixture
+def example_expungement(example_crecord, example_attorney):
+    return Expungement(
+        expungement_type=Expungement.ExpungementTypes.FULL_EXPUNGEMENT,
+        attorney=example_attorney,
+        cases=example_crecord.cases,
+        client=example_crecord.person,
+        ifp_message="IFP Message",
+        service_agencies=["Police Academy I"],
+        include_crim_hist_report=True,
+    )
+
+@pytest.fixture
 def redis_helper():
     """ A redis client.
 
@@ -113,6 +126,7 @@ def redis_helper():
     yield redis_helper
     for key in redis_helper.r.scan_iter("test:*"):
         redis_helper.r.delete(key)
+
 
 
 @pytest.fixture
