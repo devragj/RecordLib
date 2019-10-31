@@ -12,6 +12,6 @@ production-up:
 
 .PHONY: push
 push:
-	docker push ${CONTAINER_REGISTRY}/recordlibfrontend:${CONTAINER_TAG}
-	docker push ${CONTAINER_REGISTRY}/recordlibdjango:${CONTAINER_TAG}
-	docker push ${CONTAINER_REGISTRY}/recordlibdb:${CONTAINER_TAG}
+	sudo docker push ${CONTAINER_REGISTRY}/recordlibfrontend:${CONTAINER_TAG}
+	sudo docker push ${CONTAINER_REGISTRY}/recordlibdjango:${CONTAINER_TAG}
+	sudo docker push ${CONTAINER_REGISTRY}/recordlibdb:${CONTAINER_TAG}
