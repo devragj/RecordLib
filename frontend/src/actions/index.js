@@ -148,7 +148,6 @@ export function analyzeCRecord() {
 function fetchPetitionsSucceeded(petitionPath) {
         return {
                 type: 'FETCH_PETITIONS_SUCCEEDED',
-                payload: petitionPath
         }
 }
 
@@ -156,13 +155,18 @@ function fetchPetitionsSucceeded(petitionPath) {
  * Create an action that sends a list of petitions to the server, and returns the files.
  * @param {} petitions 
  */
-export function getPetitions(petitions, attorney) {
+export function fetchPetitions(petitions, attorney) {
         return (dispatch, getState) => {
                 api.fetchPetitions(petitions, attorney).then(
                         response => {
-                                const data = response.data;
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a')
+                                link.href = url;
+                                link.setAttribute('download', 'ExpungementPeitions.zip')
+                                document.body.appendChild(link)
+                                link.click()
                                 console.log("fetched petitions successfully")
-                                dispatch( fetchPetitionsSucceeded(data) )
+                                dispatch( fetchPetitionsSucceeded() )
                         }).catch(err => console.log("error fetching petitions."))
                 }
         

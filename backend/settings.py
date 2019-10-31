@@ -32,6 +32,10 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'frontend'),
 )
 
+MEDIA_ROOT = os.environ["MEDIA_ROOT"]
+
+PROTECTED_ROOT = os.environ["PROTECTED_ROOT"]
+
 WEBPACK_LOADER = {
     'DEFAULT': {
         'BUNDLE_DIR_NAME': 'bundles/',

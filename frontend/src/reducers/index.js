@@ -100,7 +100,7 @@ function analysisReducer(state={}, action) {
 function petitionsReducer(state={}, action) {
     switch (action.type) {
         case 'FETCH_PETITIONS_SUCCEEDED':
-            return Object.assign({}, state, {path: action.payload.download});
+            return state; 
         default:
             return state;
     }

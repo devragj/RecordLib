@@ -20,7 +20,11 @@ RUN pip install pipenv && pipenv install --system && apt update && \
     #chmod o+x /entrypoint.sh
 
 RUN mkdir -p /srv/static && \
-    chown gunicorn:gunicorn /srv/static
+    mkdir -p /srv/media && \
+    mkdir -p /protected && \
+    chown gunicorn:gunicorn /srv/static && \
+    chown gunicorn:gunicorn /srv/media  && \
+    chown gunicorn:gunicorn /protected
 
 USER gunicorn
 

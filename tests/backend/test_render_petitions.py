@@ -2,17 +2,18 @@ import pytest
 from RecordLib.analysis import Analysis
 from RecordLib.serializers import to_serializable
 from RecordLib.ruledefs import expunge_nonconvictions
-from cleanslate.models import PetitionTemplate
+from cleanslate.models import ExpungementPetitionTemplate, SealingPetitionTemplate
 import json 
+from django.core.files import File
 
 @pytest.mark.django_db
 def test_render_petitions(admin_user, admin_client, example_crecord, example_attorney):
     with open("tests/templates/790ExpungementTemplate_usingpythonvars.docx", 'rb') as tp:
-        exp_petition = PetitionTemplate.objects.create(
-            name="790ExpungementTemplate.docx", data=tp.read(), doctype="docx")
+        exp_petition = ExpungementPetitionTemplate.objects.create(
+            name="790ExpungementTemplate.docx", file=File(tp))
     with open("tests/templates/791SealingTemplate.docx", 'rb') as tp:
-        sealing_petition = PetitionTemplate.objects.create(
-            name="790SealingTemplate.docx", data=tp.read(), doctype="docx")
+        sealing_petition = SealingPetitionTemplate.objects.create(
+            name="790SealingTemplate.docx", file=File(tp))
     
     admin_user.userprofile.expungement_petition_template = exp_petition
     admin_user.userprofile.sealing_petition_template = sealing_petition
@@ -32,4 +33,3 @@ def test_render_petitions(admin_user, admin_client, example_crecord, example_att
         ),
         content_type="application/json")
     assert resp.status_code == 200
-    assert "Expunge" in resp.json()["download"]

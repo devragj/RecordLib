@@ -23,15 +23,14 @@ from RecordLib.petitions import (
 from .serializers import (
     CRecordSerializer, DocumentRenderSerializer, FileUploadSerializer
 )
-from .models import PetitionTemplate
-from RecordLib.compressor import Compressor
+from cleanslate.compressor import Compressor
 import json
 import os
 import os.path
 from datetime import *
 import zipfile
 import tempfile 
-
+from django.http import HttpResponse
 
 class FileUploadView(APIView):
     
@@ -84,7 +83,6 @@ class AnalyzeView(APIView):
 
         """
         try: 
-            breakpoint()
             serializer = CRecordSerializer(data=request.data)
             if serializer.is_valid():
                 rec = CRecord.from_dict(serializer.validated_data) 
@@ -123,26 +121,35 @@ class RenderDocumentsView(APIView):
                         # but we'd need to test what types of templates are actually needed.
                         try:
                             new_petition.set_template(
-                                request.user.userprofile.sealing_petition_template.data_as_bytesio()
+                                request.user.userprofile.sealing_petition_template.file
                             )
                             petitions.append(new_petition)
                         except:
-                            logging.error("User has not set a sealing petition template.")
+                            logging.error("User has not set a sealing petition template, or ")
+                            loggin.error(str(e))
                             continue
                     else:
                         new_petition = Expungement.from_dict(petition_data)
                         try: 
                             new_petition.set_template(
-                                request.user.userprofile.expungement_petition_template.data_as_bytesio()
+                                request.user.userprofile.expungement_petition_template.file
                             )
                             petitions.append(new_petition)
-                        except:
-                            logging.error("User has not set an expungement petition template.")
+                        except Exception as e:
+                            logging.error("User has not set an expungement petition template, or ")
+                            logging.error(str(e))
+                            continue
                 client_last = petitions[0].client.last_name
                 petitions = [(p.file_name(), p.render()) for p in petitions]
                 package = Compressor(f"ExpungementsFor{client_last}.zip", petitions)
-                package.save()
-                return Response({"download":package.archive_path})
+
+                logging.info("Returning x-accel-redirect to zip file.")
+
+                resp = HttpResponse()
+                resp["Content-Type"] = "application/zip"
+                resp["Content-Disposition"] = f"attachment; filename={package.name}"
+                resp["X-Accel-Redirect"] = f"/protected/{package.name}"
+                return resp
             else:
                 raise ValueError
         except:

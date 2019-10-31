@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Button from "@material-ui/core/Button"
 import Container from "@material-ui/core/Container"
-import { getPetitions } from "../actions"
+import { fetchPetitions } from "../actions"
 import Petition from "./Petition"
 import AttorneyHolder from "./AttorneyHolder";
 import AddAttorney from "./AddAttorney"
@@ -78,7 +78,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch, ownProps) {
     return({
-        getPetitions: (selectedPetitions, atty) => dispatch(getPetitions(selectedPetitions, atty))
+        getPetitions: (selectedPetitions, atty) => dispatch(fetchPetitions(selectedPetitions, atty))
     })
 }
 

@@ -1,5 +1,6 @@
 from django.test import TestCase
-from cleanslate.models import PetitionTemplate
+from django.core.files import File
+from cleanslate.models import ExpungementPetitionTemplate, SealingPetitionTemplate
 from RecordLib.petitions import Expungement
 import pytest
 import io
@@ -8,28 +9,21 @@ import io
 class PetitionTemplateTestCase(TestCase):
     def setUp(self):
         with open("tests/templates/790ExpungementTemplate_usingpythonvars.docx", 'rb') as tp:
-            PetitionTemplate.objects.create(name="Expungement Petition Template", data=tp.read(), doctype="docx")
+            ExpungementPetitionTemplate.objects.create(name="Expungement Petition Template", file=File(tp))
 
     def test_petition_template_type(self):
         """  A petition template has a doctype"""
-        expungement_template = PetitionTemplate.objects.get(name="Expungement Petition Template")
-        self.assertEqual(expungement_template.doctype, "docx")
+        expungement_template = ExpungementPetitionTemplate.objects.get(name="Expungement Petition Template")
+        self.assertEqual(expungement_template.name, "Expungement Petition Template")
 
-
-@pytest.mark.django_db
-def test_petition_bytes():
-    with open("tests/templates/790ExpungementTemplate_usingpythonvars.docx", 'rb') as tp:
-        PetitionTemplate.objects.create(
-            name="Expungement Petition Template", data=tp.read(), doctype="docx")
-    pet = PetitionTemplate.objects.get(name="Expungement Petition Template").data_as_bytesio()
 
 # a pytest test, so i can use the fixtures
 @pytest.mark.django_db
 def test_render_petition(example_expungement):
     with open("tests/templates/790ExpungementTemplate_usingpythonvars.docx", 'rb') as tp:
-        pet = PetitionTemplate.objects.create(
-            name="Expungement Petition Template", data=tp.read(), doctype="docx")
-        example_expungement.set_template(pet.data_as_bytesio())
+        pet = ExpungementPetitionTemplate.objects.create(
+            name="Expungement Petition Template", file=File(tp))
+        example_expungement.set_template(pet.file)
     try:
         example_expungement.render()
     except Exception as e:

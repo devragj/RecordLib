@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from cleanslate.models import PetitionTemplate, UserProfile
+from cleanslate.models import (
+    ExpungementPetitionTemplate, SealingPetitionTemplate, UserProfile)
 from django import forms
 from django.db import models
 
@@ -12,7 +13,8 @@ from django.db import models
 #        models.BinaryField: {'widget': forms.ClearableFileInput()}
 #    }
 #admin.site.register(PetitionTemplate, PetitionTemplateAdmin)
-admin.site.register(PetitionTemplate)
+admin.site.register(ExpungementPetitionTemplate)
+admin.site.register(SealingPetitionTemplate)
 
 # Register your models here.
 class ProfileInline(admin.StackedInline):

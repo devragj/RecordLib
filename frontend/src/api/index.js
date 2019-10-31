@@ -40,10 +40,19 @@ export function analyzeCRecord(data) {
 
 
 export function fetchPetitions(petitions, attorney) {
+        // Send a POST to transform a set of petitions into 
+        // rendered petition files, and return the generated files 
+        // in a zip file.
         petitions.forEach(p => p.attorney = attorney)
+        
+        const config = {
+                responseType: 'blob',
+        }
+
         return client.post(
                 "/record/petitions/",
-                {petitions: petitions}
+                {petitions: petitions},
+                config,
         )
 }
 

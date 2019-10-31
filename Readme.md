@@ -210,6 +210,15 @@ The app will display information from the `CRecord`
 generated from the Summary.
 
 
+## Development Docker Deployment
+
+You can use docker-compose to set up a whole development deployment of the site, and code changes will 
+reload live (with one caveat).
+
+Just run `docker-compose -f deployment/docker-compose-dev.yml build` and then `up`. 
+
+To get the frontend rebuilding, you still need to run `yarn run watch` in a separate terminal. 
+
 ## Aspirational Example Usage
 
 	person = Person(first_name="Joan", last_name="Smith", date_of_birth=date(1970, 1, 1))
