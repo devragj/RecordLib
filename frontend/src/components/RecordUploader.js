@@ -57,7 +57,7 @@ function RecordUploader(props) {
 
     const [selectedFiles, setSelectedFiles] = useState([]);
 
-    const { crecordFetched, uploadRecords } = props;
+    const { uploadRecords } = props;
 
     const onChangeHandler = event => {
         setSelectedFiles([...event.target.files]);
@@ -79,18 +79,15 @@ function RecordUploader(props) {
                 <input multiple type="file" name="file" onChange={onChangeHandler}/>
                 <Button type="submit"> Upload </Button>
             </form>
-            <div>Here is the information which you need to proceed.</div>
-            { crecordFetched &&
-                <div>Your upload was successful.  Please proceed to the next step.</div>
-            }
+            {/*<div>Here is the information which you need to proceed.</div>*/}
         </Container>
     )
 }
 
-// TODO change this.  Now, this is always true.
-function mapStateToProps(state) {
-    return {crecordFetched: state.crecord? true: false};
-};
+// TODO see if there is another way to notify the user that their upload succeeded.  Right now the condition below is always true.
+//function mapStateToProps(state) {
+//    return {crecordFetched: state.crecord? true: false};
+//};
 
 function mapDispatchToProps(dispatch) {
     return { uploadRecords: files => dispatch(uploadRecords(files)) };
@@ -98,4 +95,4 @@ function mapDispatchToProps(dispatch) {
 
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(RecordUploader)
+export default connect(null, mapDispatchToProps)(RecordUploader)

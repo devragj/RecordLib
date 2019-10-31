@@ -28,16 +28,17 @@ function uploadRecordsSucceeded(data) {
     }
 }
 
-function addAliases(aliases) {
+function addDefendant(defendant) {
     const aliasObject = {};
-    const uniqueAliases = [...new Set(aliases)];
+    const uniqueAliases = [...new Set(defendant.aliases)];
     uniqueAliases.forEach( name => {
         const id = generateId();
         aliasObject[id] = name;
     });
+    defendant.aliases = uniqueAliases;
     return {
-        type: 'ADD_ALIASES',
-        payload: aliasObject
+        type: 'ADD_DEFENDANT',
+        payload: defendant
     };
 }
 
@@ -55,14 +56,12 @@ export function uploadRecords(files) {
                     console.log("fetched data successfully")
                     console.log(data)
                     const cRecord = JSON.parse(data);
-                    console.log(cRecord)
-                    const aliases = cRecord.defendant.aliases;
+                    const defendant = cRecord.defendant;
                     delete cRecord.defendant;
                     const normalizedData = normalizeCRecord(cRecord);
-                    console.log(normalizedData);
                     const action = uploadRecordsSucceeded(normalizedData);
                     dispatch(action);
-                    const action2 = addAliases(aliases);
+                    const action2 = addDefendant(defendant);
                     dispatch(action2);
                 }
             )
@@ -148,7 +147,6 @@ export function analyzeCRecord() {
 function fetchPetitionsSucceeded(petitionPath) {
         return {
                 type: 'FETCH_PETITIONS_SUCCEEDED',
-                payload: petitionPath
         }
 }
 
@@ -156,13 +154,18 @@ function fetchPetitionsSucceeded(petitionPath) {
  * Create an action that sends a list of petitions to the server, and returns the files.
  * @param {} petitions 
  */
-export function getPetitions(petitions, attorney) {
+export function fetchPetitions(petitions, attorney) {
         return (dispatch, getState) => {
                 api.fetchPetitions(petitions, attorney).then(
                         response => {
-                                const data = response.data;
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a')
+                                link.href = url;
+                                link.setAttribute('download', 'ExpungementPeitions.zip')
+                                document.body.appendChild(link)
+                                link.click()
                                 console.log("fetched petitions successfully")
-                                dispatch( fetchPetitionsSucceeded(data) )
+                                dispatch( fetchPetitionsSucceeded() )
                         }).catch(err => console.log("error fetching petitions."))
                 }
         

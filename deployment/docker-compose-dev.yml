@@ -17,7 +17,7 @@ services:
         read_only: true
       - type: volume
         source: protectedfiles
-        target: /srv/protected
+        target: /protected
         read_only: true
     networks:
       recordlib-net:
@@ -29,8 +29,12 @@ services:
     expose:
       - 8000
     volumes:
-      - "staticfiles:/srv/static"
-      - "protectedfiles:/protected"
+      - type: volume
+        source: protectedfiles
+        target: /protected
+      - type: bind
+        source: ../
+        target: /srv
     #ports: 
     #  - "8000:8000"
     networks:
@@ -40,8 +44,8 @@ services:
     depends_on:
       - migration
       - pg_db
-    command: bash -c "python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4"
-    #command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4
+    command: python manage.py runserver 0.0.0.0:8000
+    #command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4 --reload
   migration: 
     build:
       context: ../

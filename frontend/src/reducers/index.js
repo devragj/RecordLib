@@ -53,8 +53,9 @@ function applicantReducer(state=initialApplicantState, action) {
 
             return newState;
         }
-        case 'ADD_ALIASES': {
-            const aliasObject = action.payload;
+        case 'ADD_DEFENDANT': {
+            const defendant = action.payload;
+            const aliasObject = defendant.aliases;
             const oldAliasNames = Object.values(state.aliases);
             const newAliases = {};
             const newKeys = [];
@@ -71,6 +72,15 @@ function applicantReducer(state=initialApplicantState, action) {
                 }),
                 aliases: Object.assign({}, state.aliases, newAliases)
             });
+
+            if (newState.applicant.first_name === '' && newState.applicant.last_name === '') {
+                newState.applicant.first_name = defendant.first_name;
+                newState.applicant.last_name = defendant.last_name;
+            }
+
+            if (newState.applicant.date_of_birth === '') {
+                newState.applicant.date_of_birth = defendant.date_of_birth;
+            }
 
             return newState;
         }
@@ -100,7 +110,7 @@ function analysisReducer(state={}, action) {
 function petitionsReducer(state={}, action) {
     switch (action.type) {
         case 'FETCH_PETITIONS_SUCCEEDED':
-            return Object.assign({}, state, {path: action.payload.download});
+            return state; 
         default:
             return state;
     }

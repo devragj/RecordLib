@@ -20,6 +20,13 @@ class Compressor:
 
     def __init__(self, archive_name: str, files: List[Tuple[str, DocxTemplate]] = None, tempdir = None):
         # self.__buffer__ = io.BytesIO()
+        """ Compressor takes a set of files and stores them in a zip archive
+        
+        To do this, it takes the files, creates an on-disk archive, and appends the files to the 
+        archive on the disk.
+
+        """
+
         if tempdir is None:
             tempdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tmp")
         while True:
