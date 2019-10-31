@@ -28,16 +28,17 @@ function uploadRecordsSucceeded(data) {
     }
 }
 
-function addAliases(aliases) {
+function addDefendant(defendant) {
     const aliasObject = {};
-    const uniqueAliases = [...new Set(aliases)];
+    const uniqueAliases = [...new Set(defendant.aliases)];
     uniqueAliases.forEach( name => {
         const id = generateId();
         aliasObject[id] = name;
     });
+    defendant.aliases = uniqueAliases;
     return {
-        type: 'ADD_ALIASES',
-        payload: aliasObject
+        type: 'ADD_DEFENDANT',
+        payload: defendant
     };
 }
 
@@ -55,14 +56,12 @@ export function uploadRecords(files) {
                     console.log("fetched data successfully")
                     console.log(data)
                     const cRecord = JSON.parse(data);
-                    console.log(cRecord)
-                    const aliases = cRecord.defendant.aliases;
+                    const defendant = cRecord.defendant;
                     delete cRecord.defendant;
                     const normalizedData = normalizeCRecord(cRecord);
-                    console.log(normalizedData);
                     const action = uploadRecordsSucceeded(normalizedData);
                     dispatch(action);
-                    const action2 = addAliases(aliases);
+                    const action2 = addDefendant(defendant);
                     dispatch(action2);
                 }
             )
