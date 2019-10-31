@@ -4,7 +4,7 @@ services:
     build: 
       context: .
       dockerfile: FrontendDockerfile
-    image: natev/recordlibfrontend
+    image: "${CONTAINER_REGISTRY}/recordlibfrontend:${CONTAINER_TAG}"
     restart: always
     ports: 
       - "3000:80"
@@ -17,7 +17,7 @@ services:
         read_only: true
       - type: volume
         source: protectedfiles
-        target: /srv/protected
+        target: /protected
         read_only: true
     networks:
       recordlib-net:
@@ -31,8 +31,6 @@ services:
     volumes:
       - "staticfiles:/srv/static"
       - "protectedfiles:/protected"
-    #ports: 
-    #  - "8000:8000"
     networks:
       recordlib-net: 
     env_file:
@@ -46,7 +44,8 @@ services:
     build:
       context: ../
       dockerfile: deployment/DjangoDockerfile
-    image: natev/recordlibdjango
+    image: "${CONTAINER_REGISTRY}/recordlibdjango:${CONTAINER_TAG}"
+    restart: on-failure 
     env_file: 
       - .production.env
     networks:
@@ -58,7 +57,7 @@ services:
     build:
       context: .
       dockerfile: PG_Dockerfile
-    image: natev/recordlibdb
+    image: "${CONTAINER_REGISTRY}/recordlibdb:${CONTAINER_TAG}"
     restart: always
     env_file: 
       - .production.env
@@ -67,7 +66,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - dbdata:/var/lib/postgresql/data"
+      - dbdata:/var/lib/postgresql/data
 networks:
   recordlib-net: 
 volumes:
