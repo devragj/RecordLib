@@ -1,9 +1,10 @@
 {% extends "partial/base.html" %}
-{% load render_bundle from webpack_loader %}
+{% load replace_nonce %}
 
 {% block content %}
 
     <div id="login">  </div>
 
-    {% render_bundle 'login' %}
+
+    {% replace_nonce 'login' nonce=request.csp_nonce%}
 {% endblock %}

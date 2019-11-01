@@ -35,17 +35,16 @@ services:
       - type: bind
         source: ../
         target: /srv
-    #ports: 
-    #  - "8000:8000"
     networks:
       recordlib-net: 
     env_file:
       - .production.env
+    environment:
+      - DEBUG=TRUE
     depends_on:
       - migration
       - pg_db
     command: python manage.py runserver 0.0.0.0:8000
-    #command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 4 --reload
   migration: 
     build:
       context: ../
@@ -71,7 +70,7 @@ services:
     expose:
       - "5432"
     volumes:
-      - dbdata:/var/lib/postgresql/data"
+      - dbdata:/var/lib/postgresql/data
 networks:
   recordlib-net: 
 volumes:
