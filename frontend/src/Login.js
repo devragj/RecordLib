@@ -48,6 +48,10 @@ function Login() {
                     <Typography variant="h4">
                         Log in
                     </Typography>
+                    <Typography variant="body1">
+                        This is a pre-pre-alpha demo. Don't rely on this site to do anything useful yet. 
+                        Its just for testing. 
+                    </Typography>
                     <form id="login-form" method="post" onSubmit={submitLogin}>
                         <TextField 
                             id="id_username"

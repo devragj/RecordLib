@@ -2,8 +2,6 @@ FROM python:3.7-buster
 
 COPY setup.py Pipfile Pipfile.lock /srv/
 
-COPY deployment/entrypoint.sh /
-
 WORKDIR /srv
 
 COPY ./backend /srv/backend
@@ -31,6 +29,3 @@ USER gunicorn
 ENV STATIC_ROOT /srv/static
 
 EXPOSE 8000
-
-
-#ENTRYPOINT ["/entrypoint.sh"]
