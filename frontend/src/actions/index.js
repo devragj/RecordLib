@@ -161,7 +161,7 @@ export function fetchPetitions(petitions, attorney) {
                                 const url = window.URL.createObjectURL(new Blob([response.data]));
                                 const link = document.createElement('a')
                                 link.href = url;
-                                link.setAttribute('download', 'ExpungementPeitions.zip')
+                                link.setAttribute('download', 'ExpungementPetitions.zip')
                                 document.body.appendChild(link)
                                 link.click()
                                 console.log("fetched petitions successfully")
