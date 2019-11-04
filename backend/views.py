@@ -20,3 +20,4 @@ class LoginSuccessView(APIView):
 class LoginFailureView(APIView):
     def get(self, request):
         return Response("no good")
+

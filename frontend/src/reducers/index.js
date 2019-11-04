@@ -2,6 +2,20 @@ import { combineReducers } from 'redux';
 
 import { CRECORD_ID } from "../normalize";
 
+
+function userReducer(state={}, action) {
+    switch (action.type) {
+        case 'FETCH_USER_PROFILE_SUCCEEDED': 
+            return(Object.assign({}, state, {
+                username: action.payload.user.username,
+                email: action.payload.user.email,
+            }))
+        default: {
+            return state;
+        }
+    }
+}
+
 const initialApplicant = {
     first_name: '',
     last_name: '',
@@ -308,6 +322,7 @@ function serviceAgencyReducer(state={result: [], entities: {}}, action) {
 
 
 const rootReducer = combineReducers({
+    user: userReducer,
     applicantInfo: applicantReducer,
     crecord: cRecordReducer,
     analysis: analysisReducer,

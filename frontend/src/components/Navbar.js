@@ -86,8 +86,15 @@ function Navbar () {
                         keepMounted
                         open={Boolean(anchorEl)}
                         onClose={handleClose}
+                        anchorOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                        }}
+                        getContentAnchorEl={null}
                     >
-                        <MenuItem onClick={handleClose}>Profile</MenuItem>
+                        <MenuItem onClick={handleClose} component={RouterLink} to="/profile">
+                            My Profile
+                        </MenuItem> 
                         <MenuItem onClick={localLogout}>Logout</MenuItem>
                     </Menu>
                     <Button color="primary" className={classes.buttonText} component={LinkToAbout} to="/about"> 

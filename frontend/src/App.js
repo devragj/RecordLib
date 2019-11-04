@@ -2,6 +2,7 @@ import React from "react";
 import CSSBaseline from "@material-ui/core/CssBaseline";
 import Navbar from "./components/Navbar";
 import About from "./components/About";
+import UserProfile from "./components/UserProfile";
 import NotFound from "./components/NotFound";
 import PetitionProcess from "./components/PetitionProcess"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
@@ -15,6 +16,9 @@ function App() {
                 <Switch>
                     <Route path="/about">
                         <About/>
+                    </Route>
+                    <Route path="/profile">
+                        <UserProfile/>
                     </Route>
                     <Route path="/">
                         <PetitionProcess/>

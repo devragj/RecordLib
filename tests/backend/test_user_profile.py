@@ -13,3 +13,4 @@ def test_user_profile_created_on_postsave():
         usr.userprofile
     except:
         pytest.fail( "usr doesn't seem to have a profile attached to it")
+        

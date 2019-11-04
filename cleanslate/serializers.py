@@ -1,11 +1,23 @@
 
 from rest_framework import serializers as S
+from cleanslate.models import UserProfile
+from django.contrib.auth.models import User
 from RecordLib.crecord import (
     CRecord
 )
 from RecordLib.case import Case
 from RecordLib.person import Person
 from RecordLib.common import (Charge, Sentence, SentenceLength)
+
+class UserSerializer(S.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+class UserProfileSerializer(S.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['id']
 
 """
 These serializer classes are only for serializing and deserializing json/dict representations of these 

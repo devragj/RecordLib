@@ -21,7 +21,8 @@ from RecordLib.petitions import (
     Expungement, Sealing
 )
 from .serializers import (
-    CRecordSerializer, DocumentRenderSerializer, FileUploadSerializer
+    CRecordSerializer, DocumentRenderSerializer, FileUploadSerializer, 
+    UserProfileSerializer, UserSerializer,
 )
 from cleanslate.compressor import Compressor
 import json
@@ -156,3 +157,11 @@ class RenderDocumentsView(APIView):
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
 
 
+class UserProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        return Response({
+            "user": UserSerializer(request.user).data,
+            "profile": UserProfileSerializer(request.user).data
+        })
