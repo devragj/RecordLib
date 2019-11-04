@@ -127,7 +127,7 @@ class RenderDocumentsView(APIView):
                             petitions.append(new_petition)
                         except:
                             logging.error("User has not set a sealing petition template, or ")
-                            loggin.error(str(e))
+                            logging.error(str(e))
                             continue
                     else:
                         new_petition = Expungement.from_dict(petition_data)
