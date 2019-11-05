@@ -81,3 +81,8 @@ export function logout() {
         window.location = '/accounts/login';
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
 }
+
+
+export function fetchUserProfileData() {
+        return client.get("/record/profile/") // TODO thats a bad api endpoint for a user profile.
+}
