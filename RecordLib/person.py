@@ -1,8 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional
-from datetime import date, timedelta
+from datetime import date
 from dateutil.relativedelta import relativedelta
+from RecordLib.common import Address
 
 
 @dataclass
@@ -17,11 +18,11 @@ class Person:
     aliases: List[str] = None
     date_of_death: Optional[date] = None
     ssn: Optional[str] = None
-    address: Optional[str] = None
+    address: Optional[Address] = None
 
     @staticmethod
     def from_dict(dct: dict) -> Person:
-        """ Create a Person from a dict decribing one. """
+        """ Create a Person from a dict describing one. """
         if dct is not None:
             return Person(
                 first_name = dct.get("first_name"),
@@ -30,7 +31,7 @@ class Person:
                 date_of_death = dct.get("date_of_death"),
                 aliases = dct.get("aliases") or [],
                 ssn = dct.get("ssn"),
-                address = dct.get("address")
+                address = Address.from_dict(dct.get("address"))
             )
 
     def age(self) -> int:

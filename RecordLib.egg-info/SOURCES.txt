@@ -42,6 +42,8 @@ backend/settings.py
 backend/urls.py
 backend/views.py
 backend/wsgi.py
+backend/templatetags/__init__.py
+backend/templatetags/replace_nonce.py
 cleanslate/__init__.py
 cleanslate/admin.py
 cleanslate/apps.py

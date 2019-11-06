@@ -1,33 +1,51 @@
 import pytest
 from RecordLib.case import Case
 from RecordLib.person import Person
-from RecordLib.common import Charge, Sentence, SentenceLength
+from RecordLib.common import Charge, Sentence, SentenceLength, Address
 from RecordLib.crecord import CRecord
 from RecordLib.attorney import Attorney
 from RecordLib.summary.pdf import parse_pdf as parse_summary_pdf
 from RecordLib.petitions import Expungement
 from RecordLib.docket import Docket
 from datetime import date
-import redis
 from RecordLib.redis_helper import RedisHelper
 import os
 #from django.test import Client 
 from rest_framework.test import APIClient
 
+
 @pytest.fixture
-def example_attorney():
-        return Attorney(
-                organization = "Community Legal",
-                full_name = "John Smith",
-                organization_address = r"1234 Main St.\nBig City, NY 10002",
-                organization_phone = "555-555-5555",
-                bar_id = "123456",
-              )
+def example_address():
+    return Address(
+        line_one="1234 Main St.",
+        city_state_zip="Philadelphia, PA 19103"
+    )
+
+
+@pytest.fixture
+def example_attorney_address():
+    return Address(
+        line_one="1234 Main St.",
+        city_state_zip="Big City, NY 10002"
+    )
+
+
+@pytest.fixture
+def example_attorney(example_attorney_address):
+    return Attorney(
+        organization="Community Legal",
+        full_name="John Smith",
+        organization_address=example_attorney_address,
+        organization_phone="555-555-5555",
+        bar_id="123456",
+    )
+
 
 @pytest.fixture
 def example_summary():
     return parse_summary_pdf(
         pdf="tests/data/CourtSummaryReport.pdf", tempdir="tests/data/tmp")
+
 
 @pytest.fixture
 def example_docket():
@@ -35,16 +53,18 @@ def example_docket():
     d, errs = Docket.from_pdf(os.path.join("tests","data","dockets",docket_path), tempdir="tests/data/tmp")
     return d
 
+
 @pytest.fixture
-def example_person():
+def example_person(example_address):
     return Person(
         first_name="Jane",
         last_name="Smorp",
         aliases=["JSmo", "SmorpyJJ"],
-        address="1234 Main St",
+        address=example_address,
         date_of_birth=date(2010, 1, 1),
         ssn="999-99-9999",
     )
+
 
 @pytest.fixture
 def example_sentencelength():
@@ -52,7 +72,6 @@ def example_sentencelength():
         min_time=("10", "Year"),
         max_time=("25", "Year")
     )
-
 
 
 @pytest.fixture
@@ -65,7 +84,6 @@ def example_sentence(example_sentencelength):
     )
 
 
-
 @pytest.fixture
 def example_charge(example_sentence):
     return Charge(
@@ -75,6 +93,7 @@ def example_charge(example_sentence):
         "Guilty Plea",
         disposition_date=date(2010,1,1),
         sentences=[example_sentence])
+
 
 @pytest.fixture
 def example_case(example_charge):
@@ -102,7 +121,8 @@ def example_case(example_charge):
 def example_crecord(example_person, example_case):
     return CRecord(
         person=example_person,
-        cases = [example_case])
+        cases=[example_case])
+
 
 @pytest.fixture
 def example_expungement(example_crecord, example_attorney):
@@ -116,6 +136,7 @@ def example_expungement(example_crecord, example_attorney):
         include_crim_hist_report=True,
     )
 
+
 @pytest.fixture
 def redis_helper():
     """ A redis client.
@@ -126,7 +147,6 @@ def redis_helper():
     yield redis_helper
     for key in redis_helper.r.scan_iter("test:*"):
         redis_helper.r.delete(key)
-
 
 
 @pytest.fixture
