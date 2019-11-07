@@ -97,7 +97,6 @@ class AnalyzeView(APIView):
         )
                 return Response(to_serializable(analysis))
             else:
-                print('Here2')
                 return Response({"validation_errors": serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             logging.error(e)
@@ -145,7 +144,6 @@ class RenderDocumentsView(APIView):
                             continue
                 client_last = petitions[0].client.last_name
                 petitions = [(p.file_name(), p.render()) for p in petitions]
-                print('Here')
                 package = Compressor(f"ExpungementsFor{client_last}.zip", petitions)
 
                 logging.info("Returning x-accel-redirect to zip file.")
@@ -159,7 +157,6 @@ class RenderDocumentsView(APIView):
                 raise ValueError
         except Exception as e:
             print(e)
-            raise e
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
 
 
