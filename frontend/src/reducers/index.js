@@ -22,7 +22,7 @@ const initialApplicant = {
     date_of_birth: '',
     date_of_death: '',
     ssn: '',
-    address: '',
+    address: { line_one: '', city_state_zip: '' },
     aliases: [],
     editing: true
  };
@@ -34,11 +34,25 @@ function applicantReducer(state=initialApplicantState, action) {
         case 'EDIT_APPLICANT': {
             const { field, value } = action.payload;
 
-            const newState = Object.assign({}, state, {
-                applicant: Object.assign({}, state.applicant, {
-                    [field]: value
-                })
-            });
+            let newState;
+            if (field.substring(0, 7) == 'address') {
+                const subfield = field.substring(8);
+                newState = Object.assign({}, state, {
+                    applicant: Object.assign({}, state.applicant, {
+                        address: Object.assign({}, state.applicant.address, {
+                            [subfield]: value
+                        })
+                    })
+                });
+            }
+
+            else {
+                newState = Object.assign({}, state, {
+                    applicant: Object.assign({}, state.applicant, {
+                        [field]: value
+                    })
+                });
+            }
 
             return newState;
         }
@@ -144,9 +158,22 @@ function attorneyReducer(state={}, action) {
         }
         case 'EDIT_ATTORNEY': {
             const { field, value } = action.payload;
-            const newState = Object.assign({},state, {
+            let newState;
+            if (field.substring(0, 7) == 'address') {
+                const subfield = field.substring(8);
+                newState = Object.assign({}, state, {
+                    organization_address: Object.assign({}, state.organization_address, {
+                        [subfield]: value
+                    })
+                });
+            }
+
+            else {
+                newState = Object.assign({}, state, {
                     [field]: value
                 });
+            }
+
             return newState;
         }
         case 'TOGGLE_EDITING_ATTORNEY': {

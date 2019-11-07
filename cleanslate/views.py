@@ -96,7 +96,8 @@ class AnalyzeView(APIView):
                     .rule(seal_convictions)
         )
                 return Response(to_serializable(analysis))
-            else: 
+            else:
+                print('Here2')
                 return Response({"validation_errors": serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             logging.error(e)
@@ -126,6 +127,7 @@ class RenderDocumentsView(APIView):
                             )
                             petitions.append(new_petition)
                         except:
+                            print(e)
                             logging.error("User has not set a sealing petition template, or ")
                             logging.error(str(e))
                             continue
@@ -137,11 +139,13 @@ class RenderDocumentsView(APIView):
                             )
                             petitions.append(new_petition)
                         except Exception as e:
+                            print(e)
                             logging.error("User has not set an expungement petition template, or ")
                             logging.error(str(e))
                             continue
                 client_last = petitions[0].client.last_name
                 petitions = [(p.file_name(), p.render()) for p in petitions]
+                print('Here')
                 package = Compressor(f"ExpungementsFor{client_last}.zip", petitions)
 
                 logging.info("Returning x-accel-redirect to zip file.")
@@ -153,7 +157,9 @@ class RenderDocumentsView(APIView):
                 return resp
             else:
                 raise ValueError
-        except:
+        except Exception as e:
+            print(e)
+            raise e
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
 
 

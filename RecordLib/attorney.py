@@ -12,5 +12,5 @@ class Attorney:
 
     @staticmethod
     def from_dict(dct):
-        dct["address"] = Address.from_dict(dct.get("address"))
+        dct["organization_address"] = Address.from_dict(dct.get("organization_address"))
         return Attorney(**dct) 

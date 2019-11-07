@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from 'prop-types';
 
 import EditField from "./EditField";
+import EditAddress from "./EditAddress";
 
 /**
  * Component to edit a attorney, including supplying values to a newly-created attorney.
@@ -27,8 +28,8 @@ function EditAttorney(props) {
             <button type="button" style={{marginLeft: "20px"}} onClick={toggleEditing}>Done Editing</button>
             <EditField item={organization} label="Organization: " modifier={getPropertyModifier('organization')} />
             <EditField item={bar_id} label="Bar ID: " modifier={getPropertyModifier('bar_id')} />
-            <EditField item={organization_address} label="Address: " modifier={getPropertyModifier('organization_address')} />
             <EditField item={organization_phone} label="Phone: " modifier={getPropertyModifier('organization_phone')} />
+            <EditAddress address={organization_address} header="Organization Address: " modifier={modifier} />
         </div>
     );
 };
@@ -36,7 +37,10 @@ function EditAttorney(props) {
 EditAttorney.propTypes = {
     id: PropTypes.string,
     full_name: PropTypes.string,
-    address: PropTypes.string,
+    organization_address: PropTypes.shape({
+        line_one: PropTypes.string,
+        city_state_zip: PropTypes.string
+    }),
     bar_id: PropTypes.string,
     organization: PropTypes.string,
     toggleEditing: PropTypes.func,
