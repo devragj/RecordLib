@@ -12,7 +12,7 @@ import json
 from RecordLib.decision import Decision
 from RecordLib.guess_grade import guess_grade
 
-
+logger = logging.getLogger(__name__)
 
 @dataclass
 class SentenceLength:
@@ -34,10 +34,14 @@ class SentenceLength:
         * max_unit
         * max_time
         """
-        slength = SentenceLength.from_tuples(
-            (str(dct.get("min_time")), dct.get("min_unit")),
-            (str(dct.get("max_time")), dct.get("max_unit")))
-        return slength
+        if isinstance(dct.get("min_time"), timedelta) and isinstance(dct.get("max_time"), timedelta):
+            return SentenceLength(dct.get("min_time"), dct.get("max_time"))
+        else:
+            # Parse a sentencelength submitted as a pair of (time, units) tuples, like ("54", "days").
+            slength = SentenceLength.from_tuples(
+                (str(dct.get("min_time")), dct.get("min_unit")),
+                (str(dct.get("max_time")), dct.get("max_unit")))
+            return slength
 
     @staticmethod
     def calculate_days(length: str, unit: str) -> Optional[timedelta]:
@@ -57,22 +61,22 @@ class SentenceLength:
             try:
                 return timedelta(days=float(length.strip()))
             except ValueError:
-                logging.error(f"Could not parse { length } to int")
+                logger.error(f"Could not parse { length } to int")
                 return None
         if re.match("month", unit.strip(), re.IGNORECASE):
             try:
                 return timedelta(days=30.42 * float(length.strip()))
             except ValueError:
-                logging.error(f"Could not parse { length } to int")
+                logger.error(f"Could not parse { length } to int")
                 return None
         if re.match("year", unit.strip(), re.IGNORECASE):
             try:
                 return timedelta(days=365 * float(length.strip()))
             except ValueError:
-                logging.error(f"Could not parse { length } to int")
+                logger.error(f"Could not parse { length } to int")
                 return None
         if unit.strip() != "":
-            logging.warning(f"Could not understand unit of time: { unit }")
+            logger.warning(f"Could not understand unit of time: { unit }")
         return None
 
     @classmethod
@@ -140,12 +144,12 @@ class Charge:
         try:
             i_a = grades.index(grade_a) 
         except ValueError:
-            logging.error(f"Couldn't understand the first grade, {grade_a}, so assuming it has low seriousness.")
+            logger.error(f"Couldn't understand the first grade, {grade_a}, so assuming it has low seriousness.")
             i_a = 0
         try:
             i_b = grades.index(grade_b)
         except:
-            logging.error(f"Couldn't understand the second grade, {grade_b}, so assuming it has low seriousness.")
+            logger.error(f"Couldn't understand the second grade, {grade_b}, so assuming it has low seriousness.")
             i_b = 0
         return i_a >= i_b
 
@@ -155,7 +159,8 @@ class Charge:
         try:
             dct["sentences"] = [Sentence.from_dict(s) for s in dct.get("sentences")] or []
             return Charge(**dct)
-        except:
+        except Exception as err:
+            logger.error(str(err))
             return None
 
     def set_grade(self) -> Decision:

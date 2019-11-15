@@ -13,7 +13,7 @@ import parsimonious
 from lxml import etree
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, date
 
 def text_to_pages(txt: str) -> str:
     """ Convert raw text of a docket to an xml-string, where the nodes are the pages and sections of the docket.
@@ -170,11 +170,11 @@ def xpath_or_blank(stree: etree, xpath: str) -> str:
     except IndexError:
         return ""
 
-def xpath_date_or_blank(tree: etree, xpath: str) -> Optional[datetime]:
+def xpath_date_or_blank(tree: etree, xpath: str) -> Optional[date]:
     """ Given an etree and an xpath expression, return the value of the expression 
     as a date, or None"""
     try:
-        return datetime.strptime(tree.xpath(xpath)[0].text.strip(), r"%m/%d/%Y")
+        return datetime.strptime(tree.xpath(xpath)[0].text.strip(), r"%m/%d/%Y").date()
     except (IndexError, ValueError) as e:
         return None
 
@@ -320,12 +320,12 @@ def get_case(stree: etree) -> Case:
     # TODO I'm not sure this is the right date. Is the 'disposition date' the date the case status changed to 
     #       Completed, or the date of "Sentenced/Penalty Imposed"
     if re.search("close", status, re.IGNORECASE):
-        disposition_date = xpath_or_blank(stree, "//section[@name='section_status_info']//status_event[1]/status_date")
-        try:
-            disposition_date = datetime.strptime(disposition_date, r"%m/%d/%Y")
-        except ValueError:
-            #logging.error(f"disposition date {disposition_date} did not parse.")
-            disposition_date = None
+        disposition_date = xpath_date_or_blank(stree, "//section[@name='section_status_info']//status_event[1]/status_date")
+        #try:
+        #    disposition_date = datetime.strptime(disposition_date, r"%m/%d/%Y")
+        #except ValueError:
+        #    #logging.error(f"disposition date {disposition_date} did not parse.")
+        #    disposition_date = None
     else: 
         disposition_date = None
     
@@ -343,7 +343,7 @@ def get_case(stree: etree) -> Case:
         judge=judge, affiant=affiant, arresting_agency=arresting_agency, 
         complaint_date=complaint_date)
 
-def parse_pdf(pdf: Union[BinaryIO, str], tempdir: str = "tmp") -> Tuple[Person, Case]:
+def parse_pdf(pdf: Union[BinaryIO, str], tempdir = None) -> Tuple[Person, Case]:
     """
     Parse the a pdf of a criminal record docket. 
 

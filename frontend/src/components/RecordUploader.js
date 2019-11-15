@@ -7,7 +7,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from "@material-ui/core/ListItemText";
 
-import { uploadRecords } from "../actions";
+import { uploadRecords } from "../actions/localFiles";
 /*
 *   Step in the Petition analysis and generation process for uploading files for processing.
 *
@@ -66,6 +66,7 @@ function RecordUploader(props) {
     const onClickHandler = (e) => {
         e.preventDefault();
         console.log("Uploading " + selectedFiles.length + " files")
+        setSelectedFiles([])
         uploadRecords(selectedFiles);
     };
 

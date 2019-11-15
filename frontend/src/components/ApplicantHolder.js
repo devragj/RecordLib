@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import Applicant from "./Applicant";
 import EditApplicant from "./EditApplicant";
-import { editApplicant } from "../actions";
+import { editApplicant } from "../actions/applicant";
 
 /**
  * Connected component for a Applicant, which can be in edit mode.

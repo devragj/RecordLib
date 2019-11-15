@@ -9,3 +9,10 @@ backend/tmp*
 node_modules
 frontend/src
 static
+media
+*.org
+deployment
+.hypothesis
+.mypy_cache
+.pytest_cache
+.vscode

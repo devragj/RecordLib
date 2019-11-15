@@ -3,7 +3,7 @@ import Container from "@material-ui/core/Container"
 import Paper from "@material-ui/core/Paper"
 import CircularProgress from "@material-ui/core/CircularProgress"
 import { connect } from "react-redux";
-import {fetchUserProfile} from "../actions"
+import {fetchUserProfile} from "../actions/user"
 import { makeStyles} from "@material-ui/core/styles"
 import Typography from "@material-ui/core/Typography"
 import Grid from "@material-ui/core/Grid"

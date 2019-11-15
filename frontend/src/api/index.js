@@ -6,6 +6,21 @@ import axios from 'axios';
 axios.defaults.xsrfCookieName = 'csrftoken'
 axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 
+/**
+ * Utility to remove keys with `null` values from objects sent to the 
+ * api. 
+ * 
+ * So if an object has null keys in the ui, let the server handle defaults,
+ * rather than sending null.
+ * @param {} object 
+ */
+export function removeNullValues(object) {
+        Object.keys(object).forEach((key) => {
+                if (!object[key]) {delete object[key]}
+        })
+        return(object)
+}
+
 const client = axios.create({
         //baseURL: API_BASE_URL,
         headers: {
@@ -34,7 +49,7 @@ export function uploadRecords(files) {
 export function analyzeCRecord(data) {
         return client.post(
                 "/record/analyze/",
-                data
+                removeNullValues(data)
         )
 }
 
@@ -72,7 +87,6 @@ export function login(username, password) {
                 }
 
                 window.location = "/"
-                console.log(response)
         })
 }
 
@@ -85,4 +99,28 @@ export function logout() {
 
 export function fetchUserProfileData() {
         return client.get("/record/profile/") // TODO thats a bad api endpoint for a user profile.
+}
+
+export function searchUJSByName(first_name, last_name, date_of_birth) {
+        return client.post(
+                "/ujs/search/name/", 
+                {
+                        first_name: first_name,
+                        last_name: last_name,
+                        dob: date_of_birth,
+                }
+        )
+}
+
+export function uploadUJSDocs(source_records) {
+        return client.post(
+                "/ujs/download/", {source_records: source_records}
+        )
+}
+
+export function integrateDocsWithRecord(crecord, sourceRecords) {
+        return client.put(
+                "/record/sources/",
+                { crecord, source_records: sourceRecords}
+        )
 }

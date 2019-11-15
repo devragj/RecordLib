@@ -3,6 +3,7 @@
 
 .PHONY: production-build
 production-build:
+	rm frontend/bundles/*
 	yarn run build
 	sudo docker-compose -f deployment/docker-compose.yml build
 

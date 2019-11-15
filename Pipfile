@@ -22,7 +22,7 @@ django = "==2.2.6"
 djangorestframework = "*"
 django-cors-headers = "*"
 parsimonious = "*"
-docxtpl = "*"
+docxtpl = "==0.6.3"
 gunicorn = "*"
 psycopg2 = "*"
 recordlib = {path = ".",editable = true}
