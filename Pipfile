@@ -10,6 +10,7 @@ black = "==19.10b0"
 click = "==7.0"
 pytest-django = "==3.7.0"
 pytest-pythonpath = "==0.7.3"
+pyyaml = "==5.1.2"
 
 [packages]
 mysql-connector-python = "==8.0.18"
@@ -27,6 +28,7 @@ psycopg2 = "==2.8.4"
 recordlib = {path = ".",editable = true}
 django-webpack-loader = "==0.6.0"
 django-csp = "==3.5"
+uritemplate = "==3.0.0"
 
 [requires]
 python_version = "3.7"
