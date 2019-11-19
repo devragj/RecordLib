@@ -116,7 +116,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 #}
-
+CSP_EXCLUDE_URL_PREFIXES = ("/admin",)
 
 DATABASES = {
     'default': {
