@@ -8,6 +8,7 @@ from RecordLib.crecord import (
 from RecordLib.case import Case
 from RecordLib.person import Person
 from RecordLib.common import (Charge, Sentence, SentenceLength)
+from ujs.serializers import SourceRecordSerializer
 
 class UserSerializer(S.ModelSerializer):
     class Meta:
@@ -31,9 +32,9 @@ class FileUploadSerializer(S.Serializer):
     files = S.ListField(child=S.FileField(), allow_empty=True)
 
 class SentenceLengthSerializer(S.Serializer):
-    min_time = S.IntegerField(required=False)
+    min_time = S.DurationField(required=False) #S.IntegerField(required=False)
     min_unit = S.CharField(required=False)
-    max_time = S.IntegerField(required=False)
+    max_time = S.DurationField(required=False) #S.IntegerField(required=False)
     max_unit = S.CharField(required=False) 
 
 class SentenceSerializer(S.Serializer):
@@ -45,11 +46,11 @@ class SentenceSerializer(S.Serializer):
 
 class ChargeSerializer(S.Serializer):
     offense = S.CharField()
-    grade = S.CharField(required=False, allow_blank=True)
-    statute = S.CharField(required=False, allow_blank=True)
-    disposition = S.CharField(required=False, allow_blank=True)
-    disposition_date = S.DateField(required=False)
-    sentences = SentenceSerializer(many=True)
+    grade = S.CharField(required=False, allow_blank=True, allow_null=True, default="")
+    statute = S.CharField(required=False, allow_blank=True, allow_null=True, default="")
+    disposition = S.CharField(required=False, allow_blank=True, allow_null=True, default="")
+    disposition_date = S.DateField(required=False, allow_null=True)
+    sentences = SentenceSerializer(many=True, allow_empty=True)
 
 
 class CaseSerializer(S.Serializer):
@@ -58,17 +59,17 @@ class CaseSerializer(S.Serializer):
     docket_number = S.CharField(required=True)
     otn = S.CharField(required=False, allow_blank=True)
     dc = S.CharField(required=False, allow_blank=True)
-    charges = ChargeSerializer(many=True)
-    total_fines = S.IntegerField(required=False)
-    fines_paid = S.IntegerField(required=False)
-    complaint_date = S.DateField(required=False)
-    arrest_date = S.DateField(required=False)
-    disposition_date = S.DateField(required=False)
-    judge = S.CharField(required=False, allow_blank=True)
-    judge_address = S.CharField(required=False, allow_blank=True)
-    affiant = S.CharField(required=False, allow_blank=True)
-    arresting_agency = S.CharField(required=False, allow_blank=True)
-    arresting_agency_address = S.CharField(required=False, allow_blank=True)
+    charges = ChargeSerializer(many=True, allow_null=True)
+    total_fines = S.IntegerField(required=False, default=0, allow_null=True)
+    fines_paid = S.IntegerField(required=False, default=0, allow_null=True)
+    complaint_date = S.DateField(required=False, allow_null=True)
+    arrest_date = S.DateField(required=False, allow_null=True)
+    disposition_date = S.DateField(required=False, allow_null=True)
+    judge = S.CharField(required=False, allow_blank=True, allow_null=True)
+    judge_address = S.CharField(required=False, allow_blank=True, default="", allow_null=True)
+    affiant = S.CharField(required=False, allow_blank=True, allow_null=True)
+    arresting_agency = S.CharField(required=False, allow_blank=True, default="", allow_null=True)
+    arresting_agency_address = S.CharField(required=False, allow_blank=True, default="", allow_null=True)
 
 class AttorneySerializer(S.Serializer):
     organization = S.CharField(required=False)
@@ -79,10 +80,10 @@ class AttorneySerializer(S.Serializer):
 
 
 class PersonSerializer(S.Serializer):
-    first_name = S.CharField(max_length=200)
-    last_name = S.CharField(max_length=200)
-    date_of_birth = S.DateField()
-    date_of_death = S.DateField(required=False)
+    first_name = S.CharField(max_length=200, allow_blank=True)
+    last_name = S.CharField(max_length=200, allow_blank=True)
+    date_of_birth = S.DateField(required=False, allow_null=True)
+    date_of_death = S.DateField(required=False, allow_null=True)
     aliases = S.ListField(child=S.CharField(), required=False) # CharField() doesn't seem to take many=True. 
     ssn = S.CharField(max_length=15, required=False, allow_blank=True)
     address = S.CharField(required=False, allow_blank=True)
@@ -105,3 +106,7 @@ class PetitionSerializer(S.Serializer):
 class DocumentRenderSerializer(S.Serializer):
     petitions = PetitionSerializer(many=True)
 
+
+class IntegrateSourcesSerializer(S.Serializer):
+    crecord = CRecordSerializer()
+    source_records = SourceRecordSerializer(many=True, allow_empty=True)

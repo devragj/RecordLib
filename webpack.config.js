@@ -39,6 +39,9 @@ const config = {
     },
     resolve: {
         modules: ['node_modules'],
+        alias: {
+            frontend: path.resolve(__dirname, "frontend")
+        },
         extensions: ['.js', '.jsx'],
     },
 }

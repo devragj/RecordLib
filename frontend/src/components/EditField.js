@@ -8,13 +8,13 @@ import PropTypes from 'prop-types';
  * @constructor
  */
 function EditField(props) {
-        const { item, label, modifier } = props;
+        const { item, label, modifier, fieldType } = props;
 
         const handleChange = event => modifier(event.target.value);
 
         return (
                 <div className="editField">
-                     {label}  <input type="text" value={item} onChange={handleChange}/>
+                     {label}  <input type={fieldType || "text"} value={item} onChange={handleChange}/>
                 </div>
         );
 }

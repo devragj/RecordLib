@@ -5,6 +5,7 @@ from rest_framework import permissions
 from rest_framework import status
 import logging
 from RecordLib.crecord import CRecord
+from RecordLib.docket import Docket
 from RecordLib.analysis import Analysis
 from RecordLib.summary.pdf import parse_pdf
 from RecordLib.serializers import to_serializable
@@ -22,9 +23,10 @@ from RecordLib.petitions import (
 )
 from .serializers import (
     CRecordSerializer, DocumentRenderSerializer, FileUploadSerializer, 
-    UserProfileSerializer, UserSerializer,
+    UserProfileSerializer, UserSerializer, IntegrateSourcesSerializer, SourceRecordSerializer
 )
 from cleanslate.compressor import Compressor
+from ujs.models import SourceRecord
 import json
 import os
 import os.path
@@ -33,38 +35,33 @@ import zipfile
 import tempfile 
 from django.http import HttpResponse
 
+logger = logging.getLogger(__name__)
+
 class FileUploadView(APIView):
     
     parser_classes = [MultiPartParser, FormParser]
     
     # noinspection PyMethodMayBeStatic
     def post(self, request, *args, **kwargs):
-        """Process a Summary PDF file and return JSON to the user.
+        """Accept dockets and summaries locally uploaded by a user, save them to the server, and return pointers with information about them.
 
-        This method expects a Summary PDF file to be posted by the frontend.
 
         This POST needs to be a FORM post, not a json post. 
 
-        Code from RecordLib is used to read the file, parse it,
-        and store the extracted information in a CRecord object.
-        Information in the CRecord is then serialized as JSON
-        and returned to the frontend.
+        
         """        
         file_serializer = FileUploadSerializer(data=request.data)
         if file_serializer.is_valid():
-            pdf_files = [f for f in file_serializer.validated_data.get("files")]
-            rec = CRecord()
-            tempdir = tempfile.mkdtemp()
+            files = [f for f in file_serializer.validated_data.get("files")]
+            results = []
             try:
-                for summary_file in pdf_files:
-                    summary = parse_pdf(
-                        pdf=summary_file,
-                        tempdir=tempdir)
-                    rec.add_summary(summary)
-                json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, default=to_serializable)
-                # Uncomment for human-readable JSON.  Also comment out the above line.
-                # json_to_send = json.dumps({"defendant": rec.person, "cases": rec.cases}, indent=4, default=to_serializable)
-                return Response(json_to_send, status=status.HTTP_200_OK)
+                for f in files:
+                    source_record = SourceRecord.from_unknown_file(f, owner=request.user)
+                    source_record.save()
+                    if source_record is not None: 
+                        results.append(source_record)
+                        # TODO FileUploadView should also report errors in turning uploaded pdfs into SourceRecords.
+                return Response({"source_records": SourceRecordSerializer(results, many=True).data}, status=status.HTTP_200_OK)
             except Exception as e:
                 return Response({"error_message": "Parsing failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
@@ -99,7 +96,7 @@ class AnalyzeView(APIView):
             else: 
                 return Response({"validation_errors": serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
-            logging.error(e)
+            logger.error(e)
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -126,8 +123,8 @@ class RenderDocumentsView(APIView):
                             )
                             petitions.append(new_petition)
                         except:
-                            logging.error("User has not set a sealing petition template, or ")
-                            logging.error(str(e))
+                            logger.error("User has not set a sealing petition template, or ")
+                            logger.error(str(e))
                             continue
                     else:
                         new_petition = Expungement.from_dict(petition_data)
@@ -137,14 +134,14 @@ class RenderDocumentsView(APIView):
                             )
                             petitions.append(new_petition)
                         except Exception as e:
-                            logging.error("User has not set an expungement petition template, or ")
-                            logging.error(str(e))
+                            logger.error("User has not set an expungement petition template, or ")
+                            logger.error(str(e))
                             continue
                 client_last = petitions[0].client.last_name
                 petitions = [(p.file_name(), p.render()) for p in petitions]
                 package = Compressor(f"ExpungementsFor{client_last}.zip", petitions)
 
-                logging.info("Returning x-accel-redirect to zip file.")
+                logger.info("Returning x-accel-redirect to zip file.")
 
                 resp = HttpResponse()
                 resp["Content-Type"] = "application/zip"
@@ -165,3 +162,36 @@ class UserProfileView(APIView):
             "user": UserSerializer(request.user).data,
             "profile": UserProfileSerializer(request.user).data
         })
+
+class IntegrateCRecordWithSources(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):    
+        """
+        Accept a CRecord and a set of SourceRecords. Incorporate the information that the SourceRecords contain into the CRecord.
+
+        TODO this should replace FileUpload view. 
+        """
+        try:
+            serializer = IntegrateSourcesSerializer(data=request.data)
+            if serializer.is_valid():
+                crecord = CRecord.from_dict(serializer.validated_data["crecord"])
+                for source_record_data in serializer.validated_data["source_records"]:
+                    source_record = SourceRecord.objects.get(id=source_record_data["id"])
+                    if source_record.record_type == SourceRecord.RecTypes.SUMMARY_PDF:
+                        summary = parse_pdf(source_record.file.path)
+                        crecord.add_summary(summary, case_merge_strategy="overwrite_old", override_person=True)
+                    elif source_record.record_type == SourceRecord.RecTypes.DOCKET_PDF:
+                        docket, errs = Docket.from_pdf(source_record.file.path)
+                        crecord.add_docket(docket)
+                    else:
+                        logger.error(f"Cannot parse a source record with type {source_record.record_type}")
+                return Response({'crecord': CRecordSerializer(crecord).data}, status=status.HTTP_200_OK) 
+            else:
+                return Response({
+                    "errors": serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as err: 
+            return Response({
+                "errors": [str(err)]
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

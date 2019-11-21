@@ -42,6 +42,8 @@ backend/settings.py
 backend/urls.py
 backend/views.py
 backend/wsgi.py
+backend/templatetags/__init__.py
+backend/templatetags/replace_nonce.py
 cleanslate/__init__.py
 cleanslate/admin.py
 cleanslate/apps.py
@@ -61,3 +63,14 @@ scripts/analyze.py
 scripts/download_dockets.py
 scripts/expunge.py
 scripts/parse.py
+ujs/__init__.py
+ujs/admin.py
+ujs/apps.py
+ujs/models.py
+ujs/serializers.py
+ujs/urls.py
+ujs/views.py
+ujs/migrations/0001_initial.py
+ujs/migrations/0002_auto_20191108_2054.py
+ujs/migrations/0003_auto_20191114_0207.py
+ujs/migrations/__init__.py

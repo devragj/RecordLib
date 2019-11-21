@@ -1,86 +1,21 @@
 import * as api from '../api';
-import { normalizeCRecord, denormalizeCRecord, normalizeAnalysis, CRECORD_ID  } from '../normalize';
+import { normalizeCRecord, CRECORD_ID  } from '../normalize';
+import { generateId } from "./helpers"
 
-function generateId() {
-        function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000)
-                        .toString(16)
-                        .substring(1)
-                ;
-        }
-        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                s4() + '-' + s4() + s4() + s4()
-        ;
-}
 
-/**
- * This action creator parses and then normalizes
- * the data returned by the backend.
- * @param  {string} data JSON for a CRecord
- * @return {Object} an action whose payload is
- * the normalized form of the CRecord, to be used as
- * redux state
- */
-function uploadRecordsSucceeded(data) {
-    return {
-        type: 'FETCH_CRECORD_SUCCEEDED',
-        payload: data
-    }
-}
-
-function addDefendant(defendant) {
-    const aliasObject = {};
-    const uniqueAliases = [...new Set(defendant.aliases)];
-    uniqueAliases.forEach( name => {
-        const id = generateId();
-        aliasObject[id] = name;
-    });
-    defendant.aliases = uniqueAliases;
-    return {
-        type: 'ADD_DEFENDANT',
-        payload: defendant
-    };
-}
-
-/**
- * An async action creator returning a function (of dispatch).
- * @param  {Object} file - uploaded Summary pdf file
- * @return {Object}
- */
-export function uploadRecords(files) {
-    return dispatch => {
-        api.uploadRecords(files)
-            .then(
-                response => {
-                    const data = response.data;
-                    console.log("fetched data successfully")
-                    console.log(data)
-                    const cRecord = JSON.parse(data);
-                    const defendant = cRecord.defendant;
-                    delete cRecord.defendant;
-                    const normalizedData = normalizeCRecord(cRecord);
-                    const action = uploadRecordsSucceeded(normalizedData);
-                    dispatch(action);
-                    const action2 = addDefendant(defendant);
-                    dispatch(action2);
-                }
-            )
-            // TODO Find out what errors we may get from the server
-            // and dispatch an action so that the UI can notify the user.
-            // For now, while the app is under development, I have
-            // commented this block out,
-            // as axios will catch other errors as well.
-            // See https://github.com/facebook/react/issues/7617#issuecomment-247710003
-            // If you uncomment the catch block, make sure to check
-            // the console for errors.
-            // Alternatively, we could install axios middleware.
-            // .catch(
-            //         error => {
-            //                 console.log(error);
-            //         }
-            // );
-        };
-};
+//function addDefendant(defendant) {
+//    const aliasObject = {};
+//    const uniqueAliases = [...new Set(defendant.aliases)];
+//    uniqueAliases.forEach( name => {
+//         const id = generateId();
+//         aliasObject[id] = name;
+//     });
+//     defendant.aliases = uniqueAliases;
+//     return {
+//         type: 'ADD_DEFENDANT',
+//         payload: defendant
+//     };
+// }
 
 /**
  * a generic action creator for editing a field of
@@ -103,46 +38,6 @@ export function editField(entityName, entityId, field, value) {
 
 
 
-function analyzeRecordsSucceeded(data) {
-        // TODO - do we need to normalize 'data' here? Its an analysis from the server, so its pretty deeply 
-        // nested. But we won't edit it, I think.
-        const normalizedAnalysis = normalizeAnalysis(data)
-        return {
-                type: 'ANALYZE_CRECORD_SUCCEEDED',
-                payload: normalizedAnalysis 
-        }
-}
-
-/**
- * Create an action to start the call to analyze a crecord to get an analysis of expungements and petitions
- */
-export function analyzeCRecord() {
-        return (dispatch, getState) => {
-                const crecord = getState().crecord;
-                const normalizedData = { entities: crecord, result: CRECORD_ID };
-                const denormalizedCRecord = denormalizeCRecord(normalizedData);
-                const applicantInfo = getState().applicantInfo;
-                const person = Object.assign({}, applicantInfo.applicant, {
-                    aliases: applicantInfo.applicant.aliases.map(aliasId => applicantInfo.aliases[aliasId])
-                });
-                delete person.editing;
-                if (person.date_of_death == '') {
-                    delete person.date_of_death;
-                }
-                denormalizedCRecord['person'] = person;
-                api.analyzeCRecord(denormalizedCRecord).then(
-                        response => {
-                                const data = response.data;
-                                console.log("fetched data successfully")
-                                console.log(data)
-                                const action = analyzeRecordsSucceeded(data);
-                                dispatch(action);
-                        }).catch(err => { 
-                                console.log("error analyzing record:"); 
-                                console.log(err)
-                        })
-        }
-}
 
 function fetchPetitionsSucceeded(petitionPath) {
         return {
@@ -305,43 +200,7 @@ export function deleteServiceAgency(id) {
         }
 }
 
-export function editApplicant(field, value) {
-        return {
-                type: 'EDIT_APPLICANT',
-                payload: { field, value }
-        };
-};
 
-export function editAlias(id, value) {
-        return {
-                type: 'EDIT_ALIAS',
-                payload: { id, value }
-        };
-};
 
-export function addAlias(value) {
-    const id = generateId();
-    return {
-        type: 'ADD_ALIAS',
-        payload: { id, value }
-    };
-};
 
-function fetchUserProfileSucceeded(profileData) {
-        return({
-                type: 'FETCH_USER_PROFILE_SUCCEEDED',
-                payload: profileData
-        })
-}
 
-export function fetchUserProfile() {
-        return(dispatch => {
-                api.fetchUserProfileData().then(response => {
-                        const data = response.data
-                        dispatch(fetchUserProfileSucceeded(data))
-                }).catch(err => {
-                        console.log("fetching user profile failed because:")
-                        console.log(err)
-                })
-        })
-}

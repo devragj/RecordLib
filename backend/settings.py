@@ -18,6 +18,11 @@ DEBUG = os.environ.get("DEBUG") == "TRUE"
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE= not DEBUG
 
+
+REST_FRAMEWORK = {
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+}
+
 ALLOWED_HOSTS = [os.environ.get("ALLOWED_HOSTS")] if os.environ.get("ALLOWED_HOSTS") else []
 
 USE_X_FORWARDED_HOST = os.environ.get("USE_X_FORWARDED_HOST") == "TRUE"
@@ -52,8 +57,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'webpack_loader',
     'rest_framework',
-    'cleanslate'
+    'cleanslate',
+    'ujs',
 ]
+
+# Setting for ujs app, url for the docket scraper api.
+DOCKET_SCRAPER_URL = os.environ["DOCKET_SCRAPER_URL"]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -107,7 +116,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 #        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #    }
 #}
-
+CSP_EXCLUDE_URL_PREFIXES = ("/admin",)
 
 DATABASES = {
     'default': {

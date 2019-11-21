@@ -53,6 +53,11 @@ services:
     command: python manage.py migrate --noinput
     depends_on:
       - pg_db
+  docket_scraper:
+    image: natev/docketscraper_api
+    restart: always
+    networks:
+      recordlib-net:
   pg_db:
     build:
       context: .

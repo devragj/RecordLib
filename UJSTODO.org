@@ -1,0 +1,16 @@
+* TODOS for UJS Searching
+
+TODO The Process Selected Documents button will send 
+a) the selected documents to a server endpoint, ujs/download
+
+b) the server then creates db objects for these documents, and downloads them, and responds with ids for these downloaded documents.
+
+c) redux has a slice called 'recordDocuments' that is a bunch of the documents from the server.
+
+4) upload documents also uploads docs to the server and responds with a bunch of documents that are stored in the recordDocuments slice.
+
+5) a different endpoint gets a set of recordDocuments as well as the current CRecord, and 
+updates the current CRecord with the results from analyzing the recordDocuments.
+
+TODO when generating petitions, the client sends the list of documents. 
+The server includes these documents in the petition package

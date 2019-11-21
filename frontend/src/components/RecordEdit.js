@@ -4,7 +4,7 @@ import CRecordWrapper from "./CRecord"
 import Container from "@material-ui/core/Container"
 import FormGroup from "@material-ui/core/FormGroup"
 import Button from "@material-ui/core/Button"
-import { analyzeCRecord } from "../actions"
+import { analyzeCRecord } from "../actions/crecord"
 
 
 function RecordEdit(props) {

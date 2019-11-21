@@ -138,3 +138,8 @@ export function normalizeAnalysis(analysis) {
         }).flat()
         return {petitions: petitions, analysis: analysis}
 }
+
+export function denormalizeSourceRecords(sourceRecords) {
+        const { allIds, allSourceRecords } = sourceRecords;
+        return allIds.map(i => allSourceRecords[i])
+}
