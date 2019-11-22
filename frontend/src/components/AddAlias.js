@@ -2,7 +2,7 @@ import React, { useState }  from "react";
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { addAlias } from "../actions";
+import { addAlias } from "../actions/applicant.js";
 
 function AddAlias(props) {
     const { adder } = props;

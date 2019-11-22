@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import Alias from "./Alias";
 import EditAlias from "./EditAlias";
-import { editAlias } from "../actions";
+import { editAlias } from "../actions/applicant.js";
 
 /**
  * Connected component for a Alias, which can be in edit mode.
