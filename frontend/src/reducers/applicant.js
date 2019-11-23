@@ -36,27 +36,13 @@ function aliasReducer(state = {}, action) {
                 }).reduce(callback, {})
             )
         }
-        case EDIT_ALIAS: {
+        case EDIT_ALIAS:
+        case ADD_ALIAS:
+        {
             const { id, value } = action.payload;
             
             const newState = Object.assign({}, state, {
-                aliases: Object.assign({}, state.aliases, {
-                    [id]: value
-                })
-            });
-            
-            return newState;
-        }
-        case ADD_ALIAS: {
-            const { id, value } = action.payload;
-            
-            const newState = Object.assign({}, state, {
-                applicant: Object.assign({}, state.applicant, {
-                    aliases: state.applicant.aliases.concat([id])
-                }),
-                aliases: Object.assign({}, state.aliases, {
-                    [id]: value
-                })
+                [id]: value
             });
             
             return newState;
@@ -108,6 +94,15 @@ function applicantReducer(state = initialApplicant, action) {
             if (state.date_of_birth ) {
                 newState.date_of_birth = state.date_of_birth;
             }
+
+            return newState;
+        }
+        case ADD_ALIAS: {
+            const { id, value } = action.payload;
+
+            const newState = Object.assign({}, state, {
+                aliases: state.aliases.concat(id)
+            });
 
             return newState;
         }
