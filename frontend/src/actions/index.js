@@ -2,21 +2,6 @@ import * as api from '../api';
 import { normalizeCRecord, CRECORD_ID  } from '../normalize';
 import { generateId } from "./helpers"
 
-
-//function addDefendant(defendant) {
-//    const aliasObject = {};
-//    const uniqueAliases = [...new Set(defendant.aliases)];
-//    uniqueAliases.forEach( name => {
-//         const id = generateId();
-//         aliasObject[id] = name;
-//     });
-//     defendant.aliases = uniqueAliases;
-//     return {
-//         type: 'ADD_DEFENDANT',
-//         payload: defendant
-//     };
-// }
-
 /**
  * a generic action creator for editing a field of
  * an entity in the store

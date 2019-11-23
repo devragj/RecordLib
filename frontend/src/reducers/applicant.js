@@ -7,7 +7,7 @@ const initialApplicant = {
     date_of_birth: '',
     date_of_death: '',
     ssn: '',
-    address: '',
+    address: { line_one: '', city_state_zip: '' },
     aliases: [],
     editing: true
  };
@@ -57,9 +57,22 @@ function applicantReducer(state = initialApplicant, action) {
         case EDIT_APPLICANT: {
             const { field, value } = action.payload;
 
-            const newState = Object.assign({}, state, {
-                [field]: value
-            });
+            let newState;
+            if (field.substring(0, 7) == 'address') {
+                const subfield = field.substring(8);
+                newState = Object.assign({}, state, {
+                    address: Object.assign({}, state.address, {
+                        [subfield]: value
+                    })
+                });
+            }
+
+            else {
+                newState =  Object.assign({}, state, {
+                    [field]: value
+                });
+
+            }
 
             return newState;
         }
