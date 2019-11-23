@@ -1,8 +1,9 @@
 import React from "react";
 import PropTypes from 'prop-types';
+import Address from './Address';
 
 function Attorney(props) {
-    const { id, full_name, address, bar_id, organization, toggleEditing } = props;
+    const { id, full_name, organization_address, bar_id, organization, toggleEditing } = props;
     const attorneyStyle = { display: 'grid', gridTemplateColumns: '270px 270px 270px', margin: '10px',
         border: '1px solid black', borderRadius: '15px', padding: '10px', width: '860px' };
 
@@ -12,7 +13,7 @@ function Attorney(props) {
             <button type="button" style={{marginLeft: "20px"}} onClick={toggleEditing}>Edit</button>
             <div>Organization: {organization}</div>
             <div>Bar ID: {bar_id}</div>
-            <div>Address: {address}</div>
+            <Address header="Organization Address:" address={organization_address} />
         </div>
     );
 };
@@ -20,7 +21,10 @@ function Attorney(props) {
 Attorney.propTypes = {
     id: PropTypes.string,
     full_name: PropTypes.string,
-    address: PropTypes.string,
+    organization_address: PropTypes.shape({
+        line_one: PropTypes.string,
+        city_state_zip: PropTypes.string
+    }),
     bar_id: PropTypes.string,
     organization: PropTypes.string,
     toggleEditing: PropTypes.func

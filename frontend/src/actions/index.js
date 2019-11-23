@@ -150,7 +150,10 @@ export function addAttorney(full_name) {
     const attorney = {
         id: full_name,
         full_name,
-        organization_address: '',
+        organization_address: {
+            line_one: '',
+            city_state_zip: ''
+        },
         organization_phone: '',
         bar_id: '',
         organization: '',
@@ -173,10 +176,9 @@ export function toggleEditingAttorney() {
 export function editAttorney(field, value) {
         return {
                 type: 'EDIT_ATTORNEY',
-                payload: {field, value }
+                payload: { field, value }
         };
 };
-
 
 
 export function createNewServiceAgency(serviceAgency) {

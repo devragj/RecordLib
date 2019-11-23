@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import Aliases from "./Aliases";
 import EditField from "./EditField";
+import EditAddress from "./EditAddress";
 
 function EditApplicant(props) {
     const { first_name, last_name, date_of_birth, date_of_death, aliases, ssn, address, modifier } = props;
@@ -17,8 +18,6 @@ function EditApplicant(props) {
         return value => modifier(key, value);
     }
 
-
-
     const toggleEditing = () => modifier('editing', false);
 
     return (
@@ -31,7 +30,9 @@ function EditApplicant(props) {
             <EditField item={date_of_birth} fieldType="date" label="DOB: " modifier={getPropertyModifier('date_of_birth')} />
             <EditField item={date_of_death} label="Deceased Date: " modifier={getPropertyModifier('date_of_death')} />
             <EditField item={ssn} label="Social Security Number: " modifier={getPropertyModifier('ssn')} />
-            <EditField item={address} label="Address: " modifier={getPropertyModifier('address')} />
+            <div></div>
+            <div><EditAddress address={address} header='Address:' modifier={modifier}/></div>
+            <div></div>
             <div><Aliases editing={true} aliases={aliases}/></div>
         </div>
     );
@@ -44,7 +45,10 @@ EditApplicant.propTypes = {
     date_of_death:  PropTypes.string,
     aliases: PropTypes.array,
     ssn: PropTypes.string,
-    address: PropTypes.string,
+    address: PropTypes.shape({
+        line_one: PropTypes.string,
+        city_state_zip: PropTypes.string
+    }),
     modifier: PropTypes.func
 }
 

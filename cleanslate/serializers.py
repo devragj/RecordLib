@@ -71,13 +71,16 @@ class CaseSerializer(S.Serializer):
     arresting_agency = S.CharField(required=False, allow_blank=True, default="", allow_null=True)
     arresting_agency_address = S.CharField(required=False, allow_blank=True, default="", allow_null=True)
 
+class AddressSerializer(S.Serializer):
+    line_one = S.CharField()
+    city_state_zip = S.CharField()
+
 class AttorneySerializer(S.Serializer):
     organization = S.CharField(required=False)
     full_name = S.CharField(required=False)
-    organization_address = S.CharField(required=False)
+    organization_address = AddressSerializer(required=False)
     organization_phone = S.CharField(required=False)
     bar_id = S.CharField(required=False)
-
 
 class PersonSerializer(S.Serializer):
     first_name = S.CharField(max_length=200, allow_blank=True)
@@ -86,7 +89,7 @@ class PersonSerializer(S.Serializer):
     date_of_death = S.DateField(required=False, allow_null=True)
     aliases = S.ListField(child=S.CharField(), required=False) # CharField() doesn't seem to take many=True. 
     ssn = S.CharField(max_length=15, required=False, allow_blank=True)
-    address = S.CharField(required=False, allow_blank=True)
+    address = AddressSerializer(required=False)
 
 class CRecordSerializer(S.Serializer):
     person = PersonSerializer()

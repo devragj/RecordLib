@@ -93,7 +93,7 @@ class AnalyzeView(APIView):
                     .rule(seal_convictions)
         )
                 return Response(to_serializable(analysis))
-            else: 
+            else:
                 return Response({"validation_errors": serializer.errors}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             logger.error(e)
@@ -122,9 +122,10 @@ class RenderDocumentsView(APIView):
                                 request.user.userprofile.sealing_petition_template.file
                             )
                             petitions.append(new_petition)
-                        except:
-                            logger.error("User has not set a sealing petition template, or ")
-                            logger.error(str(e))
+                        except Exception as e:
+                            print(e)
+                            logging.error("User has not set a sealing petition template, or ")
+                            logging.error(str(e))
                             continue
                     else:
                         new_petition = Expungement.from_dict(petition_data)
@@ -134,8 +135,9 @@ class RenderDocumentsView(APIView):
                             )
                             petitions.append(new_petition)
                         except Exception as e:
-                            logger.error("User has not set an expungement petition template, or ")
-                            logger.error(str(e))
+                            print(e)
+                            logging.error("User has not set an expungement petition template, or ")
+                            logging.error(str(e))
                             continue
                 client_last = petitions[0].client.last_name
                 petitions = [(p.file_name(), p.render()) for p in petitions]
@@ -150,7 +152,8 @@ class RenderDocumentsView(APIView):
                 return resp
             else:
                 raise ValueError
-        except:
+        except Exception as e:
+            print(e)
             return Response("Something went wrong", status=status.HTTP_400_BAD_REQUEST)
 
 

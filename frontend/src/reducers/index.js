@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux';
 
+
 import sourceRecordsReducer from "./sourceRecords"
 import ujsSearchReducer from "./ujsSearch"
 import serviceAgencyReducer from "./serviceAgencies"
@@ -9,6 +10,7 @@ import userReducer from "./user"
 import applicantReducer from "./applicant"
 import analysisReducer from "./analysis"
 import petitionsReducer from "./petitions"
+
 
 const rootReducer = combineReducers({
     user: userReducer,  // the current user.

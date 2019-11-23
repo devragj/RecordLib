@@ -1,5 +1,5 @@
 import functools
-from RecordLib.common import Charge, Sentence, SentenceLength
+from RecordLib.common import Charge, Sentence, SentenceLength, Address
 from RecordLib.person import Person
 from RecordLib.case import Case
 from RecordLib.analysis import Analysis
@@ -34,10 +34,18 @@ def ts_list(l):
         return []
     return [to_serializable(el) for el in l]
 
+
 @to_serializable.register(Case)
 @to_serializable.register(Charge)
 @to_serializable.register(Person)
 @to_serializable.register(Sentence)
+@to_serializable.register(Decision)
+@to_serializable.register(Analysis)
+@to_serializable.register(Sealing)
+@to_serializable.register(Expungement)
+@to_serializable.register(Attorney)
+@to_serializable.register(CRecord)
+@to_serializable.register(Address)
 def ts_object(an_object):
     return {k:to_serializable(v) for k, v in an_object.__dict__.items() if v is not None}
     # return {k: to_serializable(v) for k, v in an_object.__dict__.items()}
@@ -52,74 +60,6 @@ def ts_date(a_date):
 @to_serializable.register(timedelta)
 def ts_date(a_delta):
     return str(a_delta)
-
-
-@to_serializable.register(Decision)
-def td_decision(dec):
-    if isinstance(dec.reasoning, list):
-        return {
-            "name": to_serializable(dec.name),
-            "value": to_serializable(dec.value),
-            "reasoning": [to_serializable(r) for r in dec.reasoning]
-        }
-
-    return {
-        "name": to_serializable(dec.name),
-        "value": to_serializable(dec.value),
-        "reasoning": to_serializable(dec.reasoning)
-    }
-
-@to_serializable.register(Analysis)
-def td_analysis(an):
-    return {
-        "decisions": to_serializable(an.decisions),
-        "remaining_record": to_serializable(an.remaining_record),
-        "record": to_serializable(an.record)
-    }
-
-
-@to_serializable.register(Sealing)
-def td_sealing(s):
-    return {
-        "petition_type": to_serializable(s.petition_type),
-        "client": to_serializable(s.client),
-        "cases": to_serializable(s.cases),
-        "attorney": to_serializable(s.attorney),
-        "summary_expungement_language": to_serializable(s.summary_expungement_language),
-        "include_crim_hist_report": to_serializable(s.include_crim_hist_report),
-        "ifp_message": to_serializable(s.ifp_message),
-    }
-
-@to_serializable.register(Expungement)
-def td_expungement(e):
-    return {
-        "petition_type": to_serializable(e.petition_type),
-        "attorney": to_serializable(e.attorney),
-        "expungement_type": to_serializable(e.expungement_type),
-        "procedure": to_serializable(e.procedure),
-        "client": to_serializable(e.client),
-        "cases": to_serializable(e.cases),
-        "summary_expungement_language": to_serializable(e.summary_expungement_language),
-        "include_crim_hist_report": to_serializable(e.include_crim_hist_report),
-        "ifp_message": to_serializable(e.ifp_message),
-    }
-
-@to_serializable.register(Attorney)
-def td_attorney(atty):
-    return {
-        "organization": to_serializable(atty.organization),
-        "full_name": to_serializable(atty.full_name),
-        "organization_address": to_serializable(atty.organization_address),
-        "organization_phone": to_serializable(atty.organization_phone),
-        "bar_id": to_serializable(atty.bar_id) 
-    }
-
-@to_serializable.register(CRecord)
-def td_crecord(crec):
-    return {
-        "person": to_serializable(crec.person),
-        "cases": [to_serializable(c) for c in crec.cases]
-    }
 
     
 @to_serializable.register(SentenceLength)

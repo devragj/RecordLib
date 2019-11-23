@@ -221,3 +221,18 @@ class Charge:
             return match.group("subsections")
         else:
             return ""
+
+
+@dataclass
+class Address:
+
+    line_one: str
+    city_state_zip: str
+
+    @staticmethod
+    def from_dict(dct: dict) -> Address:
+        try:
+            return Address(**dct)
+        except:
+            return None
+
